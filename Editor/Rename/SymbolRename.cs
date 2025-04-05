@@ -1,6 +1,9 @@
+using dnlib.DotNet;
 using Obfuz.Rename;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace Obfuz
@@ -20,7 +23,102 @@ namespace Obfuz
 
         public void Process()
         {
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                if (_renamePolicy.NeedRename(ass.module))
+                {
+                    Rename(ass.module);
+                }
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
+                    if (type.FullName != "<Module>" && _renamePolicy.NeedRename(type))
+                    {
+                        Rename(type);
+                    }
+                    foreach (FieldDef field in type.Fields)
+                    {
+                        if (_renamePolicy.NeedRename(field))
+                        {
+                            Rename(field);
+                        }
+                    }
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        if (_renamePolicy.NeedRename(method))
+                        {
+                            Rename(method);
+                            foreach (Parameter param in method.Parameters)
+                            {
+                                Rename(param.ParamDef);
+                            }
+                        }
+                    }
+                    foreach (EventDef eventDef in type.Events)
+                    {
+                        if (_renamePolicy.NeedRename(eventDef))
+                        {
+                            Rename(eventDef);
+                        }
+                    }
+                    foreach (PropertyDef property in type.Properties)
+                    {
+                        if (_renamePolicy.NeedRename(property))
+                        {
+                            Rename(property);
+                        }
+                    }
+                }
+            }
+        }
 
+        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDefMD mod)
+        {
+            return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
+        }
+
+        private void Rename(ModuleDefMD mod)
+        {
+            string oldName = MetaUtil.GetModuleNameWithoutExt(mod.Name);
+            string newName = _ctx.nameMaker.GetNewName(mod, oldName);
+            mod.Name = $"{newName}.dll";
+            Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            {
+                foreach (AssemblyRef assRef in ass.module.GetAssemblyRefs())
+                {
+                    if (assRef.Name == oldName)
+                    {
+                        assRef.Name = newName;
+                        Debug.Log($"rename assembly:{ass.name}  ref oldName:{oldName} newName:{newName}");
+                    }
+                }
+            }
+        }
+
+        private void Rename(TypeDef type)
+        {
+        }
+
+        private void Rename(FieldDef field)
+        {
+        }
+
+        private void Rename(MethodDef method)
+        {
+        }
+
+        private void Rename(ParamDef param)
+        {
+
+        }
+
+        private void Rename(EventDef eventDef)
+        {
+
+        }
+
+        private void Rename(PropertyDef property)
+        {
         }
     }
 }

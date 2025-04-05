@@ -9,94 +9,49 @@ namespace Obfuz.Rename
 {
     public interface IRenamePolicy
     {
-        bool NeedKeepName(ModuleDefMD mod);
+        bool NeedRename(ModuleDefMD mod);
 
-        bool NeedKeepName(TypeDef typeDef);
+        bool NeedRename(TypeDef typeDef);
 
-        bool NeedKeepName(MethodDef methodDef);
+        bool NeedRename(MethodDef methodDef);
 
-        bool NeedKeepName(FieldDef fieldDef);
+        bool NeedRename(FieldDef fieldDef);
 
-        bool NeedKeepName(PropertyDef propertyDef);
+        bool NeedRename(PropertyDef propertyDef);
 
-        bool NeedKeepName(EventDef eventDef);
-
-
-        string GetNewName(ModuleDefMD mod, string originalName);
-
-        string GetNewName(TypeDef typeDef, string originalName);
-
-        string GetNewName(MethodDef methodDef, string originalName);
-
-        string GetNewName(FieldDef fieldDef, string originalName);
-
-        string GetNewName(PropertyDef propertyDef, string originalName);
-
-        string GetNewName(EventDef eventDef, string originalName);
-
-
+        bool NeedRename(EventDef eventDef);
     }
 
     public class RenamePolicy : IRenamePolicy
     {
-        public bool NeedKeepName(ModuleDefMD mod)
+        public bool NeedRename(ModuleDefMD mod)
         {
-            return false;
-        }
-        public bool NeedKeepName(TypeDef typeDef)
-        {
-            return false;
+            return true;
         }
 
-        public bool NeedKeepName(MethodDef methodDef)
+        public bool NeedRename(TypeDef typeDef)
         {
-            return false;
+            return true;
         }
 
-        public bool NeedKeepName(FieldDef fieldDef)
+        public bool NeedRename(MethodDef methodDef)
         {
-            return false;
+            return true;
         }
 
-        public bool NeedKeepName(PropertyDef propertyDef)
+        public bool NeedRename(FieldDef fieldDef)
         {
-            return false;
+            return true;
         }
 
-        public bool NeedKeepName(EventDef eventDef)
+        public bool NeedRename(PropertyDef propertyDef)
         {
-            return false;
+            return true;
         }
 
-
-        public string GetNewName(ModuleDefMD mod, string originalName)
+        public bool NeedRename(EventDef eventDef)
         {
-            return originalName + "_obfuz_generated__";
-        }
-
-        public string GetNewName(TypeDef typeDef, string originalName)
-        {
-            return originalName + "_obfuz_generated__";
-        }
-
-        public string GetNewName(MethodDef methodDef, string originalName)
-        {
-            return originalName + "_obfuz_generated__";
-        }
-
-        public string GetNewName(FieldDef fieldDef, string originalName)
-        {
-            return originalName + "_obfuz_generated__";
-        }
-
-        public string GetNewName(PropertyDef propertyDef, string originalName)
-        {
-            return originalName + "_obfuz_generated__";
-        }
-
-        public string GetNewName(EventDef eventDef, string originalName)
-        {
-            return originalName + "_obfuz_generated__";
+            return true;
         }
     }
 }

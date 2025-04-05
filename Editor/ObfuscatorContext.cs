@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Rename;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,9 @@ namespace Obfuz
     public class ObfuscatorContext
     {
         public List<ObfuzAssemblyInfo> assemblies;
+
+        public IRenamePolicy renamePolicy;
+
+        public INameMaker nameMaker;
     }
 }
