@@ -26,7 +26,7 @@ namespace Obfuz.Rename
     {
         public bool NeedRename(ModuleDefMD mod)
         {
-            return true;
+            return false;
         }
 
         public bool NeedRename(TypeDef typeDef)

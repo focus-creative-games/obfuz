@@ -31,7 +31,7 @@ namespace Obfuz
                 }
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
-                    if (type.FullName != "<Module>" && _renamePolicy.NeedRename(type))
+                    if (!IsSystemReservedType(type) && _renamePolicy.NeedRename(type))
                     {
                         Rename(type);
                     }
@@ -71,6 +71,15 @@ namespace Obfuz
             }
         }
 
+        private bool IsSystemReservedType(TypeDef type)
+        {
+            if (type.FullName == "<Module>")
+            {
+                return true;
+            }
+            return false;
+        }
+
         private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDefMD mod)
         {
             return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
@@ -97,6 +106,46 @@ namespace Obfuz
 
         private void Rename(TypeDef type)
         {
+            string moduleName = MetaUtil.GetModuleNameWithoutExt(type.Module.Name);
+            string oldFullName = type.FullName;
+            string oldNamespace = type.Namespace;
+            string newNamespace;
+            if (string.IsNullOrEmpty(oldNamespace))
+            {
+                newNamespace = oldNamespace;
+            }
+            else
+            {
+                newNamespace = _ctx.nameMaker.GetNewNamespace(type, oldNamespace);
+                type.Namespace = newNamespace;
+            }
+
+            string oldName = type.Name;
+            string newName = _ctx.nameMaker.GetNewName(type, oldName);
+            type.Name = newName;
+            string newFullName = type.FullName;
+            Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
+            
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies((ModuleDefMD)type.Module))
+            {
+                foreach (TypeRef typeRef in ass.module.GetTypeRefs())
+                {
+                    if (typeRef.FullName != oldFullName)
+                    {
+                        continue;
+                    }
+                    if (typeRef.DefinitionAssembly.Name != moduleName)
+                    {
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(oldNamespace))
+                    {
+                        typeRef.Namespace = newNamespace;
+                    }
+                    typeRef.Name = newName;
+                    Debug.Log($"rename assembly:{typeRef.DefinitionAssembly.Name} reference {oldFullName} => {typeRef.FullName}");
+                }
+            }
         }
 
         private void Rename(FieldDef field)
