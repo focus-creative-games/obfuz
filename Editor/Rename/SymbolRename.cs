@@ -74,6 +74,7 @@ namespace Obfuz
                     }
                 }
             }
+            // TODO handle typeof(XXX) in Attribute
         }
 
         private bool IsSystemReservedType(TypeDef type)
