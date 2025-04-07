@@ -17,6 +17,8 @@ namespace Obfuz.Rename
 
         string GetNewName(MethodDef methodDef, string originalName);
 
+        string GetNewName(ParamDef param, string originalName);
+
         string GetNewName(FieldDef fieldDef, string originalName);
 
         string GetNewName(PropertyDef propertyDef, string originalName);
@@ -47,6 +49,11 @@ namespace Obfuz.Rename
         }
 
         public string GetNewName(MethodDef methodDef, string originalName)
+        {
+            return GetDefaultNewName(originalName);
+        }
+
+        public string GetNewName(ParamDef param, string originalName)
         {
             return GetDefaultNewName(originalName);
         }

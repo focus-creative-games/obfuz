@@ -14,11 +14,13 @@ namespace Obfuz
         private readonly ObfuscatorContext _ctx;
 
         private readonly IRenamePolicy _renamePolicy;
+        private readonly INameMaker _nameMaker;
 
         public SymbolRename(ObfuscatorContext ctx)
         {
             _ctx = ctx;
-            _renamePolicy = new RenamePolicy();
+            _renamePolicy = ctx.renamePolicy;
+            _nameMaker = ctx.nameMaker;
         }
 
         public void Process()
@@ -49,7 +51,10 @@ namespace Obfuz
                             Rename(method);
                             foreach (Parameter param in method.Parameters)
                             {
-                                Rename(param.ParamDef);
+                                if (param.ParamDef != null)
+                                {
+                                    Rename(param.ParamDef);
+                                }
                             }
                         }
                     }
@@ -88,7 +93,7 @@ namespace Obfuz
         private void Rename(ModuleDefMD mod)
         {
             string oldName = MetaUtil.GetModuleNameWithoutExt(mod.Name);
-            string newName = _ctx.nameMaker.GetNewName(mod, oldName);
+            string newName = _nameMaker.GetNewName(mod, oldName);
             mod.Name = $"{newName}.dll";
             Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
@@ -116,12 +121,12 @@ namespace Obfuz
             }
             else
             {
-                newNamespace = _ctx.nameMaker.GetNewNamespace(type, oldNamespace);
+                newNamespace = _nameMaker.GetNewNamespace(type, oldNamespace);
                 type.Namespace = newNamespace;
             }
 
             string oldName = type.Name;
-            string newName = _ctx.nameMaker.GetNewName(type, oldName);
+            string newName = _nameMaker.GetNewName(type, oldName);
             type.Name = newName;
             string newFullName = type.FullName;
             Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
@@ -151,7 +156,7 @@ namespace Obfuz
         private void Rename(FieldDef field)
         {
             string oldName = field.Name;
-            string newName = _ctx.nameMaker.GetNewName(field, oldName);
+            string newName = _nameMaker.GetNewName(field, oldName);
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(field.DeclaringType.Module))
             {
                 foreach (MemberRef memberRef in ass.module.GetMemberRefs())
@@ -211,16 +216,17 @@ namespace Obfuz
 
         private void Rename(ParamDef param)
         {
-
+            param.Name = _nameMaker.GetNewName(param, param.Name);
         }
 
         private void Rename(EventDef eventDef)
         {
-
+            eventDef.Name = _nameMaker.GetNewName(eventDef, eventDef.Name);
         }
 
         private void Rename(PropertyDef property)
         {
+            property.Name = _nameMaker.GetNewName(property, property.Name);
         }
     }
 }
