@@ -2,6 +2,7 @@ using dnlib.DotNet;
 using Obfuz.Rename;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -15,12 +16,90 @@ namespace Obfuz
 
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
+        private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
 
+
+        class CustomAttributeInfo
+        {
+            public CustomAttributeCollection customAttributes;
+            public int index;
+            public List<CAArgument> arguments;
+            public List<CANamedArgument> namedArguments;
+        }
         public SymbolRename(ObfuscatorContext ctx)
         {
             _ctx = ctx;
             _renamePolicy = ctx.renamePolicy;
             _nameMaker = ctx.nameMaker;
+            BuildCustomAttributeArguments();
+        }
+
+
+        private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
+        {
+            int index = 0;
+            foreach (CustomAttribute ca in meta.CustomAttributes)
+            {
+                List<CAArgument> arguments = null;
+                if (ca.ConstructorArguments.Any(a => a.Type.ElementType == ElementType.Class))
+                {
+                    arguments = ca.ConstructorArguments.ToList();
+                }
+                List<CANamedArgument> namedArguments = null;
+                if (ca.NamedArguments.Any(a => a.ArgumentType.ElementType == ElementType.Class))
+                {
+                    namedArguments = ca.NamedArguments.ToList();
+                }
+                if (arguments != null | namedArguments != null)
+                {
+                    customAttributes.Add(new CustomAttributeInfo
+                    {
+                        customAttributes = meta.CustomAttributes,
+                        index = index,
+                        arguments = arguments,
+                        namedArguments = namedArguments
+                    });
+                }
+                ++index;
+            }
+        }
+
+        private void BuildCustomAttributeArguments()
+        {
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                var customAttributes = new List<CustomAttributeInfo>();
+                CollectCArgumentWithTypeOf(ass.module, customAttributes);
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
+                    CollectCArgumentWithTypeOf(type, customAttributes);
+                    foreach (FieldDef field in type.Fields)
+                    {
+                        CollectCArgumentWithTypeOf(field, customAttributes);
+                    }
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        CollectCArgumentWithTypeOf(method, customAttributes);
+                        foreach (Parameter param in method.Parameters)
+                        {
+                            if (param.ParamDef != null)
+                            {
+                                CollectCArgumentWithTypeOf(param.ParamDef, customAttributes);
+                            }
+                        }
+                    }
+                    foreach (PropertyDef property in type.Properties)
+                    {
+                        CollectCArgumentWithTypeOf(property, customAttributes);
+                    }
+                    foreach (EventDef eventDef in type.Events)
+                    {
+                        CollectCArgumentWithTypeOf (eventDef, customAttributes);
+                    }
+                }
+
+                _customAttributeArgumentsWithTypeByMods.Add(ass.module, customAttributes);
+            }
         }
 
         public void Process()
@@ -74,7 +153,6 @@ namespace Obfuz
                     }
                 }
             }
-            // TODO handle typeof(XXX) in Attribute
         }
 
         private bool IsSystemReservedType(TypeDef type)
@@ -128,11 +206,15 @@ namespace Obfuz
 
             string oldName = type.Name;
             string newName = _nameMaker.GetNewName(type, oldName);
-            type.Name = newName;
-            string newFullName = type.FullName;
-            Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
-            
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(type.Module))
+
+            ModuleDefMD mod = (ModuleDefMD)type.Module;
+            //RenameTypeRefInCustomAttribute(mod, type, oldFullName, null);
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            {
+                RenameTypeRefInCustomAttribute(ass.module, mod, type, oldFullName);
+            }
+
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
             {
                 foreach (TypeRef typeRef in ass.module.GetTypeRefs())
                 {
@@ -150,6 +232,184 @@ namespace Obfuz
                     }
                     typeRef.Name = newName;
                     Debug.Log($"rename assembly:{ass.module.Name} reference {oldFullName} => {typeRef.FullName}");
+                }
+            }
+            type.Name = newName;
+            string newFullName = type.FullName;
+            Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
+        }
+
+
+        private TypeSig RenameTypeSig(TypeSig type, ModuleDefMD mod, string oldFullName)
+        {
+            TypeSig next = type.Next;
+            TypeSig newNext = next != null ? RenameTypeSig(next, mod, oldFullName) : null;
+            if (type.IsModifier || type.IsPinned)
+            {
+                if (next == newNext)
+                {
+                    return type;
+                }
+                if (type is CModReqdSig cmrs)
+                {
+                    return new CModReqdSig(cmrs.Modifier, newNext);
+                }
+                if (type is CModOptSig cmos)
+                {
+                    return new CModOptSig(cmos.Modifier, newNext);
+                }
+                if (type is PinnedSig ps)
+                {
+                    return new PinnedSig(newNext);
+                }
+                throw new System.NotSupportedException(type.ToString());
+            }
+            switch (type.ElementType)
+            {
+                case ElementType.Ptr:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new PtrSig(newNext);
+                }
+                case ElementType.ValueType:
+                case ElementType.Class:
+                {
+                    var vts = type as ClassOrValueTypeSig;
+                    if (vts.DefinitionAssembly.Name != mod.Assembly.Name || vts.TypeDefOrRef.FullName != oldFullName)
+                    {
+                        return type;
+                    }
+                    TypeDef typeDef = vts.TypeDefOrRef.ResolveTypeDefThrow();
+                    if (typeDef == vts.TypeDefOrRef)
+                    {
+                        return type;
+                    }
+                    return type.IsClassSig ? new ClassSig(typeDef) : new ValueTypeSig(typeDef);
+                }
+                case ElementType.Array:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new ArraySig(newNext);
+                }
+                case ElementType.SZArray:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new SZArraySig(newNext);
+                }
+                case ElementType.GenericInst:
+                {
+                    var gis = type as GenericInstSig;
+                    ClassOrValueTypeSig genericType = gis.GenericType;
+                    ClassOrValueTypeSig newGenericType = (ClassOrValueTypeSig)RenameTypeSig(genericType, mod, oldFullName);
+                    bool anyChange = genericType != newGenericType;
+                    var genericArgs = new List<TypeSig>();
+                    foreach (var arg in gis.GenericArguments)
+                    {
+                        TypeSig newArg = RenameTypeSig(arg, mod, oldFullName);
+                        anyChange |= newArg != genericType;
+                        genericArgs.Add(newArg);
+                    }
+                    if (!anyChange)
+                    {
+                        return type;
+                    }
+                    return new GenericInstSig(newGenericType, genericArgs);
+                }
+                case ElementType.FnPtr:
+                {
+                    var fp = type as FnPtrSig;
+                    MethodSig methodSig = fp.MethodSig;
+                    TypeSig newReturnType = RenameTypeSig(methodSig.RetType, mod, oldFullName);
+                    bool anyChange = newReturnType != methodSig.RetType;
+                    var newArgs = new List<TypeSig>();
+                    foreach (TypeSig arg in methodSig.Params)
+                    {
+                        TypeSig newArg = RenameTypeSig (arg, mod, oldFullName);
+                        anyChange |= newArg != newReturnType;
+                    }
+                    if (!anyChange)
+                    {
+                        return type;
+                    }
+                    var newParamsAfterSentinel = new List<TypeSig>();
+                    foreach(TypeSig arg in methodSig.ParamsAfterSentinel)
+                    {
+                        TypeSig newArg = RenameTypeSig(arg, mod, oldFullName);
+                        anyChange |= newArg != arg;
+                        newParamsAfterSentinel.Add(newArg);
+                    }
+
+                    var newMethodSig = new MethodSig(methodSig.CallingConvention, methodSig.GenParamCount, newReturnType, newArgs, newParamsAfterSentinel);
+                    return new FnPtrSig(newMethodSig);
+                }
+                case ElementType.ByRef:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new ByRefSig(newNext);
+                }
+                default:
+                {
+                    return type;
+                }
+            }
+        }
+
+        private void RenameTypeRefInCustomAttribute(ModuleDefMD referenceMeMod, ModuleDefMD mod, TypeDef typeDef, string oldFullName)
+        {
+            List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
+            foreach (CustomAttributeInfo cai in customAttributes)
+            {
+                CustomAttribute oldAttr = cai.customAttributes[cai.index];
+                bool anyChange = false;
+                if (cai.arguments != null)
+                {
+                    for (int i = 0; i < cai.arguments.Count; i++)
+                    {
+                        CAArgument oldArg = cai.arguments[i];
+                        if (oldArg.Type.ElementType == ElementType.Class)
+                        {
+                            TypeSig newValue = RenameTypeSig((TypeSig)oldArg.Value, mod, oldFullName);
+                            if (newValue != oldArg.Value)
+                            {
+                                anyChange = true;
+                                cai.arguments[i] = new CAArgument(oldArg.Type, newValue);
+                            }
+                        }
+                    }
+                }
+                if (cai.namedArguments != null)
+                {
+                    for (int i = 0; i < cai.namedArguments.Count; i++)
+                    {
+                        CANamedArgument oldArg = cai.namedArguments[i];
+                        if (oldArg.ArgumentType.ElementType == ElementType.Class)
+                        {
+                            TypeSig newValue = RenameTypeSig((TypeSig)oldArg.Value, mod, oldFullName);
+                            if (newValue != oldArg.Value)
+                            {
+                                anyChange = true;
+                                oldArg.Argument = new CAArgument(oldArg.Type, newValue);
+                            }
+                        }
+                    }
+                }
+                if (anyChange)
+                {
+                    cai.customAttributes[cai.index] = new CustomAttribute(oldAttr.Constructor,
+                        cai.arguments != null ? cai.arguments : oldAttr.ConstructorArguments,
+                        cai.namedArguments != null ? cai.namedArguments : oldAttr.NamedArguments);
                 }
             }
         }
