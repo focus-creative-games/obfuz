@@ -67,7 +67,7 @@ namespace Obfuz
         {
             //Debug.Log($"do load module:{dllPath}");
             ModuleDefMD mod = ModuleDefMD.Load(File.ReadAllBytes(dllPath), _modCtx);
-            mod.EnableTypeDefFindCache = true;
+            //mod.EnableTypeDefFindCache = true;
             _asmResolver.AddToCache(mod);
             return mod;
         }

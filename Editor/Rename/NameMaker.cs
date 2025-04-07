@@ -28,7 +28,7 @@ namespace Obfuz.Rename
     {
         private string GetDefaultNewName(string originName)
         {
-            return originName + "_generated_obfuz";
+            return originName + "_xxx__";
         }
 
         public string GetNewName(ModuleDefMD mod, string originalName)

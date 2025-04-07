@@ -80,7 +80,7 @@ namespace Obfuz
             return false;
         }
 
-        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDefMD mod)
+        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
         {
             return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
         }
@@ -126,7 +126,7 @@ namespace Obfuz
             string newFullName = type.FullName;
             Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
             
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies((ModuleDefMD)type.Module))
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(type.Module))
             {
                 foreach (TypeRef typeRef in ass.module.GetTypeRefs())
                 {
@@ -143,13 +143,66 @@ namespace Obfuz
                         typeRef.Namespace = newNamespace;
                     }
                     typeRef.Name = newName;
-                    Debug.Log($"rename assembly:{typeRef.DefinitionAssembly.Name} reference {oldFullName} => {typeRef.FullName}");
+                    Debug.Log($"rename assembly:{ass.module.Name} reference {oldFullName} => {typeRef.FullName}");
                 }
             }
         }
 
         private void Rename(FieldDef field)
         {
+            string oldName = field.Name;
+            string newName = _ctx.nameMaker.GetNewName(field, oldName);
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(field.DeclaringType.Module))
+            {
+                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                {
+                    if (!memberRef.IsFieldRef)
+                    {
+                        continue;
+                    }
+                    if (oldName != memberRef.Name || !TypeEqualityComparer.Instance.Equals(memberRef.FieldSig.Type, field.FieldSig.Type))
+                    {
+                        continue;
+                    }
+                    IMemberRefParent parent = memberRef.Class;
+                    if (parent is ITypeDefOrRef typeDefOrRef)
+                    {
+                        if (typeDefOrRef.IsTypeDef)
+                        {
+                            if (typeDefOrRef != field.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else if (typeDefOrRef.IsTypeRef)
+                        {
+                            if (typeDefOrRef.ResolveTypeDefThrow() != field.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else if (typeDefOrRef.IsTypeSpec)
+                        {
+                            var typeSpec = (TypeSpec)typeDefOrRef;
+                            GenericInstSig gis = typeSpec.TryGetGenericInstSig();
+                            if (gis == null || gis.GenericType.ToTypeDefOrRef().ResolveTypeDef() != field.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    string oldFieldFullName = memberRef.ToString();
+                    memberRef.Name = newName;
+
+                    Debug.Log($"rename assembly:{ass.name} field:{oldFieldFullName} => {memberRef}");
+                }
+            }
+            field.Name = newName;
+            Debug.Log($"rename field. {field} => {newName}");
         }
 
         private void Rename(MethodDef method)
