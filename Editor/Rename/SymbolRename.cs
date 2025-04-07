@@ -1,7 +1,9 @@
 using dnlib.DotNet;
 using Obfuz.Rename;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEditor.SceneManagement;
@@ -35,18 +37,23 @@ namespace Obfuz
         }
 
 
+        private bool MayRenameType(ElementType type)
+        {
+            return type == ElementType.Class || type == ElementType.ValueType || type == ElementType.Object || type == ElementType.SZArray;
+        }
+
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
         {
             int index = 0;
             foreach (CustomAttribute ca in meta.CustomAttributes)
             {
                 List<CAArgument> arguments = null;
-                if (ca.ConstructorArguments.Any(a => a.Type.ElementType == ElementType.Class))
+                if (ca.ConstructorArguments.Any(a => MayRenameType(a.Type.ElementType)))
                 {
                     arguments = ca.ConstructorArguments.ToList();
                 }
                 List<CANamedArgument> namedArguments = null;
-                if (ca.NamedArguments.Any(a => a.ArgumentType.ElementType == ElementType.Class))
+                if (ca.NamedArguments.Any(a => MayRenameType(a.Type.ElementType)))
                 {
                     namedArguments = ca.NamedArguments.ToList();
                 }
@@ -366,6 +373,69 @@ namespace Obfuz
             }
         }
 
+
+        private object RenameTypeSigOfValue(object oldValue, ModuleDefMD mod, string oldFullName)
+        {
+            if (oldValue == null)
+            {
+                return null;
+            }
+            if (oldValue.GetType().IsPrimitive)
+            {
+                return oldValue;
+            }
+            if (oldValue is string || oldValue is UTF8String)
+            {
+                return oldValue;
+            }
+            if (oldValue is TypeSig typeSig)
+            {
+                return RenameTypeSig(typeSig, mod, oldFullName);
+            }
+            if (oldValue is CAArgument caValue)
+            {
+                TypeSig newType = RenameTypeSig(caValue.Type, mod, oldFullName);
+                object newValue = RenameTypeSigOfValue(caValue.Value, mod, oldFullName);
+                if (newType != caValue.Type || newValue != caValue.Value)
+                {
+                    return new CAArgument(newType, newValue);
+                }
+                return oldValue;
+            }
+            if (oldValue is List<CAArgument> oldArr)
+            {
+                bool anyChange = false;
+                var newArr = new List<CAArgument>();
+                foreach (CAArgument oldArg in oldArr)
+                {
+                    if (TryRenameArgument(mod, oldFullName, oldArg, out var newArg))
+                    {
+                        anyChange = true;
+                        newArr.Add(newArg);
+                    }
+                    else
+                    {
+                        newArr.Add(oldArg);
+                    }
+                }
+                return anyChange ? newArr : oldArr;
+            }
+            throw new NotSupportedException($"type:{oldValue.GetType()} value:{oldValue}");
+        }
+
+        private bool TryRenameArgument(ModuleDefMD mod, string oldFullName, CAArgument oldArg, out CAArgument newArg)
+        {
+            TypeSig newType = RenameTypeSig(oldArg.Type, mod, oldFullName);
+            object newValue = RenameTypeSigOfValue(oldArg.Value, mod, oldFullName);
+            if (newType != oldArg.Type || oldArg.Value != newValue)
+            {
+                newArg = new CAArgument(newType, newValue);
+                return true;
+            }
+            newArg = default;
+            return false;
+        }
+
         private void RenameTypeRefInCustomAttribute(ModuleDefMD referenceMeMod, ModuleDefMD mod, TypeDef typeDef, string oldFullName)
         {
             List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
@@ -378,14 +448,10 @@ namespace Obfuz
                     for (int i = 0; i < cai.arguments.Count; i++)
                     {
                         CAArgument oldArg = cai.arguments[i];
-                        if (oldArg.Type.ElementType == ElementType.Class)
+                        if (TryRenameArgument(mod, oldFullName, oldArg, out CAArgument newArg))
                         {
-                            TypeSig newValue = RenameTypeSig((TypeSig)oldArg.Value, mod, oldFullName);
-                            if (newValue != oldArg.Value)
-                            {
-                                anyChange = true;
-                                cai.arguments[i] = new CAArgument(oldArg.Type, newValue);
-                            }
+                            anyChange = true;
+                            cai.arguments[cai.index] = newArg;
                         }
                     }
                 }
@@ -394,14 +460,10 @@ namespace Obfuz
                     for (int i = 0; i < cai.namedArguments.Count; i++)
                     {
                         CANamedArgument oldArg = cai.namedArguments[i];
-                        if (oldArg.ArgumentType.ElementType == ElementType.Class)
+                        if (TryRenameArgument(mod, oldFullName, oldArg.Argument, out var newArg))
                         {
-                            TypeSig newValue = RenameTypeSig((TypeSig)oldArg.Value, mod, oldFullName);
-                            if (newValue != oldArg.Value)
-                            {
-                                anyChange = true;
-                                oldArg.Argument = new CAArgument(oldArg.Type, newValue);
-                            }
+                            anyChange = true;
+                            oldArg.Argument = newArg;
                         }
                     }
                 }
