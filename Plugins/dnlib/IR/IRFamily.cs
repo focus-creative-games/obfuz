@@ -1,0 +1,26 @@
+﻿namespace dnlib.IR {
+	public enum IRFamily {
+		Unspec,
+		PushOrPopVariable,
+		LoadOrSet,
+		LoadAddress,
+		LoadIndirect,
+		StoreIndirect,
+		LoadConstant,
+		Call,
+		Ret,
+		Branch,
+		BinOp,
+		UnOp,
+		Conv,
+		Obj,
+		Cast,
+		Box,
+		Exception,
+		Field,
+		Array,
+		Compare,
+		Ldftn,
+		Ref,
+	}
+}
