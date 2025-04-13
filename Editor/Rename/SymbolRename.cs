@@ -17,10 +17,12 @@ namespace Obfuz
     {
         private readonly ObfuscatorContext _ctx;
 
+        private readonly HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap = new RenameRecordMap();
+        private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
 
         class CustomAttributeInfo
         {
@@ -34,6 +36,11 @@ namespace Obfuz
             _ctx = ctx;
             _renamePolicy = ctx.renamePolicy;
             _nameMaker = ctx.nameMaker;
+
+            foreach (var mod in ctx.assemblies)
+            {
+                _obfuscatedModules.Add(mod.module);
+            }
             BuildCustomAttributeArguments();
         }
 
@@ -106,6 +113,7 @@ namespace Obfuz
 
         public void Process()
         {
+            var virtualMethods = new List<MethodDef>();
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 if (_renamePolicy.NeedRename(ass.module))
@@ -118,6 +126,7 @@ namespace Obfuz
                 }
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
+                    _virtualMethodGroupCalculator.CalculateType(type);
                     if (_renamePolicy.NeedRename(type))
                     {
                         Rename(type);
@@ -139,6 +148,11 @@ namespace Obfuz
                     }
                     foreach (MethodDef method in type.Methods)
                     {
+                        if (method.IsVirtual)
+                        {
+                            virtualMethods.Add(method);
+                            continue;
+                        }
                         if (_renamePolicy.NeedRename(method))
                         {
                             Rename(method);
@@ -177,6 +191,43 @@ namespace Obfuz
                             _renameRecordMap.AddUnRenameRecord(property);
                         }
                     }
+                }
+            }
+
+            var visitedVirtualMethods = new HashSet<MethodDef>();
+            var groupNeedRenames = new Dictionary<VirtualMethodGroup, bool>();
+            foreach (var method in virtualMethods)
+            {
+                if (!visitedVirtualMethods.Add(method))
+                {
+                    continue;
+                }
+                VirtualMethodGroup group = _virtualMethodGroupCalculator.GetMethodGroup(method);
+                if (!groupNeedRenames.TryGetValue(group, out var needRename))
+                {
+                    needRename = group.methods.All(m => _obfuscatedModules.Contains(m.DeclaringType.Module) && _renamePolicy.NeedRename(m));
+                    groupNeedRenames.Add(group, needRename);
+                    if (needRename)
+                    {
+                        _renameRecordMap.AddRenameRecord(group, method.Name, _nameMaker.GetNewName(method, method.Name));
+                    }
+                    else
+                    {
+                        _renameRecordMap.AddUnRenameRecord(group);
+                    }
+                }
+                if (!needRename)
+                {
+                    _renameRecordMap.AddUnRenameRecord(method);
+                    continue;
+                }
+                if (_renameRecordMap.TryGetRenameRecord(group, out var oldName, out var newName))
+                {
+                    Rename(method, oldName, newName);
+                }
+                else
+                {
+                    throw new Exception($"group:{group} method:{method} not found in rename record map");
                 }
             }
         }
@@ -597,6 +648,11 @@ namespace Obfuz
         {
             string oldName = method.Name;
             string newName = _nameMaker.GetNewName(method, oldName);
+            Rename(method, oldName, newName);
+        }
+
+        private void Rename(MethodDef method, string oldName, string newName)
+        {
 
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
             RenameMethodBody(method);

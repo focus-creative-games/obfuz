@@ -28,9 +28,11 @@ namespace Obfuz.Rename
 
     public class NameMaker : INameMaker
     {
+        private int _nextIndex;
+
         private string GetDefaultNewName(string originName)
         {
-            return originName + "_xxx__";
+            return $"{originName}>{_nextIndex++}";
         }
 
         public string GetNewName(ModuleDefMD mod, string originalName)

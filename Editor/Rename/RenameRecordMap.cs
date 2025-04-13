@@ -1,4 +1,5 @@
 using dnlib.DotNet;
+using Obfuz.Rename;
 using System.Collections.Generic;
 
 namespace Obfuz
@@ -24,6 +25,7 @@ namespace Obfuz
         private readonly Dictionary<FieldDef, RenameRecord> _fieldRenames = new Dictionary<FieldDef, RenameRecord>();
         private readonly Dictionary<PropertyDef, RenameRecord> _propertyRenames = new Dictionary<PropertyDef, RenameRecord>();
         private readonly Dictionary<EventDef, RenameRecord> _eventRenames = new Dictionary<EventDef, RenameRecord>();
+        private readonly Dictionary<VirtualMethodGroup, RenameRecord> _virtualMethodGroups = new Dictionary<VirtualMethodGroup, RenameRecord>();
 
 
         public void AddRenameRecord(ModuleDefMD mod, string oldName, string newName)
@@ -54,6 +56,29 @@ namespace Obfuz
                 oldName = oldName,
                 newName = newName
             });
+        }
+
+        public void AddRenameRecord(VirtualMethodGroup methodGroup, string oldName, string newName)
+        {
+            _virtualMethodGroups.Add(methodGroup, new RenameRecord
+            {
+                status = RenameStatus.Renamed,
+                oldName = oldName,
+                newName = newName
+            });
+        }
+
+        public bool TryGetRenameRecord(VirtualMethodGroup group, out string oldName, out string newName)
+        {
+            if (_virtualMethodGroups.TryGetValue(group, out var record))
+            {
+                oldName = record.oldName;
+                newName = record.newName;
+                return true;
+            }
+            oldName = null;
+            newName = null;
+            return false;
         }
 
         public void AddRenameRecord(FieldDef field, string oldName, string newName)
@@ -112,6 +137,16 @@ namespace Obfuz
             {
                 status = RenameStatus.NotRenamed,
                 oldName = methodDef.Name,
+                newName = null,
+            });
+        }
+
+        public void AddUnRenameRecord(VirtualMethodGroup methodGroup)
+        {
+            _virtualMethodGroups.Add(methodGroup, new RenameRecord
+            {
+                status = RenameStatus.NotRenamed,
+                oldName = methodGroup.methods[0].Name,
                 newName = null,
             });
         }
