@@ -13,5 +13,19 @@ namespace Obfuz.Rename
             }
             return true;
         }
+
+        public override bool NeedRename(MethodDef methodDef)
+        {
+            return methodDef.Name != ".ctor" && methodDef.Name != ".cctor";
+        }
+
+        public override bool NeedRename(FieldDef fieldDef)
+        {
+            if (fieldDef.DeclaringType.IsEnum && fieldDef.Name == "value__")
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

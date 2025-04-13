@@ -583,11 +583,82 @@ namespace Obfuz
 
         private void Rename(MethodDef method)
         {
+            string oldName = method.Name;
+            string newName = _nameMaker.GetNewName(method, oldName);
+
+            ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
+            RenameMethodBody(method);
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            {
+                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                {
+                    if (!memberRef.IsMethodRef)
+                    {
+                        continue;
+                    }
+                    if (oldName != memberRef.Name)
+                    {
+                        continue;
+                    }
+                    
+                    IMemberRefParent parent = memberRef.Class;
+                    if (parent is ITypeDefOrRef typeDefOrRef)
+                    {
+                        if (typeDefOrRef.IsTypeDef)
+                        {
+                            if (typeDefOrRef != method.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else if (typeDefOrRef.IsTypeRef)
+                        {
+                            if (typeDefOrRef.ResolveTypeDefThrow() != method.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else if (typeDefOrRef.IsTypeSpec)
+                        {
+                            var typeSpec = (TypeSpec)typeDefOrRef;
+                            GenericInstSig gis = typeSpec.TryGetGenericInstSig();
+                            if (gis == null || gis.GenericType.ToTypeDefOrRef().ResolveTypeDef() != method.DeclaringType)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    // compare methodsig
+                    if (!new SigComparer(default).Equals(method.MethodSig, memberRef.MethodSig))
+                    {
+                        continue;
+                    }
+                    string oldMethodFullName = memberRef.ToString();
+                    memberRef.Name = newName;
+
+                    Debug.Log($"rename assembly:{ass.name} method:{oldMethodFullName} => {memberRef}");
+                }
+            }
+
+            method.Name = newName;
+        }
+
+        private void RenameMethodBody(MethodDef method)
+        {
+            if (method.Body == null)
+            {
+                return;
+            }
         }
 
         private void Rename(ParamDef param)
         {
-            param.Name = _nameMaker.GetNewName(param, param.Name);
+            // let param name == 1 is more obfuscated
+            param.Name = "1";// _nameMaker.GetNewName(param, param.Name);
         }
 
         private void Rename(EventDef eventDef)
