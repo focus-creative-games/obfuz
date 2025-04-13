@@ -12,6 +12,7 @@ using UnityEngine;
 namespace Obfuz
 {
 
+
     public class SymbolRename
     {
         private readonly ObfuscatorContext _ctx;
@@ -19,7 +20,7 @@ namespace Obfuz
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
-
+        private readonly RenameRecordMap _renameRecordMap = new RenameRecordMap();
 
         class CustomAttributeInfo
         {
@@ -36,24 +37,18 @@ namespace Obfuz
             BuildCustomAttributeArguments();
         }
 
-
-        private bool MayRenameType(ElementType type)
-        {
-            return type == ElementType.Class || type == ElementType.ValueType || type == ElementType.Object || type == ElementType.SZArray;
-        }
-
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
         {
             int index = 0;
             foreach (CustomAttribute ca in meta.CustomAttributes)
             {
                 List<CAArgument> arguments = null;
-                if (ca.ConstructorArguments.Any(a => MayRenameType(a.Type.ElementType)))
+                if (ca.ConstructorArguments.Any(a => MetaUtil.MayRenameCustomDataType(a.Type.ElementType)))
                 {
                     arguments = ca.ConstructorArguments.ToList();
                 }
                 List<CANamedArgument> namedArguments = null;
-                if (ca.NamedArguments.Any(a => MayRenameType(a.Type.ElementType)))
+                if (ca.NamedArguments.Any(a => MetaUtil.MayRenameCustomDataType(a.Type.ElementType)))
                 {
                     namedArguments = ca.NamedArguments.ToList();
                 }
@@ -117,17 +112,29 @@ namespace Obfuz
                 {
                     Rename(ass.module);
                 }
+                else
+                {
+                    _renameRecordMap.AddUnRenameRecord(ass.module);
+                }
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
-                    if (!IsSystemReservedType(type) && _renamePolicy.NeedRename(type))
+                    if (_renamePolicy.NeedRename(type))
                     {
                         Rename(type);
+                    }
+                    else
+                    {
+                        _renameRecordMap.AddUnRenameRecord(type);
                     }
                     foreach (FieldDef field in type.Fields)
                     {
                         if (_renamePolicy.NeedRename(field))
                         {
                             Rename(field);
+                        }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(field);
                         }
                     }
                     foreach (MethodDef method in type.Methods)
@@ -143,12 +150,20 @@ namespace Obfuz
                                 }
                             }
                         }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(method);
+                        }
                     }
                     foreach (EventDef eventDef in type.Events)
                     {
                         if (_renamePolicy.NeedRename(eventDef))
                         {
                             Rename(eventDef);
+                        }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(eventDef);
                         }
                     }
                     foreach (PropertyDef property in type.Properties)
@@ -157,18 +172,13 @@ namespace Obfuz
                         {
                             Rename(property);
                         }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(property);
+                        }
                     }
                 }
             }
-        }
-
-        private bool IsSystemReservedType(TypeDef type)
-        {
-            if (type.FullName == "<Module>")
-            {
-                return true;
-            }
-            return false;
         }
 
         private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
@@ -180,6 +190,7 @@ namespace Obfuz
         {
             string oldName = MetaUtil.GetModuleNameWithoutExt(mod.Name);
             string newName = _nameMaker.GetNewName(mod, oldName);
+            _renameRecordMap.AddRenameRecord(mod, oldName, newName);
             mod.Name = $"{newName}.dll";
             Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
@@ -243,6 +254,7 @@ namespace Obfuz
             }
             type.Name = newName;
             string newFullName = type.FullName;
+            _renameRecordMap.AddRenameRecord(type, oldFullName, newFullName);
             Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
         }
 
@@ -576,7 +588,7 @@ namespace Obfuz
                 RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.Name, newName);
             }
             field.Name = newName;
-
+            _renameRecordMap.AddRenameRecord(field, oldName, newName);
 
             Debug.Log($"rename field. {field} => {newName}");
         }
@@ -645,6 +657,7 @@ namespace Obfuz
             }
 
             method.Name = newName;
+            _renameRecordMap.AddRenameRecord(method, oldName, newName);
         }
 
         private void RenameMethodBody(MethodDef method)
@@ -663,7 +676,10 @@ namespace Obfuz
 
         private void Rename(EventDef eventDef)
         {
-            eventDef.Name = _nameMaker.GetNewName(eventDef, eventDef.Name);
+            string oldName = eventDef.Name;
+            string newName = _nameMaker.GetNewName(eventDef, eventDef.Name);
+            eventDef.Name = newName;
+            _renameRecordMap.AddRenameRecord(eventDef, oldName, newName);
         }
 
         private void Rename(PropertyDef property)
@@ -676,6 +692,7 @@ namespace Obfuz
             {
                 RenameFieldNameInCustomAttributes(ass.module, mod, oldName, newName);
             }
+            _renameRecordMap.AddRenameRecord(property, oldName, newName);
         }
     }
 }

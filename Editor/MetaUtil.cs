@@ -164,5 +164,10 @@ namespace Obfuz
             }
             return false;
         }
+
+        public static bool MayRenameCustomDataType(ElementType type)
+        {
+            return type == ElementType.Class || type == ElementType.ValueType || type == ElementType.Object || type == ElementType.SZArray;
+        }
     }
 }
