@@ -380,6 +380,7 @@ namespace Obfuz
             {
                 return null;
             }
+            string typeName = oldValue.GetType().FullName;
             if (oldValue.GetType().IsPrimitive)
             {
                 return oldValue;
@@ -436,6 +437,23 @@ namespace Obfuz
             return false;
         }
 
+        private bool TryRenameArgument(ModuleDefMD mod, string oldFullName, CANamedArgument oldArg)
+        {
+            bool anyChange = false;
+            TypeSig newType = RenameTypeSig(oldArg.Type, mod, oldFullName);
+            if (newType != oldArg.Type)
+            {
+                anyChange = true;
+                oldArg.Type = newType;
+            }
+            if (TryRenameArgument(mod, oldFullName, oldArg.Argument, out var newArg))
+            {
+                oldArg.Argument = newArg;
+                anyChange = true;
+            }
+            return anyChange;
+        }
+
         private void RenameTypeRefInCustomAttribute(ModuleDefMD referenceMeMod, ModuleDefMD mod, TypeDef typeDef, string oldFullName)
         {
             List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
@@ -460,10 +478,36 @@ namespace Obfuz
                     for (int i = 0; i < cai.namedArguments.Count; i++)
                     {
                         CANamedArgument oldArg = cai.namedArguments[i];
-                        if (TryRenameArgument(mod, oldFullName, oldArg.Argument, out var newArg))
+                        if (TryRenameArgument(mod, oldFullName, oldArg))
                         {
                             anyChange = true;
-                            oldArg.Argument = newArg;
+                        }
+                    }
+                }
+                if (anyChange)
+                {
+                    cai.customAttributes[cai.index] = new CustomAttribute(oldAttr.Constructor,
+                        cai.arguments != null ? cai.arguments : oldAttr.ConstructorArguments,
+                        cai.namedArguments != null ? cai.namedArguments : oldAttr.NamedArguments);
+                }
+            }
+        }
+
+        private void RenameFieldNameInCustomAttributes(ModuleDefMD referenceMeMod, ModuleDefMD mod, string oldFieldOrPropertyName, string newName)
+        {
+            List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
+            foreach (CustomAttributeInfo cai in customAttributes)
+            {
+                CustomAttribute oldAttr = cai.customAttributes[cai.index];
+                bool anyChange = false;
+                if (cai.namedArguments != null)
+                {
+                    foreach (CANamedArgument arg in cai.namedArguments)
+                    {
+                        if (arg.Name == oldFieldOrPropertyName)
+                        {
+                            anyChange = true;
+                            arg.Name = newName;
                         }
                     }
                 }
@@ -528,8 +572,12 @@ namespace Obfuz
 
                     Debug.Log($"rename assembly:{ass.name} field:{oldFieldFullName} => {memberRef}");
                 }
+
+                RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.Name, newName);
             }
             field.Name = newName;
+
+
             Debug.Log($"rename field. {field} => {newName}");
         }
 
@@ -549,7 +597,14 @@ namespace Obfuz
 
         private void Rename(PropertyDef property)
         {
-            property.Name = _nameMaker.GetNewName(property, property.Name);
+            string oldName = property.Name;
+            string newName = _nameMaker.GetNewName(property, oldName);
+            property.Name = newName;
+            ModuleDefMD mod = (ModuleDefMD)property.DeclaringType.Module;
+            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            {
+                RenameFieldNameInCustomAttributes(ass.module, mod, oldName, newName);
+            }
         }
     }
 }
