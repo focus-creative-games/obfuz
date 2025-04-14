@@ -638,10 +638,10 @@ namespace Obfuz
 
                 RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.Name, newName);
             }
+            Debug.Log($"rename field. {field} => {newName}");
             field.Name = newName;
             _renameRecordMap.AddRenameRecord(field, oldName, newName);
 
-            Debug.Log($"rename field. {field} => {newName}");
         }
 
         private void Rename(MethodDef method)
