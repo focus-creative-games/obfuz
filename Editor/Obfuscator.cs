@@ -78,6 +78,7 @@ namespace Obfuz
         {
             var ctx = new ObfuscatorContext
             {
+                assemblyCache = _assemblyCache,
                 assemblies = _obfuzAssemblies,
                 renamePolicy = _renamePolicy,
                 nameMaker = _nameMaker,

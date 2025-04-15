@@ -146,6 +146,7 @@ namespace Obfuz
         private void RenameTypes()
         {
             Debug.Log("RenameTypes begin");
+            _ctx.assemblyCache.EnableTypeDefCache = false;
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
@@ -160,6 +161,7 @@ namespace Obfuz
                     }
                 }
             }
+           _ctx.assemblyCache.EnableTypeDefCache = true;
             Debug.Log("Rename Types end");
         }
 
@@ -623,12 +625,16 @@ namespace Obfuz
             }
         }
 
-        private void RenameFieldNameInCustomAttributes(ModuleDefMD referenceMeMod, ModuleDefMD mod, string oldFieldOrPropertyName, string newName)
+        private void RenameFieldNameInCustomAttributes(ModuleDefMD referenceMeMod, ModuleDefMD mod, TypeDef declaringType, string oldFieldOrPropertyName, string newName)
         {
             List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
             foreach (CustomAttributeInfo cai in customAttributes)
             {
                 CustomAttribute oldAttr = cai.customAttributes[cai.index];
+                if (MetaUtil.GetTypeDefOrGenericTypeBase(oldAttr.Constructor.DeclaringType) != declaringType)
+                {
+                    continue;
+                }
                 bool anyChange = false;
                 if (cai.namedArguments != null)
                 {
@@ -703,7 +709,7 @@ namespace Obfuz
                     Debug.Log($"rename assembly:{ass.name} field:{oldFieldFullName} => {memberRef}");
                 }
 
-                RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.Name, newName);
+                RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.DeclaringType, field.Name, newName);
             }
             Debug.Log($"rename field. {field} => {newName}");
             field.Name = newName;
@@ -822,12 +828,12 @@ namespace Obfuz
         {
             string oldName = property.Name;
             string newName = _nameMaker.GetNewName(property, oldName);
-            property.Name = newName;
             ModuleDefMD mod = (ModuleDefMD)property.DeclaringType.Module;
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
             {
-                RenameFieldNameInCustomAttributes(ass.module, mod, oldName, newName);
+                RenameFieldNameInCustomAttributes(ass.module, mod, property.DeclaringType, oldName, newName);
             }
+            property.Name = newName;
             _renameRecordMap.AddRenameRecord(property, oldName, newName);
         }
     }

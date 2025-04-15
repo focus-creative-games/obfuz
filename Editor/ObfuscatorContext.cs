@@ -19,6 +19,8 @@ namespace Obfuz
 
     public class ObfuscatorContext
     {
+        public AssemblyCache assemblyCache;
+
         public List<ObfuzAssemblyInfo> assemblies;
 
         public IRenamePolicy renamePolicy;

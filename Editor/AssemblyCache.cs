@@ -13,6 +13,7 @@ namespace Obfuz
         private readonly IAssemblyResolver _assemblyPathResolver;
         private readonly ModuleContext _modCtx;
         private readonly AssemblyResolver _asmResolver;
+        private bool _enableTypeDefCache;
 
 
         public ModuleContext ModCtx => _modCtx;
@@ -21,11 +22,26 @@ namespace Obfuz
 
         public AssemblyCache(IAssemblyResolver assemblyResolver)
         {
+            _enableTypeDefCache = true;
             _assemblyPathResolver = assemblyResolver;
             _modCtx = ModuleDef.CreateModuleContext();
             _asmResolver = (AssemblyResolver)_modCtx.AssemblyResolver;
-            _asmResolver.EnableTypeDefCache = false;
+            _asmResolver.EnableTypeDefCache = _enableTypeDefCache;
             _asmResolver.UseGAC = false;
+        }
+
+        public bool EnableTypeDefCache
+        {
+            get => _enableTypeDefCache;
+            set
+            {
+                _enableTypeDefCache = value;
+                _asmResolver.EnableTypeDefCache = value;
+                foreach (var mod in LoadedModules.Values)
+                {
+                    mod.EnableTypeDefFindCache = value;
+                }
+            }
         }
 
 
@@ -67,7 +83,7 @@ namespace Obfuz
         {
             //Debug.Log($"do load module:{dllPath}");
             ModuleDefMD mod = ModuleDefMD.Load(File.ReadAllBytes(dllPath), _modCtx);
-            mod.EnableTypeDefFindCache = false;
+            mod.EnableTypeDefFindCache = _enableTypeDefCache;
             _asmResolver.AddToCache(mod);
             return mod;
         }
