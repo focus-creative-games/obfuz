@@ -169,5 +169,210 @@ namespace Obfuz
         {
             return type == ElementType.Class || type == ElementType.ValueType || type == ElementType.Object || type == ElementType.SZArray;
         }
+
+        public static TypeSig RetargetTypeRefInTypeSig(TypeSig type)
+        {
+            TypeSig next = type.Next;
+            TypeSig newNext = next != null ? RetargetTypeRefInTypeSig(next) : null;
+            if (type.IsModifier || type.IsPinned)
+            {
+                if (next == newNext)
+                {
+                    return type;
+                }
+                if (type is CModReqdSig cmrs)
+                {
+                    return new CModReqdSig(cmrs.Modifier, newNext);
+                }
+                if (type is CModOptSig cmos)
+                {
+                    return new CModOptSig(cmos.Modifier, newNext);
+                }
+                if (type is PinnedSig ps)
+                {
+                    return new PinnedSig(newNext);
+                }
+                throw new System.NotSupportedException(type.ToString());
+            }
+            switch (type.ElementType)
+            {
+                case ElementType.Ptr:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new PtrSig(newNext);
+                }
+                case ElementType.ValueType:
+                case ElementType.Class:
+                {
+                    var vts = type as ClassOrValueTypeSig;
+                    TypeDef typeDef = vts.TypeDefOrRef.ResolveTypeDefThrow();
+                    if (typeDef == vts.TypeDefOrRef)
+                    {
+                        return type;
+                    }
+                    return type.IsClassSig ? new ClassSig(typeDef) : new ValueTypeSig(typeDef);
+                }
+                case ElementType.Array:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new ArraySig(newNext);
+                }
+                case ElementType.SZArray:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new SZArraySig(newNext);
+                }
+                case ElementType.GenericInst:
+                {
+                    var gis = type as GenericInstSig;
+                    ClassOrValueTypeSig genericType = gis.GenericType;
+                    ClassOrValueTypeSig newGenericType = (ClassOrValueTypeSig)RetargetTypeRefInTypeSig(genericType);
+                    bool anyChange = genericType != newGenericType;
+                    var genericArgs = new List<TypeSig>();
+                    foreach (var arg in gis.GenericArguments)
+                    {
+                        TypeSig newArg = RetargetTypeRefInTypeSig(arg);
+                        anyChange |= newArg != genericType;
+                        genericArgs.Add(newArg);
+                    }
+                    if (!anyChange)
+                    {
+                        return type;
+                    }
+                    return new GenericInstSig(newGenericType, genericArgs);
+                }
+                case ElementType.FnPtr:
+                {
+                    var fp = type as FnPtrSig;
+                    MethodSig methodSig = fp.MethodSig;
+                    TypeSig newReturnType = RetargetTypeRefInTypeSig(methodSig.RetType);
+                    bool anyChange = newReturnType != methodSig.RetType;
+                    var newArgs = new List<TypeSig>();
+                    foreach (TypeSig arg in methodSig.Params)
+                    {
+                        TypeSig newArg = RetargetTypeRefInTypeSig(arg);
+                        anyChange |= newArg != newReturnType;
+                    }
+                    if (!anyChange)
+                    {
+                        return type;
+                    }
+                    var newParamsAfterSentinel = new List<TypeSig>();
+                    foreach (TypeSig arg in methodSig.ParamsAfterSentinel)
+                    {
+                        TypeSig newArg = RetargetTypeRefInTypeSig(arg);
+                        anyChange |= newArg != arg;
+                        newParamsAfterSentinel.Add(newArg);
+                    }
+
+                    var newMethodSig = new MethodSig(methodSig.CallingConvention, methodSig.GenParamCount, newReturnType, newArgs, newParamsAfterSentinel);
+                    return new FnPtrSig(newMethodSig);
+                }
+                case ElementType.ByRef:
+                {
+                    if (next == newNext)
+                    {
+                        return type;
+                    }
+                    return new ByRefSig(newNext);
+                }
+                default:
+                {
+                    return type;
+                }
+            }
+        }
+
+
+        public static object RetargetTypeRefInTypeSigOfValue(object oldValue)
+        {
+            if (oldValue == null)
+            {
+                return null;
+            }
+            string typeName = oldValue.GetType().FullName;
+            if (oldValue.GetType().IsPrimitive)
+            {
+                return oldValue;
+            }
+            if (oldValue is string || oldValue is UTF8String)
+            {
+                return oldValue;
+            }
+            if (oldValue is TypeSig typeSig)
+            {
+                return RetargetTypeRefInTypeSig(typeSig);
+            }
+            if (oldValue is CAArgument caValue)
+            {
+                TypeSig newType = RetargetTypeRefInTypeSig(caValue.Type);
+                object newValue = RetargetTypeRefInTypeSigOfValue(caValue.Value);
+                if (newType != caValue.Type || newValue != caValue.Value)
+                {
+                    return new CAArgument(newType, newValue);
+                }
+                return oldValue;
+            }
+            if (oldValue is List<CAArgument> oldArr)
+            {
+                bool anyChange = false;
+                var newArr = new List<CAArgument>();
+                foreach (CAArgument oldArg in oldArr)
+                {
+                    if (TryRetargetTypeRefInArgument(oldArg, out var newArg))
+                    {
+                        anyChange = true;
+                        newArr.Add(newArg);
+                    }
+                    else
+                    {
+                        newArr.Add(oldArg);
+                    }
+                }
+                return anyChange ? newArr : oldArr;
+            }
+            throw new NotSupportedException($"type:{oldValue.GetType()} value:{oldValue}");
+        }
+
+
+
+        public static bool TryRetargetTypeRefInArgument(CAArgument oldArg, out CAArgument newArg)
+        {
+            TypeSig newType = RetargetTypeRefInTypeSig(oldArg.Type);
+            object newValue = RetargetTypeRefInTypeSigOfValue(oldArg.Value);
+            if (newType != oldArg.Type || oldArg.Value != newValue)
+            {
+                newArg = new CAArgument(newType, newValue);
+                return true;
+            }
+            newArg = default;
+            return false;
+        }
+
+        public static bool TryRetargetTypeRefInNamedArgument(CANamedArgument arg)
+        {
+            bool anyChange = false;
+            TypeSig newType = RetargetTypeRefInTypeSig(arg.Type);
+            if (newType != arg.Type)
+            {
+                anyChange = true;
+                arg.Type = newType;
+            }
+            if (TryRetargetTypeRefInArgument(arg.Argument, out var newArg))
+            {
+                arg.Argument = newArg;
+                anyChange = true;
+            }
+            return anyChange;
+        }
     }
 }
