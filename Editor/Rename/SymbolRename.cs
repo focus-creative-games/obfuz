@@ -428,9 +428,59 @@ namespace Obfuz
             Debug.Log("Rename methods end");
         }
 
+        class RefPropertyMetas
+        {
+            public List<CustomAttribute> customAttributes = new List<CustomAttribute>();
+        }
+
+        private void BuildHierarchyProperties(TypeDef type, List<PropertyDef> properties)
+        {
+            while (type != null)
+            {
+                properties.AddRange(type.Properties);
+                type = MetaUtil.GetBaseTypeDef(type);
+            }
+        }
+
+        private void BuildRefPropertyMetasMap(Dictionary<PropertyDef, RefPropertyMetas> refPropertyMetasMap)
+        {
+            foreach (var e in _refTypeRefMetasMap)
+            {
+                TypeDef typeDef = e.Key;
+                var hierarchyProperties = new List<PropertyDef>();
+                BuildHierarchyProperties(typeDef, hierarchyProperties);
+                RefTypeDefMetas typeDefMetas = e.Value;
+                foreach (CustomAttribute ca in typeDefMetas.customAttributes)
+                {
+                    foreach (var arg in ca.NamedArguments)
+                    {
+                        if (arg.IsField)
+                        {
+                            continue;
+                        }
+                        foreach (PropertyDef field in hierarchyProperties)
+                        {
+                            if (field.Name == arg.Name)
+                            {
+                                if (!refPropertyMetasMap.TryGetValue(field, out var fieldMetas))
+                                {
+                                    fieldMetas = new RefPropertyMetas();
+                                    refPropertyMetasMap.Add(field, fieldMetas);
+                                }
+                                fieldMetas.customAttributes.Add(ca);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void RenameProperties()
         {
             Debug.Log("Rename properties begin");
+            var refPropertyMetasMap = new Dictionary<PropertyDef, RefPropertyMetas>();
+            BuildRefPropertyMetasMap(refPropertyMetasMap);
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
@@ -439,7 +489,7 @@ namespace Obfuz
                     {
                         if (_renamePolicy.NeedRename(property))
                         {
-                            Rename(property);
+                            Rename(property, refPropertyMetasMap.TryGetValue(property, out var refPropertyMeta) ? refPropertyMeta : null);
                         }
                         else
                         {
@@ -531,38 +581,6 @@ namespace Obfuz
             string newFullName = type.FullName;
             _renameRecordMap.AddRenameRecord(type, oldFullName, newFullName);
             Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
-        }
-
-
-        private void RenameFieldNameInCustomAttributes(ModuleDefMD referenceMeMod, ModuleDefMD mod, TypeDef declaringType, string oldFieldOrPropertyName, string newName)
-        {
-            List<CustomAttributeInfo> customAttributes = _customAttributeArgumentsWithTypeByMods[referenceMeMod];
-            foreach (CustomAttributeInfo cai in customAttributes)
-            {
-                CustomAttribute oldAttr = cai.customAttributes[cai.index];
-                if (MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(oldAttr.Constructor.DeclaringType) != declaringType)
-                {
-                    continue;
-                }
-                bool anyChange = false;
-                if (cai.namedArguments != null)
-                {
-                    foreach (CANamedArgument arg in cai.namedArguments)
-                    {
-                        if (arg.Name == oldFieldOrPropertyName)
-                        {
-                            anyChange = true;
-                            arg.Name = newName;
-                        }
-                    }
-                }
-                if (anyChange)
-                {
-                    cai.customAttributes[cai.index] = new CustomAttribute(oldAttr.Constructor,
-                        cai.arguments != null ? cai.arguments : oldAttr.ConstructorArguments,
-                        cai.namedArguments != null ? cai.namedArguments : oldAttr.NamedArguments);
-                }
-            }
         }
 
         private void Rename(FieldDef field, RefFieldMetas fieldMetas)
@@ -700,14 +718,23 @@ namespace Obfuz
             _renameRecordMap.AddRenameRecord(eventDef, oldName, newName);
         }
 
-        private void Rename(PropertyDef property)
+        private void Rename(PropertyDef property, RefPropertyMetas refPropertyMetas)
         {
             string oldName = property.Name;
             string newName = _nameMaker.GetNewName(property, oldName);
-            ModuleDefMD mod = (ModuleDefMD)property.DeclaringType.Module;
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+
+            if (refPropertyMetas != null)
             {
-                RenameFieldNameInCustomAttributes(ass.module, mod, property.DeclaringType, oldName, newName);
+                foreach (var ca in refPropertyMetas.customAttributes)
+                {
+                    foreach (var arg in ca.NamedArguments)
+                    {
+                        if (arg.Name == oldName)
+                        {
+                            arg.Name = newName;
+                        }
+                    }
+                }
             }
             property.Name = newName;
             _renameRecordMap.AddRenameRecord(property, oldName, newName);
