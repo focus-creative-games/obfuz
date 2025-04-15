@@ -16,8 +16,8 @@ namespace Obfuz
 
     public class SymbolRename
     {
-        private readonly ObfuscatorContext _ctx;
-
+        private readonly AssemblyCache _assemblyCache;
+        private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies;
         private readonly HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
@@ -34,7 +34,8 @@ namespace Obfuz
         }
         public SymbolRename(ObfuscatorContext ctx)
         {
-            _ctx = ctx;
+            _assemblyCache = ctx.assemblyCache;
+            _obfuzAssemblies = ctx.assemblies;
             _renamePolicy = ctx.renamePolicy;
             _nameMaker = ctx.nameMaker;
 
@@ -76,7 +77,7 @@ namespace Obfuz
 
         private void BuildCustomAttributeArguments()
         {
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 var customAttributes = new List<CustomAttributeInfo>();
                 CollectCArgumentWithTypeOf(ass.module, customAttributes);
@@ -124,13 +125,13 @@ namespace Obfuz
 
         private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
         {
-            return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
+            return _obfuzAssemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
         }
 
         private void RenameModules()
         {
             Debug.Log("Rename Modules begin");
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 if (_renamePolicy.NeedRename(ass.module))
                 {
@@ -154,7 +155,7 @@ namespace Obfuz
 
         private void BuildRefTypeDefMetasMap(Dictionary<TypeDef, RefTypeDefMetas> refTypeDefMetasMap)
         {
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeRef typeRef in ass.module.GetTypeRefs())
                 {
@@ -227,9 +228,9 @@ namespace Obfuz
             RetargetTypeRefInCustomAttributes();
 
             BuildRefTypeDefMetasMap(_refTypeRefMetasMap);
-            _ctx.assemblyCache.EnableTypeDefCache = false;
+            _assemblyCache.EnableTypeDefCache = false;
 
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
@@ -245,7 +246,7 @@ namespace Obfuz
             }
 
             // clean cache
-            _ctx.assemblyCache.EnableTypeDefCache = true;
+            _assemblyCache.EnableTypeDefCache = true;
             Debug.Log("Rename Types end");
         }
 
@@ -268,7 +269,7 @@ namespace Obfuz
 
         private void BuildRefFieldMetasMap(Dictionary<FieldDef, RefFieldMetas> refFieldMetasMap)
         {
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (MemberRef memberRef in ass.module.GetMemberRefs())
                 {
@@ -336,7 +337,7 @@ namespace Obfuz
             var refFieldMetasMap = new Dictionary<FieldDef, RefFieldMetas>();
             BuildRefFieldMetasMap(refFieldMetasMap);
 
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
@@ -356,12 +357,53 @@ namespace Obfuz
             Debug.Log("Rename fields end");
         }
 
+        class RefMethodMetas
+        {
+            public readonly List<MemberRef> memberRefs = new List<MemberRef>();
+        }
+
+        private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
+        {
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            {
+                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                {
+                    if (!memberRef.IsMethodRef)
+                    {
+                        continue;
+                    }
+
+                    IMemberRefParent parent = memberRef.Class;
+                    TypeDef parentTypeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(parent);
+                    if (parentTypeDef == null)
+                    {
+                        continue;
+                    }
+                    foreach (MethodDef method in parentTypeDef.Methods)
+                    {
+                        if (method.Name == memberRef.Name && new SigComparer(default).Equals(method.MethodSig, memberRef.MethodSig))
+                        {
+                            if (!refMethodMetasMap.TryGetValue(method, out var refMethodMetas))
+                            {
+                                refMethodMetas = new RefMethodMetas();
+                                refMethodMetasMap.Add(method, refMethodMetas);
+                            }
+                            refMethodMetas.memberRefs.Add(memberRef);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         private void RenameMethods()
         {
             Debug.Log("Rename methods begin");
             Debug.Log("Rename not virtual methods begin");
             var virtualMethods = new List<MethodDef>();
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            var refMethodMetasMap = new Dictionary<MethodDef, RefMethodMetas>();
+            BuildRefMethodMetasMap(refMethodMetasMap);
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
@@ -375,7 +417,7 @@ namespace Obfuz
                         }
                         if (_renamePolicy.NeedRename(method))
                         {
-                            Rename(method);
+                            Rename(method, refMethodMetasMap.TryGetValue(method, out var refMethodMetas) ? refMethodMetas : null);
                         }
                         else
                         {
@@ -417,7 +459,7 @@ namespace Obfuz
                 }
                 if (_renameRecordMap.TryGetRenameRecord(group, out var oldName, out var newName))
                 {
-                    Rename(method, oldName, newName);
+                    Rename(method, refMethodMetasMap.TryGetValue(method, out var refMethodMetas) ? refMethodMetas : null, oldName, newName);
                 }
                 else
                 {
@@ -481,7 +523,7 @@ namespace Obfuz
             Debug.Log("Rename properties begin");
             var refPropertyMetasMap = new Dictionary<PropertyDef, RefPropertyMetas>();
             BuildRefPropertyMetasMap(refPropertyMetasMap);
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
@@ -504,7 +546,7 @@ namespace Obfuz
         private void RenameEvents()
         {
             Debug.Log("Rename events begin");
-            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
@@ -611,75 +653,28 @@ namespace Obfuz
 
         }
 
-        private void Rename(MethodDef method)
+        private void Rename(MethodDef method, RefMethodMetas refMethodMetas)
         {
             string oldName = method.Name;
             string newName = _nameMaker.GetNewName(method, oldName);
-            Rename(method, oldName, newName);
+            Rename(method, refMethodMetas, oldName, newName);
         }
 
-        private void Rename(MethodDef method, string oldName, string newName)
+        private void Rename(MethodDef method, RefMethodMetas refMethodMetas, string oldName, string newName)
         {
 
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
             RenameMethodParams(method);
             RenameMethodBody(method);
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            if (refMethodMetas != null)
             {
-                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                foreach (MemberRef memberRef in refMethodMetas.memberRefs)
                 {
-                    if (!memberRef.IsMethodRef)
-                    {
-                        continue;
-                    }
-                    if (oldName != memberRef.Name)
-                    {
-                        continue;
-                    }
-                    
-                    IMemberRefParent parent = memberRef.Class;
-                    if (parent is ITypeDefOrRef typeDefOrRef)
-                    {
-                        if (typeDefOrRef.IsTypeDef)
-                        {
-                            if (typeDefOrRef != method.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else if (typeDefOrRef.IsTypeRef)
-                        {
-                            if (typeDefOrRef.ResolveTypeDefThrow() != method.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else if (typeDefOrRef.IsTypeSpec)
-                        {
-                            var typeSpec = (TypeSpec)typeDefOrRef;
-                            GenericInstSig gis = typeSpec.TryGetGenericInstSig();
-                            if (gis == null || gis.GenericType.ToTypeDefOrRef().ResolveTypeDef() != method.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    // compare methodsig
-                    if (!new SigComparer(default).Equals(method.MethodSig, memberRef.MethodSig))
-                    {
-                        continue;
-                    }
                     string oldMethodFullName = memberRef.ToString();
                     memberRef.Name = newName;
-
-                    Debug.Log($"rename assembly:{ass.name} method:{oldMethodFullName} => {memberRef}");
+                    Debug.Log($"rename assembly:{memberRef.Module.Name} method:{oldMethodFullName} => {memberRef}");
                 }
             }
-
             method.Name = newName;
             _renameRecordMap.AddRenameRecord(method, oldName, newName);
 
@@ -706,8 +701,10 @@ namespace Obfuz
 
         private void Rename(ParamDef param)
         {
-            // let param name == 1 is more obfuscated
-            param.Name = "1";// _nameMaker.GetNewName(param, param.Name);
+            if (_renamePolicy.NeedRename(param))
+            {
+                param.Name = _nameMaker.GetNewName(param, param.Name);
+            }
         }
 
         private void Rename(EventDef eventDef)

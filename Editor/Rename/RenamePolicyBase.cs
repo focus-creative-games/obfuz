@@ -33,5 +33,10 @@ namespace Obfuz.Rename
         {
             return true;
         }
+
+        public virtual bool NeedRename(ParamDef paramDef)
+        {
+            return true;
+        }
     }
 }
