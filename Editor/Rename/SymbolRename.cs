@@ -315,7 +315,8 @@ namespace Obfuz
                         }
                         foreach (FieldDef field in hierarchyFields)
                         {
-                            if (field.Name == arg.Name)
+                            // FIXME. field of Generic Base Type may not be same
+                            if (field.Name == arg.Name && TypeEqualityComparer.Instance.Equals(field.FieldType, arg.Type))
                             {
                                 if (!refFieldMetasMap.TryGetValue(field, out var fieldMetas))
                                 {
@@ -502,7 +503,8 @@ namespace Obfuz
                         }
                         foreach (PropertyDef field in hierarchyProperties)
                         {
-                            if (field.Name == arg.Name)
+                            // FIXME. field of Generic Base Type may not be same
+                            if (field.Name == arg.Name && TypeEqualityComparer.Instance.Equals(arg.Type, field.PropertySig.RetType))
                             {
                                 if (!refPropertyMetasMap.TryGetValue(field, out var fieldMetas))
                                 {

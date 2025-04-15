@@ -34,7 +34,7 @@ namespace Obfuz
             _options = options;
             _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.AssemblySearchDirs.ToArray()));
             _renamePolicy = new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), new XmlConfigRenamePolicy());
-            _nameMaker = new NameMaker();
+            _nameMaker = new TestNameMaker();
         }
 
         public void DoIt()
