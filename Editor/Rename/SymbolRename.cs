@@ -113,7 +113,22 @@ namespace Obfuz
 
         public void Process()
         {
-            var virtualMethods = new List<MethodDef>();
+            RenameModules();
+            RenameTypes();
+            RenameFields();
+            RenameMethods();
+            RenameProperties();
+            RenameEvents();
+        }
+
+        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
+        {
+            return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
+        }
+
+        private void RenameModules()
+        {
+            Debug.Log("Rename Modules begin");
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 if (_renamePolicy.NeedRename(ass.module))
@@ -124,9 +139,17 @@ namespace Obfuz
                 {
                     _renameRecordMap.AddUnRenameRecord(ass.module);
                 }
+            }
+            Debug.Log("Rename Modules end");
+        }
+
+        private void RenameTypes()
+        {
+            Debug.Log("RenameTypes begin");
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
-                    _virtualMethodGroupCalculator.CalculateType(type);
                     if (_renamePolicy.NeedRename(type))
                     {
                         Rename(type);
@@ -135,6 +158,18 @@ namespace Obfuz
                     {
                         _renameRecordMap.AddUnRenameRecord(type);
                     }
+                }
+            }
+            Debug.Log("Rename Types end");
+        }
+
+        private void RenameFields()
+        {
+            Debug.Log("Rename fields begin");
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
                     foreach (FieldDef field in type.Fields)
                     {
                         if (_renamePolicy.NeedRename(field))
@@ -146,6 +181,21 @@ namespace Obfuz
                             _renameRecordMap.AddUnRenameRecord(field);
                         }
                     }
+                }
+            }
+            Debug.Log("Rename fields end");
+        }
+
+        private void RenameMethods()
+        {
+            Debug.Log("Rename methods begin");
+            Debug.Log("Rename not virtual methods begin");
+            var virtualMethods = new List<MethodDef>();
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
+                    _virtualMethodGroupCalculator.CalculateType(type);
                     foreach (MethodDef method in type.Methods)
                     {
                         if (method.IsVirtual)
@@ -156,44 +206,18 @@ namespace Obfuz
                         if (_renamePolicy.NeedRename(method))
                         {
                             Rename(method);
-                            foreach (Parameter param in method.Parameters)
-                            {
-                                if (param.ParamDef != null)
-                                {
-                                    Rename(param.ParamDef);
-                                }
-                            }
                         }
                         else
                         {
                             _renameRecordMap.AddUnRenameRecord(method);
                         }
                     }
-                    foreach (EventDef eventDef in type.Events)
-                    {
-                        if (_renamePolicy.NeedRename(eventDef))
-                        {
-                            Rename(eventDef);
-                        }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(eventDef);
-                        }
-                    }
-                    foreach (PropertyDef property in type.Properties)
-                    {
-                        if (_renamePolicy.NeedRename(property))
-                        {
-                            Rename(property);
-                        }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(property);
-                        }
-                    }
                 }
             }
+            Debug.Log("Rename not virtual methods end");
 
+
+            Debug.Log("Rename virtual methods begin");
             var visitedVirtualMethods = new HashSet<MethodDef>();
             var groupNeedRenames = new Dictionary<VirtualMethodGroup, bool>();
             foreach (var method in virtualMethods)
@@ -230,11 +254,54 @@ namespace Obfuz
                     throw new Exception($"group:{group} method:{method} not found in rename record map");
                 }
             }
+            Debug.Log("Rename virtual methods end");
+            Debug.Log("Rename methods end");
         }
 
-        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
+        private void RenameProperties()
         {
-            return _ctx.assemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
+            Debug.Log("Rename properties begin");
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
+                    foreach (PropertyDef property in type.Properties)
+                    {
+                        if (_renamePolicy.NeedRename(property))
+                        {
+                            Rename(property);
+                        }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(property);
+                        }
+                    }
+                }
+            }
+            Debug.Log("Rename properties end");
+        }
+
+        private void RenameEvents()
+        {
+            Debug.Log("Rename events begin");
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (TypeDef type in ass.module.GetTypes())
+                {
+                    foreach (EventDef eventDef in type.Events)
+                    {
+                        if (_renamePolicy.NeedRename(eventDef))
+                        {
+                            Rename(eventDef);
+                        }
+                        else
+                        {
+                            _renameRecordMap.AddUnRenameRecord(eventDef);
+                        }
+                    }
+                }
+            }
+            Debug.Log("Rename events begin");
         }
 
         private void Rename(ModuleDefMD mod)
@@ -655,6 +722,7 @@ namespace Obfuz
         {
 
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
+            RenameMethodParams(method);
             RenameMethodBody(method);
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
             {
@@ -714,6 +782,7 @@ namespace Obfuz
 
             method.Name = newName;
             _renameRecordMap.AddRenameRecord(method, oldName, newName);
+
         }
 
         private void RenameMethodBody(MethodDef method)
@@ -721,6 +790,17 @@ namespace Obfuz
             if (method.Body == null)
             {
                 return;
+            }
+        }
+
+        private void RenameMethodParams(MethodDef method)
+        {
+            foreach (Parameter param in method.Parameters)
+            {
+                if (param.ParamDef != null)
+                {
+                    Rename(param.ParamDef);
+                }
             }
         }
 
