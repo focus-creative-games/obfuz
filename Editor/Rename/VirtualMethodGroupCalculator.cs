@@ -62,12 +62,12 @@ namespace Obfuz.Rename
 
             if (typeDef.BaseType != null)
             {
-                TypeDef baseTypeDef = MetaUtil.GetTypeDefOrGenericTypeBase(typeDef.BaseType);
+                TypeDef baseTypeDef = MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(typeDef.BaseType);
                 CalculateType(baseTypeDef);
                 typeMethods.flatMethods.AddRange(_visitedTypes[baseTypeDef].flatMethods);
                 foreach (var intfType in typeDef.Interfaces)
                 {
-                    TypeDef intfTypeDef = MetaUtil.GetTypeDefOrGenericTypeBase(intfType.Interface);
+                    TypeDef intfTypeDef = MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(intfType.Interface);
                     CalculateType(intfTypeDef);
                     typeMethods.flatMethods.AddRange(_visitedTypes[intfTypeDef].flatMethods);
                 }

@@ -40,7 +40,7 @@ namespace Obfuz
             }
         }
 
-        public static TypeDef GetTypeDefOrGenericTypeBase(ITypeDefOrRef type)
+        public static TypeDef GetTypeDefOrGenericTypeBaseThrowException(ITypeDefOrRef type)
         {
             if (type.IsTypeDef)
             {
@@ -56,6 +56,42 @@ namespace Obfuz
                 return gis.GenericType.ToTypeDefOrRef().ResolveTypeDefThrow();
             }
             throw new NotSupportedException($"{type}");
+        }
+
+        public static TypeDef GetTypeDefOrGenericTypeBaseOrNull(ITypeDefOrRef type)
+        {
+            if (type.IsTypeDef)
+            {
+                return (TypeDef)type;
+            }
+            if (type.IsTypeRef)
+            {
+                return type.ResolveTypeDefThrow();
+            }
+            if (type.IsTypeSpec)
+            {
+                GenericInstSig gis = type.TryGetGenericInstSig();
+                return gis.GenericType.ToTypeDefOrRef().ResolveTypeDefThrow();
+            }
+            return null;
+        }
+
+        public static TypeDef GetMemberRefTypeDefParentOrNull(IMemberRefParent parent)
+        {
+            if (parent is TypeDef typeDef)
+            {
+                return typeDef;
+            }
+            if (parent is TypeRef typeRef)
+            {
+                return typeRef.ResolveTypeDefThrow();
+            }
+            if (parent is TypeSpec typeSpec)
+            {
+                GenericInstSig genericIns = typeSpec.TypeSig.ToGenericInstSig();
+                return genericIns.GenericType.TypeDefOrRef.ResolveTypeDefThrow();
+            }
+            return null;
         }
 
         public static bool IsInheritFromUnityObject(TypeDef typeDef)

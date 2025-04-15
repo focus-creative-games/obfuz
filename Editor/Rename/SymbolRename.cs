@@ -167,6 +167,18 @@ namespace Obfuz
                     typeDefMetas.typeRefs.Add(typeRef);
                 }
             }
+
+            foreach (CustomAttributeInfo cai in _customAttributeArgumentsWithTypeByMods.Values.SelectMany(cas => cas))
+            {
+                CustomAttribute ca = cai.customAttributes[cai.index];
+                TypeDef typeDef = MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(ca.Constructor.DeclaringType);
+                if (!refTypeDefMetasMap.TryGetValue(typeDef, out var typeDefMetas))
+                {
+                    typeDefMetas = new RefTypeDefMetas();
+                    refTypeDefMetasMap.Add(typeDef, typeDefMetas);
+                }
+                typeDefMetas.customAttributes.Add(ca);
+            }
         }
 
         private void RetargetTypeRefInCustomAttributes()
@@ -206,14 +218,15 @@ namespace Obfuz
             }
         }
 
+        private readonly Dictionary<TypeDef, RefTypeDefMetas> _refTypeRefMetasMap = new Dictionary<TypeDef, RefTypeDefMetas>();
+
         private void RenameTypes()
         {
             Debug.Log("RenameTypes begin");
 
             RetargetTypeRefInCustomAttributes();
 
-            var refTypeDefMetasMap = new Dictionary<TypeDef, RefTypeDefMetas>();
-            BuildRefTypeDefMetasMap(refTypeDefMetasMap);
+            BuildRefTypeDefMetasMap(_refTypeRefMetasMap);
             _ctx.assemblyCache.EnableTypeDefCache = false;
 
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
@@ -222,7 +235,7 @@ namespace Obfuz
                 {
                     if (_renamePolicy.NeedRename(type))
                     {
-                        Rename(type, refTypeDefMetasMap.TryGetValue(type, out var typeDefMetas) ? typeDefMetas : null);
+                        Rename(type, _refTypeRefMetasMap.TryGetValue(type, out var typeDefMetas) ? typeDefMetas : null);
                     }
                     else
                     {
@@ -236,9 +249,93 @@ namespace Obfuz
             Debug.Log("Rename Types end");
         }
 
+
+        class RefFieldMetas
+        {
+            public readonly List<MemberRef> fieldRefs = new List<MemberRef>();
+            public readonly List<CustomAttribute> customAttributes = new List<CustomAttribute>();
+        }
+
+
+        private void BuildHierarchyFields(TypeDef type, List<FieldDef> fields)
+        {
+            while (type != null)
+            {
+                fields.AddRange(type.Fields);
+                type = MetaUtil.GetBaseTypeDef(type);
+            }
+        }
+
+        private void BuildRefFieldMetasMap(Dictionary<FieldDef, RefFieldMetas> refFieldMetasMap)
+        {
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                {
+                    if (!memberRef.IsFieldRef)
+                    {
+                        continue;
+                    }
+                     
+                    IMemberRefParent parent = memberRef.Class;
+                    TypeDef parentTypeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(parent);
+                    if (parentTypeDef == null)
+                    {
+                        continue;
+                    }
+                    foreach (FieldDef field in parentTypeDef.Fields)
+                    {
+                        if (field.Name == memberRef.Name && TypeEqualityComparer.Instance.Equals(field.FieldSig.Type, memberRef.FieldSig.Type))
+                        {
+                            if (!refFieldMetasMap.TryGetValue(field, out var fieldMetas))
+                            {
+                                fieldMetas = new RefFieldMetas();
+                                refFieldMetasMap.Add(field, fieldMetas);
+                            }
+                            fieldMetas.fieldRefs.Add(memberRef);
+                            break;
+                        }
+                    }
+                }
+            }
+            foreach (var e in _refTypeRefMetasMap)
+            {
+                TypeDef typeDef = e.Key;
+                var hierarchyFields = new List<FieldDef>();
+                BuildHierarchyFields(typeDef, hierarchyFields);
+                RefTypeDefMetas typeDefMetas = e.Value;
+                foreach (CustomAttribute ca in typeDefMetas.customAttributes)
+                {
+                    foreach (var arg in ca.NamedArguments)
+                    {
+                        if (arg.IsProperty)
+                        {
+                            continue;
+                        }
+                        foreach (FieldDef field in hierarchyFields)
+                        {
+                            if (field.Name == arg.Name)
+                            {
+                                if (!refFieldMetasMap.TryGetValue(field, out var fieldMetas))
+                                {
+                                    fieldMetas = new RefFieldMetas();
+                                    refFieldMetasMap.Add(field, fieldMetas);
+                                }
+                                fieldMetas.customAttributes.Add(ca);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void RenameFields()
         {
             Debug.Log("Rename fields begin");
+            var refFieldMetasMap = new Dictionary<FieldDef, RefFieldMetas>();
+            BuildRefFieldMetasMap(refFieldMetasMap);
+
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
@@ -247,7 +344,7 @@ namespace Obfuz
                     {
                         if (_renamePolicy.NeedRename(field))
                         {
-                            Rename(field);
+                            Rename(field, refFieldMetasMap.TryGetValue(field, out var fieldMetas) ? fieldMetas : null);
                         }
                         else
                         {
@@ -416,13 +513,6 @@ namespace Obfuz
             string oldName = type.Name;
             string newName = _nameMaker.GetNewName(type, oldName);
 
-            ModuleDefMD mod = (ModuleDefMD)type.Module;
-            //RenameTypeRefInCustomAttribute(mod, type, oldFullName, null);
-            //foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
-            //{
-            //    RenameTypeRefInCustomAttribute(ass.module, mod, type, oldFullName);
-            //}
-
             if (refTypeDefMeta != null)
             {
                 foreach (TypeRef typeRef in refTypeDefMeta.typeRefs)
@@ -450,7 +540,7 @@ namespace Obfuz
             foreach (CustomAttributeInfo cai in customAttributes)
             {
                 CustomAttribute oldAttr = cai.customAttributes[cai.index];
-                if (MetaUtil.GetTypeDefOrGenericTypeBase(oldAttr.Constructor.DeclaringType) != declaringType)
+                if (MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(oldAttr.Constructor.DeclaringType) != declaringType)
                 {
                     continue;
                 }
@@ -475,60 +565,27 @@ namespace Obfuz
             }
         }
 
-        private void Rename(FieldDef field)
+        private void Rename(FieldDef field, RefFieldMetas fieldMetas)
         {
             string oldName = field.Name;
             string newName = _nameMaker.GetNewName(field, oldName);
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(field.DeclaringType.Module))
+            if (fieldMetas != null)
             {
-                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                foreach (var memberRef in fieldMetas.fieldRefs)
                 {
-                    if (!memberRef.IsFieldRef)
-                    {
-                        continue;
-                    }
-                    if (oldName != memberRef.Name || !TypeEqualityComparer.Instance.Equals(memberRef.FieldSig.Type, field.FieldSig.Type))
-                    {
-                        continue;
-                    }
-                    IMemberRefParent parent = memberRef.Class;
-                    if (parent is ITypeDefOrRef typeDefOrRef)
-                    {
-                        if (typeDefOrRef.IsTypeDef)
-                        {
-                            if (typeDefOrRef != field.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else if (typeDefOrRef.IsTypeRef)
-                        {
-                            if (typeDefOrRef.ResolveTypeDefThrow() != field.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else if (typeDefOrRef.IsTypeSpec)
-                        {
-                            var typeSpec = (TypeSpec)typeDefOrRef;
-                            GenericInstSig gis = typeSpec.TryGetGenericInstSig();
-                            if (gis == null || gis.GenericType.ToTypeDefOrRef().ResolveTypeDef() != field.DeclaringType)
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    string oldFieldFullName = memberRef.ToString();
                     memberRef.Name = newName;
-
-                    Debug.Log($"rename assembly:{ass.name} field:{oldFieldFullName} => {memberRef}");
+                    Debug.Log($"rename assembly:{memberRef.Module.Name} reference {field.FullName} => {memberRef.FullName}");
                 }
-
-                RenameFieldNameInCustomAttributes(ass.module, (ModuleDefMD)field.DeclaringType.Module, field.DeclaringType, field.Name, newName);
+                foreach (var ca in fieldMetas.customAttributes)
+                {
+                    foreach (var arg in ca.NamedArguments)
+                    {
+                        if (arg.Name == oldName)
+                        {
+                            arg.Name = newName;
+                        }
+                    }
+                }
             }
             Debug.Log($"rename field. {field} => {newName}");
             field.Name = newName;
