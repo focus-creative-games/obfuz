@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Obfuz
 {
@@ -143,17 +144,51 @@ namespace Obfuz
             Debug.Log("Rename Modules end");
         }
 
+
+        class RefTypeDefMetas
+        {
+            public readonly List<TypeRef> typeRefs = new List<TypeRef>();
+
+            public readonly List<CustomAttribute> customAttributes = new List<CustomAttribute>();
+        }
+
+        private void BuildRefTypeDefMetasMap(Dictionary<TypeDef, RefTypeDefMetas> refTypeDefMetasMap)
+        {
+            //foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            //{
+            //    RenameTypeRefInCustomAttribute(ass.module, mod, type, oldFullName);
+            //}
+
+            foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
+            {
+                foreach (TypeRef typeRef in ass.module.GetTypeRefs())
+                {
+                    TypeDef typeDef = typeRef.ResolveThrow();
+                    if (!refTypeDefMetasMap.TryGetValue(typeDef, out var typeDefMetas))
+                    {
+                        typeDefMetas = new RefTypeDefMetas();
+                        refTypeDefMetasMap.Add(typeDef, typeDefMetas);
+                    }
+                    typeDefMetas.typeRefs.Add(typeRef);
+                }
+            }
+        }
+
         private void RenameTypes()
         {
             Debug.Log("RenameTypes begin");
+
+            var refTypeDefMetasMap = new Dictionary<TypeDef, RefTypeDefMetas>();
+            BuildRefTypeDefMetasMap(refTypeDefMetasMap);
             _ctx.assemblyCache.EnableTypeDefCache = false;
+
             foreach (ObfuzAssemblyInfo ass in _ctx.assemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
                 {
                     if (_renamePolicy.NeedRename(type))
                     {
-                        Rename(type);
+                        Rename(type, refTypeDefMetasMap.TryGetValue(type, out var typeDefMetas) ? typeDefMetas : null);
                     }
                     else
                     {
@@ -326,7 +361,7 @@ namespace Obfuz
             }
         }
 
-        private void Rename(TypeDef type)
+        private void Rename(TypeDef type, RefTypeDefMetas refTypeDefMeta)
         {
             string moduleName = MetaUtil.GetModuleNameWithoutExt(type.Module.Name);
             string oldFullName = type.FullName;
@@ -352,24 +387,18 @@ namespace Obfuz
                 RenameTypeRefInCustomAttribute(ass.module, mod, type, oldFullName);
             }
 
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            if (refTypeDefMeta != null)
             {
-                foreach (TypeRef typeRef in ass.module.GetTypeRefs())
+                foreach (TypeRef typeRef in refTypeDefMeta.typeRefs)
                 {
-                    if (typeRef.FullName != oldFullName)
-                    {
-                        continue;
-                    }
-                    if (typeRef.DefinitionAssembly.Name != moduleName)
-                    {
-                        continue;
-                    }
+                    Assert.AreEqual(typeRef.FullName, oldFullName);
+                    Assert.IsTrue(typeRef.DefinitionAssembly.Name == moduleName);
                     if (!string.IsNullOrEmpty(oldNamespace))
                     {
                         typeRef.Namespace = newNamespace;
                     }
                     typeRef.Name = newName;
-                    Debug.Log($"rename assembly:{ass.module.Name} reference {oldFullName} => {typeRef.FullName}");
+                    Debug.Log($"rename assembly:{typeRef.Module.Name} reference {oldFullName} => {typeRef.FullName}");
                 }
             }
             type.Name = newName;
