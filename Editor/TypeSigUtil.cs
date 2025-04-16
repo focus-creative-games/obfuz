@@ -101,7 +101,10 @@ namespace Obfuz
                 {
                     var valueOrClassType = type.ToClassOrValueTypeSig();
                     var typeDef = valueOrClassType.ToTypeDefOrRef().ResolveTypeDefThrow();
-                    result.Append($"[{typeDef.Module.Assembly.Name}]");
+                    if (typeDef.Module.IsCoreLibraryModule != true)
+                    {
+                        result.Append($"[{typeDef.Module.Assembly.Name}]");
+                    }
                     result.Append(typeDef.FullName);
                     break;
                 }

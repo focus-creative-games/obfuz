@@ -118,13 +118,69 @@ namespace Obfuz
                     oldName = name,
                     newName = null,
                 });
-                _modRenames.Add(mod, new RenameRecord
+                foreach (TypeDef type in mod.GetTypes())
                 {
-                    status = RenameStatus.NotRenamed,
-                    signature = mod.Assembly.Name,
-                    oldName = mod.Assembly.Name,
-                    newName = null,
-                });
+                    _typeRenames.Add(type, new RenameRecord
+                    {
+                        status = RenameStatus.NotRenamed,
+                        signature = type.FullName,
+                        oldName = type.FullName,
+                        newName = null,
+                    });
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        _methodRenames.Add(method, new RenameRecord
+                        {
+                            status = RenameStatus.NotRenamed,
+                            signature = TypeSigUtil.ComputeMethodDefSignature(method),
+                            oldName = method.Name,
+                            newName = null,
+                        });
+                        foreach (Parameter param in method.Parameters)
+                        {
+                            if (param.ParamDef != null)
+                            {
+                                _paramRenames.Add(param.ParamDef, new RenameRecord
+                                {
+                                    status = RenameStatus.NotRenamed,
+                                    signature = param.Name,
+                                    oldName = param.Name,
+                                    newName = null,
+                                });
+                            }
+                        }
+                    }
+                    foreach (FieldDef field in type.Fields)
+                    {
+                        _fieldRenames.Add(field, new RenameRecord
+                        {
+                            status = RenameStatus.NotRenamed,
+                            signature = TypeSigUtil.ComputeFieldDefSignature(field),
+                            oldName = field.Name,
+                            newName = null,
+                        });
+                    }
+                    foreach (PropertyDef property in type.Properties)
+                    {
+                        _propertyRenames.Add(property, new RenameRecord
+                        {
+                            status = RenameStatus.NotRenamed,
+                            signature = TypeSigUtil.ComputePropertyDefSignature(property),
+                            oldName = property.Name,
+                            newName = null,
+                        });
+                    }
+                    foreach (EventDef eventDef in type.Events)
+                    {
+                        _eventRenames.Add(eventDef, new RenameRecord
+                        {
+                            status = RenameStatus.NotRenamed,
+                            signature = TypeSigUtil.ComputeEventDefSignature(eventDef),
+                            oldName = eventDef.Name,
+                            newName = null,
+                        });
+                    }
+                }
             }
         }
 
@@ -215,7 +271,7 @@ namespace Obfuz
             {
                 signature = signature,
                 newName = newName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = RenameStatus.Renamed,
             };
             foreach (XmlNode node in ele.ChildNodes)
             {
@@ -240,7 +296,7 @@ namespace Obfuz
             {
                 index = int.Parse(index),
                 newName = newName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = RenameStatus.Renamed,
             };
             method.parameters.Add(rmp);
         }
@@ -253,7 +309,7 @@ namespace Obfuz
             {
                 signature = signature,
                 newName = newName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = RenameStatus.Renamed,
             };
             type.fields.Add(signature, rmf);
         }
@@ -266,7 +322,7 @@ namespace Obfuz
             {
                 signature = signature,
                 newName = newName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = RenameStatus.Renamed,
             };
             type.properties.Add(signature, rmp);
         }
@@ -279,7 +335,7 @@ namespace Obfuz
             {
                 signature = signature,
                 newName = newName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = RenameStatus.Renamed,
             };
             type.events.Add(signature, rme);
         }
@@ -408,194 +464,76 @@ namespace Obfuz
             methodEle.AppendChild(paramNode);
         }
 
-        public void AddRenameRecord(ModuleDefMD mod, string oldName, string newName)
+        public void AddRename(ModuleDefMD mod, string newName)
         {
-            _modRenames.Add(mod, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = oldName,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _modRenames[mod];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(TypeDef type, string oldName, string newName)
+        public void AddRename(TypeDef type, string newName)
         {
-            _typeRenames.Add(type, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = oldName,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _typeRenames[type];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(MethodDef method, string signature, string oldName, string newName)
+        public void AddRename(MethodDef method, string newName)
         {
-            _methodRenames.Add(method, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = signature,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _methodRenames[method];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(ParamDef paramDef, string oldName, string newName)
+        public void AddRename(ParamDef paramDef, string newName)
         {
-            _paramRenames.Add(paramDef, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = oldName,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _paramRenames[paramDef];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(VirtualMethodGroup methodGroup, string signature, string oldName, string newName)
+        public void InitAndAddRename(VirtualMethodGroup methodGroup, string newName)
         {
+            RenameRecord methodRecord = _methodRenames[methodGroup.methods[0]];
             _virtualMethodGroups.Add(methodGroup, new RenameRecord
             {
                 status = RenameStatus.Renamed,
-                signature = signature,
-                oldName = oldName,
-                newName = newName
+                signature = methodRecord.signature,
+                oldName = methodRecord.oldName,
+                newName = newName,
             });
         }
 
-        public bool TryGetRenameRecord(VirtualMethodGroup group, out string oldName, out string newName)
+        public bool TryGetRename(VirtualMethodGroup group, out string newName)
         {
             if (_virtualMethodGroups.TryGetValue(group, out var record))
             {
-                oldName = record.oldName;
                 newName = record.newName;
                 return true;
             }
-            oldName = null;
             newName = null;
             return false;
         }
 
-        public void AddRenameRecord(FieldDef field, string signature, string oldName, string newName)
+        public void AddRename(FieldDef field, string newName)
         {
-            _fieldRenames.Add(field, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = signature,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _fieldRenames[field];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(PropertyDef property, string signature, string oldName, string newName)
+        public void AddRename(PropertyDef property, string newName)
         {
-            _propertyRenames.Add(property, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = signature,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _propertyRenames[property];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
 
-        public void AddRenameRecord(EventDef eventDef, string signature, string oldName, string newName)
+        public void AddRename(EventDef eventDef, string newName)
         {
-            _eventRenames.Add(eventDef, new RenameRecord
-            {
-                status = RenameStatus.Renamed,
-                signature = signature,
-                oldName = oldName,
-                newName = newName
-            });
+            RenameRecord record = _eventRenames[eventDef];
+            record.status = RenameStatus.Renamed;
+            record.newName = newName;
         }
-
-        public void AddUnRenameRecord(ModuleDefMD mod)
-        {
-            _modRenames.Add(mod, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = mod.Assembly.Name,
-                oldName = mod.Assembly.Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(TypeDef typeDef)
-        {
-            _typeRenames.Add(typeDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = typeDef.FullName,
-                oldName = typeDef.FullName,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(MethodDef methodDef)
-        {
-            _methodRenames.Add(methodDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = methodDef.FullName,
-                oldName = methodDef.Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(ParamDef paramDef)
-        {
-            _paramRenames.Add(paramDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = paramDef.Name,
-                oldName = paramDef.Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(VirtualMethodGroup methodGroup)
-        {
-            _virtualMethodGroups.Add(methodGroup, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = methodGroup.methods[0].FullName,
-                oldName = methodGroup.methods[0].Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(FieldDef fieldDef)
-        {
-            _fieldRenames.Add(fieldDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = fieldDef.FullName,
-                oldName = fieldDef.Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(PropertyDef propertyDef)
-        {
-            _propertyRenames.Add(propertyDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = propertyDef.FullName,
-                oldName = propertyDef.Name,
-                newName = null,
-            });
-        }
-
-        public void AddUnRenameRecord(EventDef eventDef)
-        {
-            _eventRenames.Add(eventDef, new RenameRecord
-            {
-                status = RenameStatus.NotRenamed,
-                signature = eventDef.FullName,
-                oldName = eventDef.Name,
-                newName = null,
-            });
-        }
-
     }
 }

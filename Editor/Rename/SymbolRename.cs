@@ -118,6 +118,7 @@ namespace Obfuz
 
         public void Process()
         {
+            _renameRecordMap.Init(_obfuzAssemblies);
             RenameModules();
             RenameTypes();
             RenameFields();
@@ -139,10 +140,6 @@ namespace Obfuz
                 if (_renamePolicy.NeedRename(ass.module))
                 {
                     Rename(ass.module);
-                }
-                else
-                {
-                    _renameRecordMap.AddUnRenameRecord(ass.module);
                 }
             }
             Debug.Log("Rename Modules end");
@@ -240,10 +237,6 @@ namespace Obfuz
                     if (_renamePolicy.NeedRename(type))
                     {
                         Rename(type, _refTypeRefMetasMap.TryGetValue(type, out var typeDefMetas) ? typeDefMetas : null);
-                    }
-                    else
-                    {
-                        _renameRecordMap.AddUnRenameRecord(type);
                     }
                 }
             }
@@ -351,10 +344,6 @@ namespace Obfuz
                         {
                             Rename(field, refFieldMetasMap.TryGetValue(field, out var fieldMetas) ? fieldMetas : null);
                         }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(field);
-                        }
                     }
                 }
             }
@@ -423,10 +412,6 @@ namespace Obfuz
                         {
                             Rename(method, refMethodMetasMap.TryGetValue(method, out var refMethodMetas) ? refMethodMetas : null);
                         }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(method);
-                        }
                     }
                 }
             }
@@ -449,21 +434,16 @@ namespace Obfuz
                     groupNeedRenames.Add(group, needRename);
                     if (needRename)
                     {
-                        _renameRecordMap.AddRenameRecord(group, method.FullName, method.Name, _nameMaker.GetNewName(method, method.Name));
-                    }
-                    else
-                    {
-                        _renameRecordMap.AddUnRenameRecord(group);
+                        _renameRecordMap.InitAndAddRename(group, _nameMaker.GetNewName(method, method.Name));
                     }
                 }
                 if (!needRename)
                 {
-                    _renameRecordMap.AddUnRenameRecord(method);
                     continue;
                 }
-                if (_renameRecordMap.TryGetRenameRecord(group, out var oldName, out var newName))
+                if (_renameRecordMap.TryGetRename(group, out var newName))
                 {
-                    Rename(method, refMethodMetasMap.TryGetValue(method, out var refMethodMetas) ? refMethodMetas : null, oldName, newName);
+                    Rename(method, refMethodMetasMap.TryGetValue(method, out var refMethodMetas) ? refMethodMetas : null, newName);
                 }
                 else
                 {
@@ -538,10 +518,6 @@ namespace Obfuz
                         {
                             Rename(property, refPropertyMetasMap.TryGetValue(property, out var refPropertyMeta) ? refPropertyMeta : null);
                         }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(property);
-                        }
                     }
                 }
             }
@@ -561,10 +537,6 @@ namespace Obfuz
                         {
                             Rename(eventDef);
                         }
-                        else
-                        {
-                            _renameRecordMap.AddUnRenameRecord(eventDef);
-                        }
                     }
                 }
             }
@@ -575,7 +547,7 @@ namespace Obfuz
         {
             string oldName = MetaUtil.GetModuleNameWithoutExt(mod.Name);
             string newName = _nameMaker.GetNewName(mod, oldName);
-            _renameRecordMap.AddRenameRecord(mod, oldName, newName);
+            _renameRecordMap.AddRename(mod, newName);
             mod.Name = $"{newName}.dll";
             //Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
             foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
@@ -626,7 +598,7 @@ namespace Obfuz
             }
             type.Name = newName;
             string newFullName = type.FullName;
-            _renameRecordMap.AddRenameRecord(type, oldFullName, newFullName);
+            _renameRecordMap.AddRename(type, newFullName);
             //Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
         }
 
@@ -653,7 +625,7 @@ namespace Obfuz
                 }
             }
             //Debug.Log($"rename field. {field} => {newName}");
-            _renameRecordMap.AddRenameRecord(field, field.FullName, oldName, newName);
+            _renameRecordMap.AddRename(field, newName);
             field.Name = newName;
 
         }
@@ -662,10 +634,10 @@ namespace Obfuz
         {
             string oldName = method.Name;
             string newName = _nameMaker.GetNewName(method, oldName);
-            Rename(method, refMethodMetas, oldName, newName);
+            Rename(method, refMethodMetas, newName);
         }
 
-        private void Rename(MethodDef method, RefMethodMetas refMethodMetas, string oldName, string newName)
+        private void Rename(MethodDef method, RefMethodMetas refMethodMetas, string newName)
         {
 
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
@@ -680,7 +652,7 @@ namespace Obfuz
                     //Debug.Log($"rename assembly:{memberRef.Module.Name} method:{oldMethodFullName} => {memberRef}");
                 }
             }
-            _renameRecordMap.AddRenameRecord(method, method.FullName, oldName, newName);
+            _renameRecordMap.AddRename(method, newName);
             method.Name = newName;
         }
 
@@ -708,12 +680,8 @@ namespace Obfuz
             if (_renamePolicy.NeedRename(param))
             {
                 string newName = _nameMaker.GetNewName(param, param.Name);
-                _renameRecordMap.AddRenameRecord(param, param.Name, newName);
+                _renameRecordMap.AddRename(param, newName);
                 param.Name = newName;
-            }
-            else
-            {
-                _renameRecordMap.AddUnRenameRecord(param);
             }
         }
 
@@ -721,7 +689,7 @@ namespace Obfuz
         {
             string oldName = eventDef.Name;
             string newName = _nameMaker.GetNewName(eventDef, eventDef.Name);
-            _renameRecordMap.AddRenameRecord(eventDef, eventDef.FullName, oldName, newName);
+            _renameRecordMap.AddRename(eventDef, newName);
             eventDef.Name = newName;
         }
 
@@ -743,7 +711,7 @@ namespace Obfuz
                     }
                 }
             }
-            _renameRecordMap.AddRenameRecord(property, property.FullName, oldName, newName);
+            _renameRecordMap.AddRename(property, newName);
             property.Name = newName;
         }
 
