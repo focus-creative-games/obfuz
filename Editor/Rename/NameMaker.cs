@@ -20,10 +20,17 @@ namespace Obfuz.Rename
 
         public string GetNewName(string originalName)
         {
-            if (_nextIndex >= _wordSet.Count)
-                throw new InvalidOperationException("No more names available in the word set.");
-            string newName = _wordSet[_nextIndex++];
-            return newName;
+            var nameBuilder = new StringBuilder();
+            for (int i = _nextIndex++; ;)
+            {
+                nameBuilder.Append(_wordSet[i % _wordSet.Count]);
+                i = i / _wordSet.Count;
+                if (i == 0)
+                {
+                    break;
+                }
+            }
+            return nameBuilder.ToString();
         }
     }
 
