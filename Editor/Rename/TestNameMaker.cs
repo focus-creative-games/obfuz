@@ -11,6 +11,8 @@ namespace Obfuz.Rename
     {
         private int _nextIndex;
 
+        private readonly Dictionary<string, string> _nameMap = new Dictionary<string, string>();
+
         private string GetDefaultNewName(string originName)
         {
             return $"{originName}>{_nextIndex++}";
@@ -23,7 +25,17 @@ namespace Obfuz.Rename
 
         public string GetNewNamespace(TypeDef typeDef, string originalNamespace)
         {
-            return GetDefaultNewName(originalNamespace);
+            if (string.IsNullOrEmpty(originalNamespace))
+            {
+                return string.Empty;
+            }
+            if (_nameMap.TryGetValue(originalNamespace, out var newName))
+            {
+                return newName;
+            }
+            newName = GetDefaultNewName(originalNamespace);
+            _nameMap.Add(originalNamespace, newName);
+            return newName;
         }
 
         public string GetNewName(TypeDef typeDef, string originalName)

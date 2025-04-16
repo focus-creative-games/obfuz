@@ -12,13 +12,15 @@ namespace Obfuz.Rename
         private readonly List<string> _wordSet;
         private int _nextIndex;
 
+        private readonly Dictionary<string, string> _nameMap = new Dictionary<string, string>();
+
         public NameScope(List<string> wordSet)
         {
             _wordSet = wordSet;
             _nextIndex = 0;
         }
 
-        public string GetNewName(string originalName)
+        private string CreateNewName()
         {
             var nameBuilder = new StringBuilder();
             for (int i = _nextIndex++; ;)
@@ -32,6 +34,22 @@ namespace Obfuz.Rename
             }
             return nameBuilder.ToString();
         }
+
+        public string GetNewName()
+        {
+            return CreateNewName();
+        }
+
+        public string GetNewName0(string originalName)
+        {
+            if (_nameMap.TryGetValue(originalName, out var newName))
+            {
+                return newName;
+            }
+            newName = CreateNewName();
+            _nameMap[originalName] = newName;
+            return newName;
+        }
     }
 
     public class NameMaker : INameMaker
@@ -39,6 +57,8 @@ namespace Obfuz.Rename
         private readonly List<string> _wordSet;
 
         private readonly Dictionary<object, NameScope> _nameScopes = new Dictionary<object, NameScope>();
+
+        private readonly object _namespaceScope = new object();
 
         public NameMaker(List<string> wordSet)
         {
@@ -55,19 +75,23 @@ namespace Obfuz.Rename
             return nameScope;
         }
 
-        private string GetDefaultNewName(object scope, string originName)
-        {
-            return GetNameScope(scope).GetNewName(originName);
-        }
-
         public string GetNewName(ModuleDefMD mod, string originalName)
         {
             return GetDefaultNewName(this, originalName);
         }
 
+        private string GetDefaultNewName(object scope, string originName)
+        {
+            return GetNameScope(scope).GetNewName();
+        }
+
         public string GetNewNamespace(TypeDef typeDef, string originalNamespace)
         {
-            return GetDefaultNewName(typeDef.Module, originalNamespace);
+            if (string.IsNullOrEmpty(originalNamespace))
+            {
+                return string.Empty;
+            }
+            return GetNameScope(_namespaceScope).GetNewName0(originalNamespace);
         }
 
         public string GetNewName(TypeDef typeDef, string originalName)
