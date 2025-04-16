@@ -27,6 +27,8 @@ namespace Obfuz
 
         public INameMaker nameMaker;
 
+        public string mappingXmlPath;
+
         public string outputDir;
     }
 }

@@ -18,6 +18,7 @@ namespace Obfuz
         {
             public List<string> AssemblySearchDirs;
             public List<string> ObfuscatedAssemblyNames;
+            public string mappingXmlPath;
             public string outputDir;
         }
 
@@ -44,12 +45,13 @@ namespace Obfuz
                 assemblies = _obfuzAssemblies,
                 renamePolicy = _renamePolicy,
                 nameMaker = _nameMaker,
+                mappingXmlPath = _options.mappingXmlPath,
                 outputDir = _options.outputDir,
             };
             _symbolRename = new SymbolRename(ctx);
         }
 
-        public void DoIt()
+        public void Run()
         {
             LoadAssemblies();
             Rename();

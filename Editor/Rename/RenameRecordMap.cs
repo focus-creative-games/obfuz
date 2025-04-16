@@ -104,7 +104,6 @@ namespace Obfuz
             _mappingFile = mappingFile;
         }
 
-
         public void Init(List<ObfuzAssemblyInfo> assemblies, INameMaker nameMaker)
         {
             LoadXmlMappingFile(_mappingFile);

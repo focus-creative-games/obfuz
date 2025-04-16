@@ -42,13 +42,22 @@ namespace Obfuz
 
         private static void RunObfuscate()
         {
+            ObfuzSettings settings = ObfuzSettings.Instance;
+            if (!settings.enable)
+            {
+                Debug.Log("Obfuscation is disabled.");
+                return;
+            }
+
             Debug.Log("Obfuscation begin...");
+            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+
 
             string originalPlayerScriptAssembliesPath = @"Library\Bee\PlayerScriptAssemblies";
-            string backupPlayerScriptAssembliesPath = @"Library\Bee\PlayerScriptAssemblies_Backup";
+            string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
             BashUtil.CopyDir(originalPlayerScriptAssembliesPath, backupPlayerScriptAssembliesPath);
 
-            var obfuzedDlls = new List<string> { "Assembly-CSharp" };
+
 
             var opt = new Obfuscator.Options
             {
@@ -59,17 +68,19 @@ namespace Obfuz
                     @"D:\UnityHubs\2022.3.60f1\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\il2cpp\Managed",
                    backupPlayerScriptAssembliesPath,
                 },
-                ObfuscatedAssemblyNames = obfuzedDlls,
-                outputDir = $"{backupPlayerScriptAssembliesPath}/obfuzed",
+                ObfuscatedAssemblyNames = settings.obfuscatedAssemblyNames.ToList(),
+                mappingXmlPath = settings.GetMappingFile(buildTarget),
+                outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
             };
             var obfuz = new Obfuscator(opt);
-            obfuz.DoIt();
+            obfuz.Run();
 
-            foreach (var dllName in obfuzedDlls)
+            foreach (var dllName in settings.obfuscatedAssemblyNames)
             {
                 string src = $"{opt.outputDir}/{dllName}.dll";
                 string dst = $"{originalPlayerScriptAssembliesPath}/{dllName}.dll";
                 File.Copy(src, dst, true);
+                Debug.Log($"obfuscate dll:{dst}");
             }
 
             Debug.Log("Obfuscation end.");

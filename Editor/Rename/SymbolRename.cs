@@ -17,6 +17,7 @@ namespace Obfuz
 
     public class SymbolRename
     {
+        private readonly string _mappingXmlPath;
         private readonly AssemblyCache _assemblyCache;
         private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies;
         private readonly HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
@@ -33,8 +34,10 @@ namespace Obfuz
             public List<CAArgument> arguments;
             public List<CANamedArgument> namedArguments;
         }
+
         public SymbolRename(ObfuscatorContext ctx)
         {
+            _mappingXmlPath = ctx.mappingXmlPath;
             _assemblyCache = ctx.assemblyCache;
             _obfuzAssemblies = ctx.assemblies;
             _renamePolicy = ctx.renamePolicy;
@@ -46,7 +49,7 @@ namespace Obfuz
             }
             BuildCustomAttributeArguments();
 
-            _renameRecordMap = new RenameRecordMap(Path.Combine(ctx.outputDir, "mapping.xml"));
+            _renameRecordMap = new RenameRecordMap(ctx.mappingXmlPath);
         }
 
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
@@ -721,6 +724,7 @@ namespace Obfuz
 
         public void Save()
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(_mappingXmlPath));
             _renameRecordMap.WriteXmlMappingFile();
         }
     }
