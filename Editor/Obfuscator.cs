@@ -28,6 +28,7 @@ namespace Obfuz
 
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
+        private readonly SymbolRename _symbolRename;
 
         public Obfuscator(Options options)
         {
@@ -36,6 +37,16 @@ namespace Obfuz
             _renamePolicy = new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), new XmlConfigRenamePolicy());
             //_nameMaker = new TestNameMaker();
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
+
+            var ctx = new ObfuscatorContext
+            {
+                assemblyCache = _assemblyCache,
+                assemblies = _obfuzAssemblies,
+                renamePolicy = _renamePolicy,
+                nameMaker = _nameMaker,
+                outputDir = _options.outputDir,
+            };
+            _symbolRename = new SymbolRename(ctx);
         }
 
         public void DoIt()
@@ -77,21 +88,14 @@ namespace Obfuz
 
         private void Rename()
         {
-            var ctx = new ObfuscatorContext
-            {
-                assemblyCache = _assemblyCache,
-                assemblies = _obfuzAssemblies,
-                renamePolicy = _renamePolicy,
-                nameMaker = _nameMaker,
-            };
-            var sr = new SymbolRename(ctx);
-            sr.Process();
+            _symbolRename.Process();
         }
 
         private void Save()
         {
             string outputDir = _options.outputDir;
             FileUtil.RecreateDir(outputDir);
+            _symbolRename.Save();
             foreach (var ass in _obfuzAssemblies)
             {
                 string outputFile = $"{outputDir}/{ass.module.Name}";

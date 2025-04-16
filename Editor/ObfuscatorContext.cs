@@ -26,5 +26,7 @@ namespace Obfuz
         public IRenamePolicy renamePolicy;
 
         public INameMaker nameMaker;
+
+        public string outputDir;
     }
 }
