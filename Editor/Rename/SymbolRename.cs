@@ -434,7 +434,7 @@ namespace Obfuz
                     groupNeedRenames.Add(group, needRename);
                     if (needRename)
                     {
-                        _renameRecordMap.InitAndAddRename(group, _nameMaker.GetNewName(method, method.Name));
+                        _renameRecordMap.InitAndAddRename(group, _renameRecordMap.TryGetExistRenameMapping(method, out var nn) ? nn : _nameMaker.GetNewName(method, method.Name));
                     }
                 }
                 if (!needRename)
@@ -546,7 +546,7 @@ namespace Obfuz
         private void Rename(ModuleDefMD mod)
         {
             string oldName = mod.Assembly.Name;
-            string newName = _nameMaker.GetNewName(mod, oldName);
+            string newName = _renameRecordMap.TryGetExistRenameMapping(mod, out var n) ? n :  _nameMaker.GetNewName(mod, oldName);
             _renameRecordMap.AddRename(mod, newName);
             mod.Assembly.Name = newName;
             mod.Name = $"{newName}.dll";
@@ -570,19 +570,21 @@ namespace Obfuz
             string moduleName = MetaUtil.GetModuleNameWithoutExt(type.Module.Name);
             string oldFullName = type.FullName;
             string oldNamespace = type.Namespace;
+
+            string oldName = type.Name;
+
             string newNamespace;
-            if (string.IsNullOrEmpty(oldNamespace))
+            string newName;
+            if (_renameRecordMap.TryGetExistRenameMapping(type, out var nns, out var nn))
             {
-                newNamespace = oldNamespace;
+                newNamespace = nns;
+                newName = nn;
             }
             else
             {
                 newNamespace = _nameMaker.GetNewNamespace(type, oldNamespace, true);
-                type.Namespace = newNamespace;
+                newName = _nameMaker.GetNewName(type, oldName);
             }
-
-            string oldName = type.Name;
-            string newName = _nameMaker.GetNewName(type, oldName);
 
             if (refTypeDefMeta != null)
             {
@@ -599,6 +601,7 @@ namespace Obfuz
                 }
             }
             type.Name = newName;
+            type.Namespace = newNamespace;
             string newFullName = type.FullName;
             _renameRecordMap.AddRename(type, newFullName);
             //Debug.Log($"rename typedef. assembly:{type.Module.Name} oldName:{oldFullName} => newName:{newFullName}");
@@ -607,7 +610,7 @@ namespace Obfuz
         private void Rename(FieldDef field, RefFieldMetas fieldMetas)
         {
             string oldName = field.Name;
-            string newName = _nameMaker.GetNewName(field, oldName);
+            string newName = _renameRecordMap.TryGetExistRenameMapping(field, out var nn) ? nn : _nameMaker.GetNewName(field, oldName);
             if (fieldMetas != null)
             {
                 foreach (var memberRef in fieldMetas.fieldRefs)
@@ -635,13 +638,12 @@ namespace Obfuz
         private void Rename(MethodDef method, RefMethodMetas refMethodMetas)
         {
             string oldName = method.Name;
-            string newName = _nameMaker.GetNewName(method, oldName);
+            string newName = _renameRecordMap.TryGetExistRenameMapping(method, out var nn) ? nn : _nameMaker.GetNewName(method, oldName);
             Rename(method, refMethodMetas, newName);
         }
 
         private void Rename(MethodDef method, RefMethodMetas refMethodMetas, string newName)
         {
-
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
             RenameMethodParams(method);
             RenameMethodBody(method);
@@ -690,7 +692,7 @@ namespace Obfuz
         private void Rename(EventDef eventDef)
         {
             string oldName = eventDef.Name;
-            string newName = _nameMaker.GetNewName(eventDef, eventDef.Name);
+            string newName = _renameRecordMap.TryGetExistRenameMapping(eventDef, out var nn) ? nn : _nameMaker.GetNewName(eventDef, eventDef.Name);
             _renameRecordMap.AddRename(eventDef, newName);
             eventDef.Name = newName;
         }
@@ -698,7 +700,7 @@ namespace Obfuz
         private void Rename(PropertyDef property, RefPropertyMetas refPropertyMetas)
         {
             string oldName = property.Name;
-            string newName = _nameMaker.GetNewName(property, oldName);
+            string newName = _renameRecordMap.TryGetExistRenameMapping(property, out var nn) ? nn : _nameMaker.GetNewName(property, oldName);
 
             if (refPropertyMetas != null)
             {

@@ -24,6 +24,7 @@ namespace Obfuz
             public string signature;
             public string oldName;
             public string newName;
+            public object renameMappingData;
         }
 
         private class RenameMappingField
@@ -112,19 +113,21 @@ namespace Obfuz
                 ModuleDefMD mod = ObfuzAssemblyInfo.module;
                 string name = mod.Assembly.Name;
                 nameMaker.AddPreservedName(mod, name);
-                _modRenames.Add(mod, new RenameRecord
-                {
-                    status = RenameStatus.NotRenamed,
-                    signature = name,
-                    oldName = name,
-                    newName = null,
-                });
 
                 RenameMappingAssembly rma = _assemblies.GetValueOrDefault(name);
                 if (rma != null && rma.status == RenameStatus.Renamed)
                 {
                     nameMaker.AddPreservedName(mod, rma.newAssName);
                 }
+
+                _modRenames.Add(mod, new RenameRecord
+                {
+                    status = RenameStatus.NotRenamed,
+                    signature = name,
+                    oldName = name,
+                    newName = null,
+                    renameMappingData = rma,
+                });
 
                 foreach (TypeDef type in mod.GetTypes())
                 {
@@ -145,6 +148,7 @@ namespace Obfuz
                         signature = fullTypeName,
                         oldName = fullTypeName,
                         newName = null,
+                        renameMappingData = rmt,
                     });
                     foreach (MethodDef method in type.Methods)
                     {
@@ -163,6 +167,7 @@ namespace Obfuz
                             signature = methodSig,
                             oldName = method.Name,
                             newName = null,
+                            renameMappingData = rmm,
                         });
                         foreach (Parameter param in method.Parameters)
                         {
@@ -193,6 +198,7 @@ namespace Obfuz
                             signature = fieldSig,
                             oldName = field.Name,
                             newName = null,
+                            renameMappingData = rmf,
                         });
                     }
                     foreach (PropertyDef property in type.Properties)
@@ -210,6 +216,7 @@ namespace Obfuz
                             signature = propertySig,
                             oldName = property.Name,
                             newName = null,
+                            renameMappingData = rmp,
                         });
                     }
                     foreach (EventDef eventDef in type.Events)
@@ -227,6 +234,7 @@ namespace Obfuz
                             signature = eventSig,
                             oldName = eventDef.Name,
                             newName = null,
+                            renameMappingData = rme,
                         });
                     }
                 }
@@ -551,17 +559,6 @@ namespace Obfuz
             });
         }
 
-        public bool TryGetRename(VirtualMethodGroup group, out string newName)
-        {
-            if (_virtualMethodGroups.TryGetValue(group, out var record))
-            {
-                newName = record.newName;
-                return true;
-            }
-            newName = null;
-            return false;
-        }
-
         public void AddRename(FieldDef field, string newName)
         {
             RenameRecord record = _fieldRenames[field];
@@ -581,6 +578,85 @@ namespace Obfuz
             RenameRecord record = _eventRenames[eventDef];
             record.status = RenameStatus.Renamed;
             record.newName = newName;
+        }
+
+        public bool TryGetExistRenameMapping(ModuleDefMD mod, out string newName)
+        {
+            if (_modRenames.TryGetValue(mod, out var record) && record.renameMappingData != null)
+            {
+                newName = ((RenameMappingAssembly)record.renameMappingData).newAssName;
+                return true;
+            }
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetExistRenameMapping(TypeDef type, out string newNamespace, out string newName)
+        {
+            if (_typeRenames.TryGetValue(type, out var record) && record.renameMappingData != null)
+            {
+                var rmt = (RenameMappingType)record.renameMappingData;
+                (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
+                return true;
+            }
+            newNamespace = null;
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetExistRenameMapping(MethodDef method, out string newName)
+        {
+            if (_methodRenames.TryGetValue(method, out var record) && record.renameMappingData != null)
+            {
+                newName = ((RenameMappingMethod)record.renameMappingData).newName;
+                return true;
+            }
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetExistRenameMapping(FieldDef field, out string newName)
+        {
+            if (_fieldRenames.TryGetValue(field, out var record) && record.renameMappingData != null)
+            {
+                newName = ((RenameMappingField)record.renameMappingData).newName;
+                return true;
+            }
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetExistRenameMapping(PropertyDef property, out string newName)
+        {
+            if (_propertyRenames.TryGetValue(property, out var record) && record.renameMappingData != null)
+            {
+                newName = ((RenameMappingProperty)record.renameMappingData).newName;
+                return true;
+            }
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetExistRenameMapping(EventDef eventDef, out string newName)
+        {
+            if (_eventRenames.TryGetValue(eventDef, out var record) && record.renameMappingData != null)
+            {
+                newName = ((RenameMappingEvent)record.renameMappingData).newName;
+                return true;
+            }
+            newName = null;
+            return false;
+        }
+
+        public bool TryGetRename(VirtualMethodGroup group, out string newName)
+        {
+            if (_virtualMethodGroups.TryGetValue(group, out var record))
+            {
+                newName = record.newName;
+                return true;
+            }
+            newName = null;
+            return false;
         }
     }
 }
