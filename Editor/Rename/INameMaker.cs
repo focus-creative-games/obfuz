@@ -4,11 +4,27 @@ namespace Obfuz.Rename
 {
     public interface INameMaker
     {
+        void AddPreservedName(ModuleDefMD mod, string name);
+        
+        void AddPreservedName(TypeDef typeDef, string name);
+
+        void AddPreservedNamespace(TypeDef typeDef, string name);
+
+        void AddPreservedName(MethodDef methodDef, string name);
+
+        void AddPreservedName(ParamDef paramDef, string name);
+
+        void AddPreservedName(FieldDef fieldDef, string name);
+
+        void AddPreservedName(PropertyDef propertyDef, string name);
+
+        void AddPreservedName(EventDef eventDef, string name);
+
         string GetNewName(ModuleDefMD mod, string originalName);
 
         string GetNewName(TypeDef typeDef, string originalName);
 
-        string GetNewNamespace(TypeDef typeDef, string originalNamespace);
+        string GetNewNamespace(TypeDef typeDef, string originalNamespace, bool reuse);
 
         string GetNewName(MethodDef methodDef, string originalName);
 

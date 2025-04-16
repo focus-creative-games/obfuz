@@ -101,16 +101,17 @@ namespace Obfuz
         public RenameRecordMap(string mappingFile)
         {
             _mappingFile = mappingFile;
-            LoadXmlMappingFile(mappingFile);
         }
 
 
-        public void Init(List<ObfuzAssemblyInfo> assemblies)
+        public void Init(List<ObfuzAssemblyInfo> assemblies, INameMaker nameMaker)
         {
+            LoadXmlMappingFile(_mappingFile);
             foreach (var ObfuzAssemblyInfo in assemblies)
             {
                 ModuleDefMD mod = ObfuzAssemblyInfo.module;
                 string name = mod.Assembly.Name;
+                nameMaker.AddPreservedName(mod, name);
                 _modRenames.Add(mod, new RenameRecord
                 {
                     status = RenameStatus.NotRenamed,
@@ -118,21 +119,48 @@ namespace Obfuz
                     oldName = name,
                     newName = null,
                 });
+
+                RenameMappingAssembly rma = _assemblies.GetValueOrDefault(name);
+                if (rma != null && rma.status == RenameStatus.Renamed)
+                {
+                    nameMaker.AddPreservedName(mod, rma.newAssName);
+                }
+
                 foreach (TypeDef type in mod.GetTypes())
                 {
+                    nameMaker.AddPreservedName(type, name);
+                    nameMaker.AddPreservedNamespace(type, type.Namespace);
+                    string fullTypeName = type.FullName;
+                    RenameMappingType rmt = rma?.types.GetValueOrDefault(fullTypeName);
+                    if (rmt != null)
+                    {
+                        var (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
+                        nameMaker.AddPreservedNamespace(type, newNamespace);
+                        nameMaker.AddPreservedName(type, newName);
+                    }
+
                     _typeRenames.Add(type, new RenameRecord
                     {
                         status = RenameStatus.NotRenamed,
-                        signature = type.FullName,
-                        oldName = type.FullName,
+                        signature = fullTypeName,
+                        oldName = fullTypeName,
                         newName = null,
                     });
                     foreach (MethodDef method in type.Methods)
                     {
+                        nameMaker.AddPreservedName(method, method.Name);
+                        string methodSig = TypeSigUtil.ComputeMethodDefSignature(method);
+                        nameMaker.AddPreservedName(method, method.Name);
+
+                        RenameMappingMethod rmm = rmt?.methods.GetValueOrDefault(methodSig);
+                        if (rmm != null)
+                        {
+                            nameMaker.AddPreservedName(method, rmm.newName);
+                        }
                         _methodRenames.Add(method, new RenameRecord
                         {
                             status = RenameStatus.NotRenamed,
-                            signature = TypeSigUtil.ComputeMethodDefSignature(method),
+                            signature = methodSig,
                             oldName = method.Name,
                             newName = null,
                         });
@@ -152,30 +180,51 @@ namespace Obfuz
                     }
                     foreach (FieldDef field in type.Fields)
                     {
+                        nameMaker.AddPreservedName(field, field.Name);
+                        string fieldSig = TypeSigUtil.ComputeFieldDefSignature(field);
+                        RenameMappingField rmf = rmt?.fields.GetValueOrDefault(fieldSig);
+                        if (rmf != null)
+                        {
+                            nameMaker.AddPreservedName(field, rmf.newName);
+                        }
                         _fieldRenames.Add(field, new RenameRecord
                         {
                             status = RenameStatus.NotRenamed,
-                            signature = TypeSigUtil.ComputeFieldDefSignature(field),
+                            signature = fieldSig,
                             oldName = field.Name,
                             newName = null,
                         });
                     }
                     foreach (PropertyDef property in type.Properties)
                     {
+                        nameMaker.AddPreservedName(property, property.Name);
+                        string propertySig = TypeSigUtil.ComputePropertyDefSignature(property);
+                        RenameMappingProperty rmp = rmt?.properties.GetValueOrDefault(propertySig);
+                        if (rmp != null)
+                        {
+                            nameMaker.AddPreservedName(property, rmp.newName);
+                        }
                         _propertyRenames.Add(property, new RenameRecord
                         {
                             status = RenameStatus.NotRenamed,
-                            signature = TypeSigUtil.ComputePropertyDefSignature(property),
+                            signature = propertySig,
                             oldName = property.Name,
                             newName = null,
                         });
                     }
                     foreach (EventDef eventDef in type.Events)
                     {
+                        nameMaker.AddPreservedName(eventDef, eventDef.Name);
+                        string eventSig = TypeSigUtil.ComputeEventDefSignature(eventDef);
+                        RenameMappingEvent rme = rmt?.events.GetValueOrDefault(eventSig);
+                        if (rme != null)
+                        {
+                            nameMaker.AddPreservedName(eventDef, rme.newName);
+                        }
                         _eventRenames.Add(eventDef, new RenameRecord
                         {
                             status = RenameStatus.NotRenamed,
-                            signature = TypeSigUtil.ComputeEventDefSignature(eventDef),
+                            signature = eventSig,
                             oldName = eventDef.Name,
                             newName = null,
                         });
@@ -202,8 +251,6 @@ namespace Obfuz
                 LoadAssemblyMapping(element);
             }
         }
-
-
 
         private void LoadAssemblyMapping(XmlElement ele)
         {
