@@ -51,7 +51,9 @@ namespace Obfuz
         {
             string filePath = SettingsPath;
             var arr = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
-            s_Instance = arr.Length > 0 ? arr[0] as ObfuzSettings : CreateInstance<ObfuzSettings>();
+            //Debug.Log($"typeof arr:{arr?.GetType()} arr[0]:{(arr != null && arr.Length > 0 ? arr[0].GetType(): null)}");
+
+            s_Instance = arr != null && arr.Length > 0 ? (ObfuzSettings)arr[0] : CreateInstance<ObfuzSettings>();
             return s_Instance;
         }
 

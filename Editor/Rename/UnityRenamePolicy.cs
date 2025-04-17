@@ -59,6 +59,10 @@ namespace Obfuz.Rename
             {
                 return false;
             }
+            if (typeDef.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            {
+                return false;
+            }
             return true;
         }
 
@@ -67,6 +71,10 @@ namespace Obfuz.Rename
             if (MetaUtil.IsInheritFromUnityObject(methodDef.DeclaringType))
             {
                 return !s_monoBehaviourEvents.Contains(methodDef.Name);
+            }
+            if (methodDef.DeclaringType.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            {
+                return false;
             }
             return true;
         }
@@ -77,6 +85,10 @@ namespace Obfuz.Rename
             if (MetaUtil.IsScriptOrSerializableType(typeDef))
             {
                 return !MetaUtil.IsSerializableField(fieldDef);
+            }
+            if (fieldDef.DeclaringType.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            {
+                return false;
             }
             return true;
         }

@@ -2,6 +2,7 @@ using dnlib.DotNet;
 using Obfuz.Rename;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
@@ -413,6 +414,22 @@ namespace Obfuz
                 }
                 root.AppendChild(assemblyNode);
             }
+            foreach (RenameMappingAssembly ass in _assemblies.Values)
+            {
+                if (_modRenames.Keys.Any(m => m.Assembly.Name == ass.oldAssName))
+                {
+                    continue;
+                }
+                var assemblyNode = doc.CreateElement("assembly");
+                assemblyNode.SetAttribute("name", ass.oldAssName);
+                assemblyNode.SetAttribute("newName", ass.status == RenameStatus.Renamed ? ass.newAssName : "");
+                assemblyNode.SetAttribute("status", ass.status.ToString());
+                foreach (var e in ass.types)
+                {
+                    WriteTypeMapping(assemblyNode, e.Key, e.Value);
+                }
+                root.AppendChild(assemblyNode);
+            }
             doc.Save(_mappingFile);
             Debug.Log($"Mapping file saved to {Path.GetFullPath(_mappingFile)}");
         }
@@ -447,6 +464,37 @@ namespace Obfuz
             }
         }
 
+
+
+        private void WriteTypeMapping(XmlElement assNode, string fullName, RenameMappingType type)
+        {
+            var typeNode = assNode.OwnerDocument.CreateElement("type");
+            typeNode.SetAttribute("fullName", fullName);
+            typeNode.SetAttribute("newFullName", type.status == RenameStatus.Renamed ? type.newFullName : "");
+            typeNode.SetAttribute("status", type.status.ToString());
+
+            foreach (var e in type.fields)
+            {
+                string signature = e.Key;
+                RenameMappingField field = e.Value;
+                WriteFieldMapping(typeNode, e.Key, e.Value);
+            }
+            foreach (var e in type.properties)
+            {
+                WritePropertyMapping(typeNode, e.Key, e.Value);
+            }
+            foreach (var e in type.events)
+            {
+                WriteEventMapping(typeNode, e.Key, e.Value);
+            }
+            foreach (var e in type.methods)
+            {
+                WriteMethodMapping(typeNode, e.Key, e.Value);
+            }
+
+            assNode.AppendChild(typeNode);
+        }
+
         private void WriteFieldMapping(XmlElement typeEle, FieldDef field)
         {
             if (!_fieldRenames.TryGetValue(field, out var record) || record.status == RenameStatus.NotRenamed)
@@ -456,6 +504,15 @@ namespace Obfuz
             var fieldNode = typeEle.OwnerDocument.CreateElement("field");
             fieldNode.SetAttribute("signature", record?.signature);
             fieldNode.SetAttribute("newName", record.newName);
+            //fieldNode.SetAttribute("status", record.status.ToString());
+            typeEle.AppendChild(fieldNode);
+        }
+
+        private void WriteFieldMapping(XmlElement typeEle, string signature, RenameMappingField field)
+        {
+            var fieldNode = typeEle.OwnerDocument.CreateElement("field");
+            fieldNode.SetAttribute("signature", signature);
+            fieldNode.SetAttribute("newName", field.newName);
             //fieldNode.SetAttribute("status", record.status.ToString());
             typeEle.AppendChild(fieldNode);
         }
@@ -473,6 +530,15 @@ namespace Obfuz
             typeEle.AppendChild(propertyNode);
         }
 
+        private void WritePropertyMapping(XmlElement typeEle, string signature, RenameMappingProperty property)
+        {
+            var propertyNode = typeEle.OwnerDocument.CreateElement("property");
+            propertyNode.SetAttribute("signature", signature);
+            propertyNode.SetAttribute("newName", property.newName);
+            //propertyNode.SetAttribute("status", record.status.ToString());
+            typeEle.AppendChild(propertyNode);
+        }
+
         private void WriteEventMapping(XmlElement typeEle, EventDef eventDef)
         {
             if (!_eventRenames.TryGetValue(eventDef, out var record) || record.status == RenameStatus.NotRenamed)
@@ -482,6 +548,14 @@ namespace Obfuz
             var eventNode = typeEle.OwnerDocument.CreateElement("event");
             eventNode.SetAttribute("signature", record.signature);
             eventNode.SetAttribute("newName", record.newName);
+            typeEle.AppendChild(eventNode);
+        }
+
+        private void WriteEventMapping(XmlElement typeEle, string signature, RenameMappingEvent eventDef)
+        {
+            var eventNode = typeEle.OwnerDocument.CreateElement("event");
+            eventNode.SetAttribute("signature", signature);
+            eventNode.SetAttribute("newName", eventDef.newName);
             typeEle.AppendChild(eventNode);
         }
 
@@ -505,6 +579,19 @@ namespace Obfuz
             typeEle.AppendChild(methodNode);
         }
 
+        private void WriteMethodMapping(XmlElement typeEle, string signature, RenameMappingMethod method)
+        {
+            var methodNode = typeEle.OwnerDocument.CreateElement("method");
+            methodNode.SetAttribute("signature", signature);
+            methodNode.SetAttribute("newName", method.newName);
+            //methodNode.SetAttribute("status", record != null ? record.status.ToString() : RenameStatus.NotRenamed.ToString());
+            foreach (RenameMappingMethodParam param in method.parameters)
+            {
+                WriteMethodParamMapping(methodNode, param);
+            }
+            typeEle.AppendChild(methodNode);
+        }
+
         private void WriteMethodParamMapping(XmlElement methodEle, ParamDef param)
         {
             if (!_paramRenames.TryGetValue(param, out var record) || record.status == RenameStatus.NotRenamed)
@@ -514,6 +601,15 @@ namespace Obfuz
             var paramNode = methodEle.OwnerDocument.CreateElement("param");
             paramNode.SetAttribute("index", param.Sequence.ToString());
             paramNode.SetAttribute("newName", record.newName);
+            //paramNode.SetAttribute("status", record.status.ToString());
+            methodEle.AppendChild(paramNode);
+        }
+
+        private void WriteMethodParamMapping(XmlElement methodEle, RenameMappingMethodParam param)
+        {
+            var paramNode = methodEle.OwnerDocument.CreateElement("param");
+            paramNode.SetAttribute("index", param.index.ToString());
+            paramNode.SetAttribute("newName", param.newName);
             //paramNode.SetAttribute("status", record.status.ToString());
             methodEle.AppendChild(paramNode);
         }

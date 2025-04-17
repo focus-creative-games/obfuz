@@ -2,8 +2,7 @@
     "name": "Obfuz",
     "rootNamespace": "",
     "references": [
-        "GUID:167b4b7f91c16bb4183f7298af665076",
-        "GUID:d6548fbf155e392419f0f6a6dcf078d9"
+        "GUID:167b4b7f91c16bb4183f7298af665076"
     ],
     "includePlatforms": [
         "Editor"
