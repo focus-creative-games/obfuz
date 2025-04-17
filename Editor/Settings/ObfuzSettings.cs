@@ -11,8 +11,11 @@ namespace Obfuz
         [Tooltip("enable Obfuz")]
         public bool enable = true;
 
-        [Tooltip("obfuscated assembly names(without .dll suffix)")]
-        public string[] obfuscatedAssemblyNames;
+        [Tooltip("obfuscation rule files for aot assemblies")]
+        public string[] aotRuleFiles;
+
+        [Tooltip("obfuscation rule files for hot update assemblies")]
+        public string[] hotUpdateRuleFiles;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 

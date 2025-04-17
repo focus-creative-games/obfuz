@@ -29,7 +29,8 @@ namespace Obfuz
 
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
-        private SerializedProperty _obfuscatedAssemblyNames;
+        private SerializedProperty _aotRuleFiles;
+        private SerializedProperty _hotUpdateRuleFiles;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -47,7 +48,8 @@ namespace Obfuz
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
-            _obfuscatedAssemblyNames = _serializedObject.FindProperty("obfuscatedAssemblyNames");
+            _aotRuleFiles = _serializedObject.FindProperty("aotRuleFiles");
+            _hotUpdateRuleFiles = _serializedObject.FindProperty("hotUpdateRuleFiles");
         }
 
         private void OnEditorFocused()
@@ -68,7 +70,8 @@ namespace Obfuz
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.PropertyField(_enable);
-                EditorGUILayout.PropertyField(_obfuscatedAssemblyNames);
+                EditorGUILayout.PropertyField(_aotRuleFiles);
+                EditorGUILayout.PropertyField(_hotUpdateRuleFiles);
 
                 if (EditorGUI.EndChangeCheck())
                 {

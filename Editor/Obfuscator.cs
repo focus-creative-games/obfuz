@@ -17,13 +17,14 @@ namespace Obfuz
         public class Options
         {
             public List<string> AssemblySearchDirs;
-            public List<string> ObfuscatedAssemblyNames;
+            public List<string> ObfuscationRuleFiles;
             public string mappingXmlPath;
             public string outputDir;
         }
 
         private readonly Options _options;
         private readonly AssemblyCache _assemblyCache;
+        private readonly ObfuscateRuleConfig _obfuscateRuleConfig;
 
         private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies = new List<ObfuzAssemblyInfo>();
 
@@ -31,11 +32,15 @@ namespace Obfuz
         private readonly INameMaker _nameMaker;
         private readonly SymbolRename _symbolRename;
 
+        public IList<string> ObfuscatedAssemblyNames => _obfuzAssemblies.Select(x => x.name).ToList();
+
         public Obfuscator(Options options)
         {
             _options = options;
             _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.AssemblySearchDirs.ToArray()));
-            _renamePolicy = new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), new XmlConfigRenamePolicy());
+            _obfuscateRuleConfig = new ObfuscateRuleConfig();
+            _obfuscateRuleConfig.LoadXmls(options.ObfuscationRuleFiles);
+            _renamePolicy = new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig);
             //_nameMaker = new TestNameMaker();
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
 
@@ -60,9 +65,14 @@ namespace Obfuz
 
         private void LoadAssemblies()
         {
-            foreach (string assName in _options.ObfuscatedAssemblyNames)
+            foreach (string assName in _obfuscateRuleConfig.ObfuscatedAssemblyNames)
             {
-                ModuleDefMD mod = _assemblyCache.LoadModule(assName);
+                ModuleDefMD mod = _assemblyCache.TryLoadModule(assName);
+                if (mod == null)
+                {
+                    Debug.Log($"assembly: {assName} not found! ignore.");
+                    continue;
+                }
                 var obfuzAsm = new ObfuzAssemblyInfo
                 {
                     name = assName,

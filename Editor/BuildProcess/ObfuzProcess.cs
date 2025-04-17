@@ -68,14 +68,14 @@ namespace Obfuz
                     @"D:\UnityHubs\2022.3.60f1\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\il2cpp\Managed",
                    backupPlayerScriptAssembliesPath,
                 },
-                ObfuscatedAssemblyNames = settings.obfuscatedAssemblyNames.ToList(),
+                ObfuscationRuleFiles = settings.aotRuleFiles.ToList(),
                 mappingXmlPath = settings.GetMappingFile(buildTarget),
                 outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
             };
             var obfuz = new Obfuscator(opt);
             obfuz.Run();
 
-            foreach (var dllName in settings.obfuscatedAssemblyNames)
+            foreach (var dllName in obfuz.ObfuscatedAssemblyNames)
             {
                 string src = $"{opt.outputDir}/{dllName}.dll";
                 string dst = $"{originalPlayerScriptAssembliesPath}/{dllName}.dll";

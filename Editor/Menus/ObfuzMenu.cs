@@ -3,20 +3,14 @@ using UnityEngine;
 
 namespace Obfuz
 {
-    public static class MenuProvider
+    public static class ObfuzMenu
     {
-
-        [MenuItem("Obfuz/About", priority = 0)]
-        public static void OpenAbout() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/intro");
 
         [MenuItem("Obfuz/Settings...", priority = 61)]
         public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/Obfuz");
 
         [MenuItem("Obfuz/Documents/Quick Start")]
         public static void OpenQuickStart() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/beginner/quickstart");
-
-        [MenuItem("Obfuz/Documents/Performance")]
-        public static void OpenPerformance() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/basic/performance");
 
         [MenuItem("Obfuz/Documents/FAQ")]
         public static void OpenFAQ() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/help/faq");
@@ -32,6 +26,9 @@ namespace Obfuz
 
         [MenuItem("Obfuz/Documents/Gitee")]
         public static void OpenGitee() => Application.OpenURL("https://gitee.com/focus-creative-games/obfuz");
+
+        [MenuItem("Obfuz/Documents/About")]
+        public static void OpenAbout() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/intro");
     }
 
 }
