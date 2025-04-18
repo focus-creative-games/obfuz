@@ -6,6 +6,7 @@ namespace Obfuz.Rename
     public class CombineRenamePolicy : IRenamePolicy
     {
         private readonly IRenamePolicy[] _policies;
+
         public CombineRenamePolicy(params IRenamePolicy[] policies)
         {
             _policies = policies;

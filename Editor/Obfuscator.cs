@@ -40,7 +40,7 @@ namespace Obfuz
             _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.AssemblySearchDirs.ToArray()));
             _obfuscateRuleConfig = new ObfuscateRuleConfig();
             _obfuscateRuleConfig.LoadXmls(options.ObfuscationRuleFiles);
-            _renamePolicy = new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig);
+            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
             //_nameMaker = new TestNameMaker();
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
 
