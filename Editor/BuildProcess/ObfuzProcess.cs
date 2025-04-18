@@ -69,7 +69,7 @@ namespace Obfuz
                    backupPlayerScriptAssembliesPath,
                 },
                 ObfuscationRuleFiles = settings.aotRuleFiles.ToList(),
-                mappingXmlPath = settings.GetMappingFile(buildTarget),
+                mappingXmlPath = settings.mappingFile,
                 outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
             };
             var obfuz = new Obfuscator(opt);

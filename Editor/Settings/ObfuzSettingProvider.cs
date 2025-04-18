@@ -29,6 +29,7 @@ namespace Obfuz
 
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
+        private SerializedProperty _mappingFile;
         private SerializedProperty _aotRuleFiles;
         private SerializedProperty _hotUpdateRuleFiles;
 
@@ -48,6 +49,7 @@ namespace Obfuz
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
+            _mappingFile = _serializedObject.FindProperty("mappingFile");
             _aotRuleFiles = _serializedObject.FindProperty("aotRuleFiles");
             _hotUpdateRuleFiles = _serializedObject.FindProperty("hotUpdateRuleFiles");
         }
@@ -70,6 +72,7 @@ namespace Obfuz
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.PropertyField(_enable);
+                EditorGUILayout.PropertyField(_mappingFile);
                 EditorGUILayout.PropertyField(_aotRuleFiles);
                 EditorGUILayout.PropertyField(_hotUpdateRuleFiles);
 

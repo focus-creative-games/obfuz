@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -11,6 +12,9 @@ namespace Obfuz
         [Tooltip("enable Obfuz")]
         public bool enable = true;
 
+        [Tooltip("path of mapping.xml")]
+        public string mappingFile = "Assets/Obfuz/mapping.xml";
+
         [Tooltip("obfuscation rule files for aot assemblies")]
         public string[] aotRuleFiles;
 
@@ -18,11 +22,6 @@ namespace Obfuz
         public string[] hotUpdateRuleFiles;
 
         public string ObfuzRootDir => $"Library/Obfuz";
-
-        public string GetMappingFile(BuildTarget target)
-        {
-            return $"{ObfuzRootDir}/{target}/mapping.xml";
-        }
 
         public string GetObfuscatedAssemblyOutputDir(BuildTarget target)
         {
