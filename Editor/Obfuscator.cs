@@ -30,7 +30,7 @@ namespace Obfuz
 
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
-        private readonly SymbolRename _symbolRename;
+        private SymbolRename _symbolRename;
 
         public IList<string> ObfuscatedAssemblyNames => _obfuzAssemblies.Select(x => x.name).ToList();
 
@@ -44,16 +44,6 @@ namespace Obfuz
             //_nameMaker = new TestNameMaker();
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
 
-            var ctx = new ObfuscatorContext
-            {
-                assemblyCache = _assemblyCache,
-                assemblies = _obfuzAssemblies,
-                renamePolicy = _renamePolicy,
-                nameMaker = _nameMaker,
-                mappingXmlPath = _options.mappingXmlPath,
-                outputDir = _options.outputDir,
-            };
-            _symbolRename = new SymbolRename(ctx);
         }
 
         public void Run()
@@ -100,6 +90,16 @@ namespace Obfuz
 
         private void Rename()
         {
+            var ctx = new ObfuscatorContext
+            {
+                assemblyCache = _assemblyCache,
+                assemblies = _obfuzAssemblies,
+                renamePolicy = _renamePolicy,
+                nameMaker = _nameMaker,
+                mappingXmlPath = _options.mappingXmlPath,
+                outputDir = _options.outputDir,
+            };
+            _symbolRename = new SymbolRename(ctx);
             _symbolRename.Process();
         }
 

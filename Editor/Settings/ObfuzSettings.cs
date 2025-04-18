@@ -15,11 +15,8 @@ namespace Obfuz
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/mapping.xml";
 
-        [Tooltip("obfuscation rule files for aot assemblies")]
-        public string[] aotRuleFiles;
-
-        [Tooltip("obfuscation rule files for hot update assemblies")]
-        public string[] hotUpdateRuleFiles;
+        [Tooltip("obfuscation rule files for assemblies")]
+        public string[] ruleFiles;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 

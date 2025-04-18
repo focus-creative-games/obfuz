@@ -30,8 +30,7 @@ namespace Obfuz
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
         private SerializedProperty _mappingFile;
-        private SerializedProperty _aotRuleFiles;
-        private SerializedProperty _hotUpdateRuleFiles;
+        private SerializedProperty _ruleFiles;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -50,8 +49,7 @@ namespace Obfuz
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
             _mappingFile = _serializedObject.FindProperty("mappingFile");
-            _aotRuleFiles = _serializedObject.FindProperty("aotRuleFiles");
-            _hotUpdateRuleFiles = _serializedObject.FindProperty("hotUpdateRuleFiles");
+            _ruleFiles = _serializedObject.FindProperty("ruleFiles");
         }
 
         private void OnEditorFocused()
@@ -73,8 +71,7 @@ namespace Obfuz
 
                 EditorGUILayout.PropertyField(_enable);
                 EditorGUILayout.PropertyField(_mappingFile);
-                EditorGUILayout.PropertyField(_aotRuleFiles);
-                EditorGUILayout.PropertyField(_hotUpdateRuleFiles);
+                EditorGUILayout.PropertyField(_ruleFiles);
 
                 if (EditorGUI.EndChangeCheck())
                 {

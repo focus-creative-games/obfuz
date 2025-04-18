@@ -68,7 +68,7 @@ namespace Obfuz
                     @"D:\UnityHubs\2022.3.60f1\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\il2cpp\Managed",
                    backupPlayerScriptAssembliesPath,
                 },
-                ObfuscationRuleFiles = settings.aotRuleFiles.ToList(),
+                ObfuscationRuleFiles = settings.ruleFiles.ToList(),
                 mappingXmlPath = settings.mappingFile,
                 outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
             };
