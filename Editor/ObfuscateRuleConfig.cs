@@ -124,7 +124,7 @@ namespace Obfuz
             public bool obfuscateName;
             public bool obfuscateNamespace;
 
-            public List<TypeRuleSpec> nestTypeRuleSpecs;
+            //public List<TypeRuleSpec> nestTypeRuleSpecs;
             public List<FieldRuleSpec> fieldRuleSpecs;
             public List<MethodRuleSpec> methodRuleSpecs;
             public List<PropertyRuleSpec> propertyRuleSpecs;
@@ -199,7 +199,7 @@ namespace Obfuz
             ruleName = "none",
             obfuscateName = false,
             obfuscateNamespace = false,
-            nestTypeRuleSpecs = new List<TypeRuleSpec>(),
+            //nestTypeRuleSpecs = new List<TypeRuleSpec>(),
             fieldRuleSpecs = new List<FieldRuleSpec> {  new FieldRuleSpec { rule = s_noneFieldRule} },
             methodRuleSpecs = new List<MethodRuleSpec> { new MethodRuleSpec { rule = s_noneMethodRule} },
             propertyRuleSpecs = new List<PropertyRuleSpec> { new PropertyRuleSpec { rule = s_nonePropertyRule} },
@@ -213,13 +213,13 @@ namespace Obfuz
             typeRuleSpecs = new List<TypeRuleSpec> { new TypeRuleSpec { rule = s_noneTypeRule } },
         };
 
-        static ObfuscateRuleConfig()
-        {
-            s_noneTypeRule.nestTypeRuleSpecs.Add(new TypeRuleSpec
-            {
-                rule = s_noneTypeRule,
-            });
-        }
+        //static ObfuscateRuleConfig()
+        //{
+        //    s_noneTypeRule.nestTypeRuleSpecs.Add(new TypeRuleSpec
+        //    {
+        //        rule = s_noneTypeRule,
+        //    });
+        //}
 
         private IRule GetOrParseRule(string ruleName, RuleType ruleType, XmlElement ele)
         {
@@ -303,7 +303,7 @@ namespace Obfuz
         {
             var rule = new AssemblyRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
             rule.typeRuleSpecs = new List<TypeRuleSpec>();
             foreach (XmlNode node in element.ChildNodes)
             {
@@ -328,9 +328,9 @@ namespace Obfuz
         {
             var rule = new TypeRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
-            rule.obfuscateNamespace = ParseBoolNoneOrFalse(element.GetAttribute("ob:namespace"));
-            rule.nestTypeRuleSpecs = new List<TypeRuleSpec>();
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
+            rule.obfuscateNamespace = ParseBoolNoneOrFalse(element.GetAttribute("ob-namespace"));
+            //rule.nestTypeRuleSpecs = new List<TypeRuleSpec>();
             rule.fieldRuleSpecs = new List<FieldRuleSpec>();
             rule.methodRuleSpecs = new List<MethodRuleSpec>();
             rule.propertyRuleSpecs = new List<PropertyRuleSpec>();
@@ -343,15 +343,15 @@ namespace Obfuz
                 }
                 switch (childElement.Name)
                 {
-                    case "nesttype":
-                    {
-                        var typeRuleSpec = new TypeRuleSpec();
-                        typeRuleSpec.nameMatcher = new NameMatcher(childElement.GetAttribute("name"));
-                        typeRuleSpec.modifierType = ParseModifierType(childElement.GetAttribute("modifier"));
-                        typeRuleSpec.rule = (TypeRule)GetOrParseRule(childElement.GetAttribute("rule"), RuleType.Type, childElement);
-                        rule.nestTypeRuleSpecs.Add(typeRuleSpec);
-                        break;
-                    }
+                    //case "nesttype":
+                    //{
+                    //    var typeRuleSpec = new TypeRuleSpec();
+                    //    typeRuleSpec.nameMatcher = new NameMatcher(childElement.GetAttribute("name"));
+                    //    typeRuleSpec.modifierType = ParseModifierType(childElement.GetAttribute("modifier"));
+                    //    typeRuleSpec.rule = (TypeRule)GetOrParseRule(childElement.GetAttribute("rule"), RuleType.Type, childElement);
+                    //    rule.nestTypeRuleSpecs.Add(typeRuleSpec);
+                    //    break;
+                    //}
                     case "field":
                     {
                         var fieldRuleSpec = new FieldRuleSpec();
@@ -371,6 +371,7 @@ namespace Obfuz
                         var propertyRulerSpec = new PropertyRuleSpec();
                         propertyRulerSpec.nameMatcher = new NameMatcher(childElement.GetAttribute("name"));
                         propertyRulerSpec.rule = (PropertyRule)GetOrParseRule(childElement.GetAttribute("rule"), RuleType.Property, childElement);
+                        rule.propertyRuleSpecs.Add(propertyRulerSpec);
                         break;
                     }
                     case "event":
@@ -400,9 +401,9 @@ namespace Obfuz
         {
             var rule = new MethodRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
-            rule.obfuscateParam = ParseBoolNoneOrFalse(element.GetAttribute("ob:param"));
-            rule.obfuscateBody = ParseBoolNoneOrFalse(element.GetAttribute("ob:body"));
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
+            rule.obfuscateParam = ParseBoolNoneOrFalse(element.GetAttribute("ob-param"));
+            rule.obfuscateBody = ParseBoolNoneOrFalse(element.GetAttribute("ob-body"));
             return rule;
         }
 
@@ -410,7 +411,7 @@ namespace Obfuz
         {
             var rule = new FieldRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
             return rule;
         }
 
@@ -418,7 +419,7 @@ namespace Obfuz
         {
             var rule = new PropertyRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
 
             foreach (XmlNode node in element.ChildNodes)
             {
@@ -456,7 +457,7 @@ namespace Obfuz
         {
             var rule = new EventRule();
             rule.ruleName = ruleName;
-            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob:name"));
+            rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
 
             foreach (XmlNode node in element.ChildNodes)
             {
@@ -566,6 +567,8 @@ namespace Obfuz
         {
             Debug.Log($"ObfuscateRule::LoadXml {xmlFile}");
             var doc = new XmlDocument();
+            //var nsManager = new XmlNamespaceManager(doc.NameTable);
+            //nsManager.AddNamespace("ob", "https://github.com/focus-creative-games/Obfuz"); // 绑定前缀到 URI
             doc.Load(xmlFile);
             var root = doc.DocumentElement;
             if (root.Name != "obfuz")
@@ -709,7 +712,7 @@ namespace Obfuz
             cache = new TypeDefComputeCache();
             _typeRenameCache.Add(typeDef, cache);
 
-            if (!_assemblyRuleSpecs.TryGetValue(typeDef.Module.Assembly.Name, out var assemblyRuleSpec))
+            if (!_assemblyRuleSpecs.TryGetValue(typeDef.Module.Assembly.Name, out var assemblyRuleSpec) || assemblyRuleSpec.rule == null)
             {
                 return cache;
             }
@@ -718,7 +721,7 @@ namespace Obfuz
             var totalMethodSpecFromPropertyAndEvents = new List<(MethodDef, MethodRuleSpec)>();
             foreach (var typeRule in assemblyRuleSpec.rule.typeRuleSpecs)
             {
-                if (!typeRule.nameMatcher.IsMatch(typeName) || !MatchModifier(typeRule.modifierType, typeDef))
+                if ((typeRule.nameMatcher != null && !typeRule.nameMatcher.IsMatch(typeName)) || !MatchModifier(typeRule.modifierType, typeDef))
                 {
                     continue;
                 }
@@ -729,49 +732,51 @@ namespace Obfuz
 
                 foreach (var eventDef in typeDef.Events)
                 {
-                    foreach (var eventRule in typeRule.rule.eventRuleSpecs)
+                    foreach (var eventSpec in typeRule.rule.eventRuleSpecs)
                     {
-                        if (!eventRule.nameMatcher.IsMatch(eventDef.Name))
+                        if (eventSpec.nameMatcher != null && !eventSpec.nameMatcher.IsMatch(eventDef.Name))
                         {
                             continue;
                         }
-                        if (!eventRule.rule.obfuscateName)
+                        EventRule eventRule = eventSpec.rule;
+                        if (!eventRule.obfuscateName)
                         {
                             cache.notObfuscatedEvents.Add(eventDef);
                         }
-                        if (eventDef.AddMethod != null && MatchModifier(eventRule.rule.add.modifierType, eventDef.AddMethod))
+                        if (eventDef.AddMethod != null && eventRule.add != null && MatchModifier(eventRule.add.modifierType, eventDef.AddMethod))
                         {
-                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.AddMethod,eventRule.rule.add));
+                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.AddMethod,eventRule.add));
                         }
-                        if (eventDef.RemoveMethod != null && MatchModifier(eventRule.rule.remove.modifierType, eventDef.RemoveMethod))
+                        if (eventDef.RemoveMethod != null && eventRule.remove != null && MatchModifier(eventRule.remove.modifierType, eventDef.RemoveMethod))
                         {
-                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.RemoveMethod, eventRule.rule.remove));
+                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.RemoveMethod, eventRule.remove));
                         }
-                        if (eventDef.InvokeMethod != null && MatchModifier(eventRule.rule.fire.modifierType, eventDef.InvokeMethod))
+                        if (eventDef.InvokeMethod != null && eventRule.fire != null && MatchModifier(eventRule.fire.modifierType, eventDef.InvokeMethod))
                         {
-                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.InvokeMethod, eventRule.rule.fire));
+                            totalMethodSpecFromPropertyAndEvents.Add((eventDef.InvokeMethod, eventRule.fire));
                         }
                     }
                 }
                 foreach (var propertyDef in typeDef.Properties)
                 {
-                    foreach (var propertyRule in typeRule.rule.propertyRuleSpecs)
+                    foreach (var propertySpec in typeRule.rule.propertyRuleSpecs)
                     {
-                        if (!propertyRule.nameMatcher.IsMatch(propertyDef.Name))
+                        if (propertySpec.nameMatcher != null && !propertySpec.nameMatcher.IsMatch(propertyDef.Name))
                         {
                             continue;
                         }
-                        if (!propertyRule.rule.obfuscateName)
+                        PropertyRule propertyRule = propertySpec.rule;
+                        if (!propertyRule.obfuscateName)
                         {
                             cache.notObfuscatedProperties.Add(propertyDef);
                         }
-                        if (propertyDef.GetMethod != null && MatchModifier(propertyRule.rule.getter.modifierType, propertyDef.GetMethod))
+                        if (propertyDef.GetMethod != null && propertyRule.getter != null && MatchModifier(propertyRule.getter.modifierType, propertyDef.GetMethod))
                         {
-                            totalMethodSpecFromPropertyAndEvents.Add((propertyDef.GetMethod, propertyRule.rule.getter));
+                            totalMethodSpecFromPropertyAndEvents.Add((propertyDef.GetMethod, propertyRule.getter));
                         }
-                        if (propertyDef.SetMethod != null && MatchModifier(propertyRule.rule.setter.modifierType, propertyDef.SetMethod))
+                        if (propertyDef.SetMethod != null && propertyRule.setter != null && MatchModifier(propertyRule.setter.modifierType, propertyDef.SetMethod))
                         {
-                            totalMethodSpecFromPropertyAndEvents.Add((propertyDef.SetMethod, propertyRule.rule.setter));
+                            totalMethodSpecFromPropertyAndEvents.Add((propertyDef.SetMethod, propertyRule.setter));
                         }
                     }
                 }
@@ -780,7 +785,7 @@ namespace Obfuz
                 {
                     foreach (var fieldRule in typeRule.rule.fieldRuleSpecs)
                     {
-                        if (fieldRule.nameMatcher.IsMatch(fieldDef.Name) && MatchModifier(fieldRule.modifierType, fieldDef) && !fieldRule.rule.obfuscateName)
+                        if ((fieldRule.nameMatcher == null || fieldRule.nameMatcher.IsMatch(fieldDef.Name)) && MatchModifier(fieldRule.modifierType, fieldDef) && !fieldRule.rule.obfuscateName)
                         {
                             cache.notObfuscatedFields.Add(fieldDef);
                         }
@@ -806,7 +811,7 @@ namespace Obfuz
                     }
                     foreach (MethodRuleSpec methodSpec in totalMethodSpecs)
                     {
-                        if (!methodSpec.nameMatcher.IsMatch(methodDef.Name) || !MatchModifier(methodSpec.modifierType, methodDef))
+                        if ((methodSpec.nameMatcher != null && !methodSpec.nameMatcher.IsMatch(methodDef.Name)) || !MatchModifier(methodSpec.modifierType, methodDef))
                         {
                             continue;
                         }
@@ -846,21 +851,21 @@ namespace Obfuz
         {
             TypeDef typeDef = fieldDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
-            return cache.notObfuscatedFields.Contains(fieldDef);
+            return !cache.notObfuscatedFields.Contains(fieldDef);
         }
 
         public bool NeedRename(PropertyDef propertyDef)
         {
             TypeDef typeDef = propertyDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
-            return cache.notObfuscatedProperties.Contains(propertyDef);
+            return !cache.notObfuscatedProperties.Contains(propertyDef);
         }
 
         public bool NeedRename(EventDef eventDef)
         {
             TypeDef typeDef = eventDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
-            return cache.notObfuscatedEvents.Contains(eventDef);
+            return !cache.notObfuscatedEvents.Contains(eventDef);
         }
 
         public bool NeedRename(ParamDef paramDef)

@@ -11,6 +11,10 @@ namespace Obfuz
 
         public NameMatcher(string nameOrPattern)
         {
+            if (string.IsNullOrEmpty(nameOrPattern))
+            {
+                nameOrPattern = "*";
+            }
             _str = nameOrPattern;
             _regex = nameOrPattern.Contains('*') || nameOrPattern.Contains('?') ? new Regex(WildcardToRegex(nameOrPattern)) : null;
         }
