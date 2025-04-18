@@ -430,6 +430,7 @@ namespace Obfuz
                 }
                 root.AppendChild(assemblyNode);
             }
+            Directory.CreateDirectory(Path.GetDirectoryName(_mappingFile));
             doc.Save(_mappingFile);
             Debug.Log($"Mapping file saved to {Path.GetFullPath(_mappingFile)}");
         }
@@ -463,8 +464,6 @@ namespace Obfuz
                 assNode.AppendChild(typeNode);
             }
         }
-
-
 
         private void WriteTypeMapping(XmlElement assNode, string fullName, RenameMappingType type)
         {
