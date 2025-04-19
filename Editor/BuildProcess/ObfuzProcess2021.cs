@@ -18,29 +18,40 @@ namespace Obfuz
 #if UNITY_2021 || UNITY_2020_1_OR_NEWER
     internal class ObfuzProcess2021 : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
-        private static bool s_inBuild = false;
         private static bool s_obfuscated = false;
 
         public int callbackOrder => 10000;
 
+        [InitializeOnLoadMethod]
+        private static void Init()
+        {
+            CompilationPipeline.compilationFinished += OnCompilationFinished;
+        }
+
         public void OnPreprocessBuild(BuildReport report)
         {
-            s_inBuild = true;
             s_obfuscated = false;
-
-            CompilationPipeline.compilationFinished += OnCompilationFinished;
         }
 
         private static string GetScriptAssembliesPath(object obj)
         {
+#if UNITY_2021
             object settings = obj.GetType().GetProperty("settings").GetValue(obj);
             string path = (string)settings.GetType().GetProperty("OutputDirectory").GetValue(settings);
-            return path;
+#elif UNITY_2020
+            return "Library/PlayerScriptAssemblies";
+#else
+            throw new Exception();
+#endif
         }
 
-        private void OnCompilationFinished(object obj)
+        private static void OnCompilationFinished(object obj)
         {
-            if (s_inBuild && !s_obfuscated)
+            if (!BuildPipeline.isBuildingPlayer)
+            {
+                return;
+            }
+            if (!s_obfuscated)
             {
                 RunObfuscate(GetScriptAssembliesPath(obj));
                 s_obfuscated = true;
@@ -49,9 +60,7 @@ namespace Obfuz
 
         public void OnPostprocessBuild(BuildReport report)
         {
-            s_inBuild = false;
             s_obfuscated = false;
-            CompilationPipeline.compilationFinished -= OnCompilationFinished;
         }
 
         private static void RunObfuscate(string scriptAssembliesPath)
@@ -76,8 +85,15 @@ namespace Obfuz
             {
                 AssemblySearchDirs = new List<string>
                 {
+#if UNITY_2021_1_OR_NEWER
                     Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
                     Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api"),
+#elif UNITY_2020
+                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api/Facades"),
+                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api"),
+#else
+                    #error "Unsupported Unity version"
+#endif
                     Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
                    backupPlayerScriptAssembliesPath,
                 },
@@ -100,4 +116,4 @@ namespace Obfuz
         }
     }
 #endif
-}
+                }

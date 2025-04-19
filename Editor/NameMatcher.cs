@@ -16,7 +16,7 @@ namespace Obfuz
                 nameOrPattern = "*";
             }
             _str = nameOrPattern;
-            _regex = nameOrPattern.Contains('*') || nameOrPattern.Contains('?') ? new Regex(WildcardToRegex(nameOrPattern)) : null;
+            _regex = nameOrPattern.Contains("*") || nameOrPattern.Contains("?") ? new Regex(WildcardToRegex(nameOrPattern)) : null;
         }
 
         public static string WildcardToRegex(string pattern)

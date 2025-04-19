@@ -16,7 +16,7 @@ namespace Obfuz
             }
         }
 
-        public static V GetValueOrDefault<K, V>(IDictionary<K, V> dic, K key)
+        public static V GetValueOrDefault<K, V>(this IDictionary<K, V> dic, K key)
         {
             return dic.TryGetValue(key, out  V v) ? v : default(V);
         }

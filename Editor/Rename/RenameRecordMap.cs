@@ -252,7 +252,7 @@ namespace Obfuz
             var root = doc.DocumentElement;
             foreach (XmlNode node in root.ChildNodes)
             {
-                if (node is not XmlElement element)
+                if (!(node is XmlElement element))
                 {
                     continue;
                 }
@@ -273,11 +273,11 @@ namespace Obfuz
             {
                 oldAssName = assemblyName,
                 newAssName = newAssemblyName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = (RenameStatus)System.Enum.Parse(typeof(RenameStatus), ele.Attributes["status"].Value),
             };
             foreach (XmlNode node in ele.ChildNodes)
             {
-                if (node is not XmlElement element)
+                if (!(node is XmlElement element))
                 {
                     continue;
                 }
@@ -298,11 +298,11 @@ namespace Obfuz
             {
                 oldFullName = typeName,
                 newFullName = newTypeName,
-                status = System.Enum.Parse<RenameStatus>(ele.Attributes["status"].Value),
+                status = (RenameStatus)System.Enum.Parse(typeof(RenameStatus), ele.Attributes["status"].Value),
             };
             foreach (XmlNode node in ele.ChildNodes)
             {
-                if (node is not XmlElement c)
+                if (!(node is XmlElement c))
                 {
                     continue;
                 }
@@ -330,7 +330,7 @@ namespace Obfuz
             };
             foreach (XmlNode node in ele.ChildNodes)
             {
-                if (node is not XmlElement c)
+                if (!(node is XmlElement c))
                 {
                     continue;
                 }

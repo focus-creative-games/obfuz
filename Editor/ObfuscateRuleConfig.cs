@@ -307,7 +307,7 @@ namespace Obfuz
             rule.typeRuleSpecs = new List<TypeRuleSpec>();
             foreach (XmlNode node in element.ChildNodes)
             {
-                if (node is not XmlElement childElement)
+                if (!(node is XmlElement childElement))
                 {
                     continue;
                 }
@@ -337,7 +337,7 @@ namespace Obfuz
             rule.eventRuleSpecs = new List<EventRuleSpec>();
             foreach (XmlNode node in element.ChildNodes)
             {
-                if (node is not XmlElement childElement)
+                if (!(node is XmlElement childElement))
                 {
                     continue;
                 }
@@ -423,7 +423,7 @@ namespace Obfuz
 
             foreach (XmlNode node in element.ChildNodes)
             {
-                if (node is not XmlElement childElement)
+                if (!(node is XmlElement childElement))
                 {
                     continue;
                 }
@@ -461,7 +461,7 @@ namespace Obfuz
 
             foreach (XmlNode node in element.ChildNodes)
             {
-                if (node is not XmlElement childElement)
+                if (!(node is XmlElement childElement))
                 {
                     continue;
                 }
@@ -577,7 +577,7 @@ namespace Obfuz
             }
             foreach (XmlNode node in root.ChildNodes)
             {
-                if (node is not XmlElement element)
+                if (!(node is XmlElement element))
                 {
                     continue;
                 }

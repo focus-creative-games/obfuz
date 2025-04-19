@@ -259,7 +259,7 @@ namespace Obfuz
                     {
                         return type;
                     }
-                    return type.IsClassSig ? new ClassSig(typeDef) : new ValueTypeSig(typeDef);
+                    return type.IsClassSig ? (TypeSig)new ClassSig(typeDef) : new ValueTypeSig(typeDef);
                 }
                 case ElementType.Array:
                 {
