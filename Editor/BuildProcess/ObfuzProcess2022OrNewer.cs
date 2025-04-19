@@ -9,10 +9,13 @@ using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEditor.Compilation;
 
 namespace Obfuz
 {
-    internal class ObfuzProcess : IPreprocessBuildWithReport, IProcessSceneWithReport, IPostprocessBuildWithReport
+
+#if UNITY_2022_1_OR_NEWER
+    internal class ObfuzProcess2022OrNewer : IPreprocessBuildWithReport, IProcessSceneWithReport, IPostprocessBuildWithReport
     {
         private static bool s_inBuild = false;
         private static bool s_obfuscated = false;
@@ -23,6 +26,17 @@ namespace Obfuz
         {
             s_inBuild = true;
             s_obfuscated = false;
+
+            //CompilationPipeline.compilationFinished += OnCompilationFinished;
+        }
+
+        private void OnCompilationFinished(object obj)
+        {
+            if (s_inBuild && !s_obfuscated)
+            {
+                RunObfuscate();
+                s_obfuscated = true;
+            }
         }
 
         public void OnProcessScene(Scene scene, BuildReport report)
@@ -38,6 +52,7 @@ namespace Obfuz
         {
             s_inBuild = false;
             s_obfuscated = false;
+            //CompilationPipeline.compilationFinished -= OnCompilationFinished;
         }
 
         private static void RunObfuscate()
@@ -55,17 +70,17 @@ namespace Obfuz
 
             string originalPlayerScriptAssembliesPath = @"Library\Bee\PlayerScriptAssemblies";
             string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
-            BashUtil.CopyDir(originalPlayerScriptAssembliesPath, backupPlayerScriptAssembliesPath);
+            FileUtil.CopyDir(originalPlayerScriptAssembliesPath, backupPlayerScriptAssembliesPath);
 
-
+            string applicationContentsPath = EditorApplication.applicationContentsPath;
 
             var opt = new Obfuscator.Options
             {
                 AssemblySearchDirs = new List<string>
                 {
-                    @"D:\UnityHubs\2022.3.60f1\Editor\Data\MonoBleedingEdge\lib\mono\unityaot-win32\Facades",
-                    @"D:\UnityHubs\2022.3.60f1\Editor\Data\MonoBleedingEdge\lib\mono\unityaot-win32",
-                    @"D:\UnityHubs\2022.3.60f1\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations\il2cpp\Managed",
+                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
+                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api"),
+                    Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
                    backupPlayerScriptAssembliesPath,
                 },
                 ObfuscationRuleFiles = settings.ruleFiles.ToList(),
@@ -86,4 +101,5 @@ namespace Obfuz
             Debug.Log("Obfuscation end.");
         }
     }
+#endif
 }
