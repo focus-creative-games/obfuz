@@ -36,10 +36,7 @@ namespace Obfuz
 
         private static string GetScriptAssembliesPath()
         {
-#if UNITY_2021_1_OR_NEWER
-            //object settings = obj.GetType().GetProperty("settings").GetValue(obj);
-            //string path = (string)settings.GetType().GetProperty("OutputDirectory").GetValue(settings);
-            //return path;
+#if UNITY_2022_1_OR_NEWER
             return "Library/Bee/PlayerScriptAssemblies";
 #else
             return "Library/PlayerScriptAssemblies";
