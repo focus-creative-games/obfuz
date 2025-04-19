@@ -14,7 +14,7 @@ using UnityEditor.Compilation;
 namespace Obfuz
 {
 
-#if UNITY_2022_1_OR_NEWER
+#if DISABLE
     internal class ObfuzProcess2022OrNewer : IPreprocessBuildWithReport, IProcessSceneWithReport, IPostprocessBuildWithReport
     {
         private static bool s_inBuild = false;

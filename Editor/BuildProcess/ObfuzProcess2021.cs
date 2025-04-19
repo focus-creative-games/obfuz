@@ -15,7 +15,7 @@ using System.Reflection;
 namespace Obfuz
 {
 
-#if UNITY_2019 || UNITY_2020 || UNITY_2021
+#if UNITY_2019 || UNITY_2020 || UNITY_2021 || UNITY_2022
     internal class ObfuzProcess2021 : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
@@ -35,9 +35,11 @@ namespace Obfuz
 
         private static string GetScriptAssembliesPath(object obj)
         {
-#if UNITY_2021
-            object settings = obj.GetType().GetProperty("settings").GetValue(obj);
-            string path = (string)settings.GetType().GetProperty("OutputDirectory").GetValue(settings);
+#if UNITY_2021_1_OR_NEWER
+            //object settings = obj.GetType().GetProperty("settings").GetValue(obj);
+            //string path = (string)settings.GetType().GetProperty("OutputDirectory").GetValue(settings);
+            //return path;
+            return "Library/Bee/PlayerScriptAssemblies";
 #else
             return "Library/PlayerScriptAssemblies";
 #endif
