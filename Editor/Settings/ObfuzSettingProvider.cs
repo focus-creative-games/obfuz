@@ -31,6 +31,7 @@ namespace Obfuz
         private SerializedProperty _enable;
         private SerializedProperty _mappingFile;
         private SerializedProperty _ruleFiles;
+        private SerializedProperty _extraAssemblySearchDirs;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -50,6 +51,7 @@ namespace Obfuz
             _enable = _serializedObject.FindProperty("enable");
             _mappingFile = _serializedObject.FindProperty("mappingFile");
             _ruleFiles = _serializedObject.FindProperty("ruleFiles");
+            _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
         }
 
         private void OnEditorFocused()
@@ -72,6 +74,7 @@ namespace Obfuz
                 EditorGUILayout.PropertyField(_enable);
                 EditorGUILayout.PropertyField(_mappingFile);
                 EditorGUILayout.PropertyField(_ruleFiles);
+                EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
 
                 if (EditorGUI.EndChangeCheck())
                 {

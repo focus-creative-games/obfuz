@@ -18,6 +18,9 @@ namespace Obfuz
         [Tooltip("obfuscation rule files for assemblies")]
         public string[] ruleFiles;
 
+        [Tooltip("extra assembly search dirs")]
+        public string[] extraAssemblySearchDirs;
+
         public string ObfuzRootDir => $"Library/Obfuz";
 
         public string GetObfuscatedAssemblyOutputDir(BuildTarget target)

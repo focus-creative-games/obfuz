@@ -94,7 +94,7 @@ namespace Obfuz
 #endif
                     Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
                    backupPlayerScriptAssembliesPath,
-                },
+                }.Concat(settings.extraAssemblySearchDirs).ToList(),
                 ObfuscationRuleFiles = settings.ruleFiles.ToList(),
                 mappingXmlPath = settings.mappingFile,
                 outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
