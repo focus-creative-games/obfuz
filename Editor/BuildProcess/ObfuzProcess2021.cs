@@ -15,7 +15,7 @@ using System.Reflection;
 namespace Obfuz
 {
 
-#if UNITY_2021 || UNITY_2020_1_OR_NEWER
+#if UNITY_2019 || UNITY_2020 || UNITY_2021
     internal class ObfuzProcess2021 : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
@@ -38,10 +38,8 @@ namespace Obfuz
 #if UNITY_2021
             object settings = obj.GetType().GetProperty("settings").GetValue(obj);
             string path = (string)settings.GetType().GetProperty("OutputDirectory").GetValue(settings);
-#elif UNITY_2020
-            return "Library/PlayerScriptAssemblies";
 #else
-            throw new Exception();
+            return "Library/PlayerScriptAssemblies";
 #endif
         }
 
@@ -88,7 +86,7 @@ namespace Obfuz
 #if UNITY_2021_1_OR_NEWER
                     Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
                     Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api"),
-#elif UNITY_2020
+#elif UNITY_2020 || UNITY_2019
                     Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api/Facades"),
                     Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api"),
 #else
