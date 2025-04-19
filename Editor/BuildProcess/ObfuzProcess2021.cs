@@ -31,9 +31,10 @@ namespace Obfuz
         public void OnPreprocessBuild(BuildReport report)
         {
             s_obfuscated = false;
+            FileUtil.RemoveDir(GetScriptAssembliesPath());
         }
 
-        private static string GetScriptAssembliesPath(object obj)
+        private static string GetScriptAssembliesPath()
         {
 #if UNITY_2021_1_OR_NEWER
             //object settings = obj.GetType().GetProperty("settings").GetValue(obj);
@@ -53,7 +54,7 @@ namespace Obfuz
             }
             if (!s_obfuscated)
             {
-                RunObfuscate(GetScriptAssembliesPath(obj));
+                RunObfuscate(GetScriptAssembliesPath());
                 s_obfuscated = true;
             }
         }
@@ -92,7 +93,7 @@ namespace Obfuz
                     Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api/Facades"),
                     Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api"),
 #else
-                    #error "Unsupported Unity version"
+#error "Unsupported Unity version"
 #endif
                     Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
                    backupPlayerScriptAssembliesPath,
@@ -116,4 +117,4 @@ namespace Obfuz
         }
     }
 #endif
-                }
+        }
