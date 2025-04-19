@@ -15,7 +15,7 @@ using System.Reflection;
 namespace Obfuz
 {
 
-#if UNITY_2019 || UNITY_2020 || UNITY_2021 || UNITY_2022
+#if UNITY_2019_1_OR_NEWER
     internal class ObfuzProcess2021 : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
