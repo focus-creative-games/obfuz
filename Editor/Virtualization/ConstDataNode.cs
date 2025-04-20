@@ -2,7 +2,7 @@
 
 namespace Obfuz.Virtualization
 {
-    public class ConstPrimitiveDataNode : DataNodeAny
+    public class ConstDataNode : DataNodeAny
     {
 
         public override void Compile(CompileContext ctx)
@@ -10,11 +10,11 @@ namespace Obfuz.Virtualization
 
             switch (Type)
             {
-                case DataNodeType.Byte:
-                {
-                    // create ldloc.i4 
-                    break;
-                }
+                //case DataNodeType.Byte:
+                //{
+                //    // create ldloc.i4 
+                //    break;
+                //}
                 case DataNodeType.Int32:
                 {
                     // create ldloc.i4
@@ -38,6 +38,18 @@ namespace Obfuz.Virtualization
                 case DataNodeType.Null:
                 {
                     // create ldnull
+                    break;
+                }
+                case DataNodeType.String:
+                {
+                    // create ldstr
+                    break;
+                }
+                case DataNodeType.Bytes:
+                {
+                    // create ldstr
+
+                    // RuntimeHelpers.InitializeArray(array, fieldHandle);
                     break;
                 }
                 default:

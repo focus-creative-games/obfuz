@@ -1,7 +1,9 @@
 ﻿namespace Obfuz.Virtualization
 {
-    public class CreateExpressionOptions
+    public struct CreateExpressionOptions
     {
         public IRandom random;
+        public IDataNodeCreator expressionCreator;
+        public int depth;
     }
 }

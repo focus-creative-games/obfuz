@@ -27,6 +27,7 @@
     public abstract class DataNodeAny : DataNodeBase
     {
         private object _value;
+
         public override object Value
         {
             get => _value;

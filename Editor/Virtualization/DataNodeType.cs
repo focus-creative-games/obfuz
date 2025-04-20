@@ -2,7 +2,7 @@
 {
     public enum DataNodeType
     {
-        Byte,
+        //Byte,
         Int32,
         Int64,
         Float32,

@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 
 namespace Obfuz.Virtualization
 {
-    public class ConstBytesDataNode : DataNodeAny
+    public class RvaBytesNode : DataNodeBase<byte[]>
     {
 
         public override void Compile(CompileContext ctx)
         {
 
-
-            // create ldstr
-            // RuntimeHelpers.InitializeArray(array, fieldHandle);
         }
     }
 }
