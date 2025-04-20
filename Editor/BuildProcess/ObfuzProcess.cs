@@ -16,7 +16,7 @@ namespace Obfuz
 {
 
 #if UNITY_2019_1_OR_NEWER
-    internal class ObfuzProcess2021 : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+    internal class ObfuzProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
 

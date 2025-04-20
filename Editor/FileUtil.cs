@@ -15,7 +15,7 @@ namespace Obfuz
         {
             if (log)
             {
-                UnityEngine.Debug.Log($"[BashUtil] RemoveDir dir:{dir}");
+                UnityEngine.Debug.Log($"removeDir dir:{dir}");
             }
 
             int maxTryCount = 5;
@@ -41,7 +41,7 @@ namespace Obfuz
                 }
                 catch (Exception e)
                 {
-                    UnityEngine.Debug.LogError($"[BashUtil] RemoveDir:{dir} with exception:{e}. try count:{i}");
+                    UnityEngine.Debug.LogError($"removeDir:{dir} with exception:{e}. try count:{i}");
                     Thread.Sleep(100);
                 }
             }
@@ -79,7 +79,7 @@ namespace Obfuz
         {
             if (log)
             {
-                UnityEngine.Debug.Log($"[BashUtil] CopyDir {src} => {dst}");
+                UnityEngine.Debug.Log($"copyDir {src} => {dst}");
             }
             RemoveDir(dst);
             Directory.CreateDirectory(dst);
