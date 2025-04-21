@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
 using UnityEditor;
@@ -11,6 +12,9 @@ namespace Obfuz
     {
         [Tooltip("enable Obfuz")]
         public bool enable = true;
+
+        [Tooltip("obfuscation assembly names")]
+        public string[] obfuscationAssemblyNames;
 
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/mapping.xml";

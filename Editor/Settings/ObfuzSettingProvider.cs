@@ -29,6 +29,7 @@ namespace Obfuz
 
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
+        private SerializedProperty _obfuscationAssemblyNames;
         private SerializedProperty _mappingFile;
         private SerializedProperty _ruleFiles;
         private SerializedProperty _extraAssemblySearchDirs;
@@ -49,6 +50,7 @@ namespace Obfuz
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
+            _obfuscationAssemblyNames = _serializedObject.FindProperty("obfuscationAssemblyNames");
             _mappingFile = _serializedObject.FindProperty("mappingFile");
             _ruleFiles = _serializedObject.FindProperty("ruleFiles");
             _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
@@ -72,6 +74,7 @@ namespace Obfuz
                 EditorGUI.BeginChangeCheck();
 
                 EditorGUILayout.PropertyField(_enable);
+                EditorGUILayout.PropertyField(_obfuscationAssemblyNames);
                 EditorGUILayout.PropertyField(_mappingFile);
                 EditorGUILayout.PropertyField(_ruleFiles);
                 EditorGUILayout.PropertyField(_extraAssemblySearchDirs);

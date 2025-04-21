@@ -23,10 +23,8 @@ namespace Obfuz
 
         public List<ObfuzAssemblyInfo> assemblies;
 
-        public IRenamePolicy renamePolicy;
-
-        public INameMaker nameMaker;
-
+        public List<string> obfuscationAssemblyNames;
+        public List<string> obfuscationRuleFiles;
         public string mappingXmlPath;
 
         public string outputDir;

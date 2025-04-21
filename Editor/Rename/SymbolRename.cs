@@ -21,6 +21,7 @@ namespace Obfuz
         private readonly AssemblyCache _assemblyCache;
         private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies;
         private readonly HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
+        private readonly ObfuscateRuleConfig _obfuscateRuleConfig;
         private readonly IRenamePolicy _renamePolicy;
         private readonly INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
@@ -40,8 +41,10 @@ namespace Obfuz
             _mappingXmlPath = ctx.mappingXmlPath;
             _assemblyCache = ctx.assemblyCache;
             _obfuzAssemblies = ctx.assemblies;
-            _renamePolicy = ctx.renamePolicy;
-            _nameMaker = ctx.nameMaker;
+            _obfuscateRuleConfig = new ObfuscateRuleConfig(ctx.obfuscationAssemblyNames);
+            _obfuscateRuleConfig.LoadXmls(ctx.obfuscationRuleFiles);
+            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
+            _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
 
             foreach (var mod in ctx.assemblies)
             {

@@ -160,8 +160,6 @@ namespace Obfuz
 
         private readonly Dictionary<string, AssemblyRuleSpec> _assemblyRuleSpecs = new Dictionary<string, AssemblyRuleSpec>();
 
-        public List<string> ObfuscatedAssemblyNames => _assemblyRuleSpecs.Keys.ToList();
-
 
         private static readonly MethodRule s_noneMethodRule = new MethodRule
         {
@@ -520,6 +518,10 @@ namespace Obfuz
                 {
                     throw new Exception($"Invalid xml file, assembly name is empty");
                 }
+                if (!_obfuscationAssemblyNames.Contains(assemblyName))
+                {
+                    throw new Exception($"unknown assembly name:{assemblyName}, not in ObfuzSettings.obfuscationAssemblyNames");
+                }
                 if (_assemblyRuleSpecs.ContainsKey(assemblyName))
                 {
                     throw new Exception($"Invalid xml file, duplicate assembly name {assemblyName}");
@@ -702,6 +704,13 @@ namespace Obfuz
         }
 
         private readonly Dictionary<TypeDef, TypeDefComputeCache> _typeRenameCache = new Dictionary<TypeDef, TypeDefComputeCache>();
+
+        private readonly HashSet<string> _obfuscationAssemblyNames;
+
+        public ObfuscateRuleConfig(List<string> obfuscationAssemblyNames)
+        {
+            this._obfuscationAssemblyNames = obfuscationAssemblyNames.ToHashSet();
+        }
 
         private TypeDefComputeCache GetOrCreateTypeDefRenameComputeCache(TypeDef typeDef)
         {

@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Rename;
+using Obfuz.Virtualization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,46 +17,60 @@ namespace Obfuz
     {
         public class Options
         {
-            public List<string> AssemblySearchDirs;
-            public List<string> ObfuscationRuleFiles;
+            public List<string> obfuscationAssemblyNames;
+            public List<string> assemblySearchDirs;
+            public List<string> obfuscationRuleFiles;
             public string mappingXmlPath;
             public string outputDir;
         }
 
         private readonly Options _options;
         private readonly AssemblyCache _assemblyCache;
-        private readonly ObfuscateRuleConfig _obfuscateRuleConfig;
 
         private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies = new List<ObfuzAssemblyInfo>();
 
-        private readonly IRenamePolicy _renamePolicy;
-        private readonly INameMaker _nameMaker;
-        private SymbolRename _symbolRename;
 
-        public IList<string> ObfuscatedAssemblyNames => _obfuzAssemblies.Select(x => x.name).ToList();
+        private readonly List<string> _obfuscationAssemblyNames;
+
+        public IList<string> ObfuscationAssemblyNames => _obfuscationAssemblyNames;
+
+        private readonly ObfuzPipeline _pipeline = new ObfuzPipeline();
+
+        private readonly ObfuscatorContext _ctx;
 
         public Obfuscator(Options options)
         {
             _options = options;
-            _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.AssemblySearchDirs.ToArray()));
-            _obfuscateRuleConfig = new ObfuscateRuleConfig();
-            _obfuscateRuleConfig.LoadXmls(options.ObfuscationRuleFiles);
-            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
-            //_nameMaker = new TestNameMaker();
-            _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
+            _obfuscationAssemblyNames = options.obfuscationAssemblyNames;
+            _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.assemblySearchDirs.ToArray()));
+
+            _pipeline.AddPass(new DataVirtualizationPass());
+            _pipeline.AddPass(new RenameSymbolPass());
+
+
+            _ctx = new ObfuscatorContext
+            {
+                assemblyCache = _assemblyCache,
+                assemblies = _obfuzAssemblies,
+                obfuscationAssemblyNames = _obfuscationAssemblyNames,
+                obfuscationRuleFiles = options.obfuscationRuleFiles,
+                mappingXmlPath = _options.mappingXmlPath,
+                outputDir = options.outputDir,
+            };
 
         }
 
         public void Run()
         {
             LoadAssemblies();
-            Rename();
-            Save();
+            _pipeline.Start(_ctx);
+            DoObfuscation();
+            OnObfuscationFinished();
         }
 
         private void LoadAssemblies()
         {
-            foreach (string assName in _obfuscateRuleConfig.ObfuscatedAssemblyNames)
+            foreach (string assName in _obfuscationAssemblyNames)
             {
                 ModuleDefMD mod = _assemblyCache.TryLoadModule(assName);
                 if (mod == null)
@@ -88,26 +103,20 @@ namespace Obfuz
             }
         }
 
-        private void Rename()
-        {
-            var ctx = new ObfuscatorContext
-            {
-                assemblyCache = _assemblyCache,
-                assemblies = _obfuzAssemblies,
-                renamePolicy = _renamePolicy,
-                nameMaker = _nameMaker,
-                mappingXmlPath = _options.mappingXmlPath,
-                outputDir = _options.outputDir,
-            };
-            _symbolRename = new SymbolRename(ctx);
-            _symbolRename.Process();
-        }
-
-        private void Save()
+        private void DoObfuscation()
         {
             string outputDir = _options.outputDir;
             FileUtil.RecreateDir(outputDir);
-            _symbolRename.Save();
+
+            _pipeline.Run(_ctx);
+        }
+
+        private void OnObfuscationFinished()
+        {
+            string outputDir = _options.outputDir;
+
+            _pipeline.Stop(_ctx);
+
             foreach (var ass in _obfuzAssemblies)
             {
                 string outputFile = $"{outputDir}/{ass.module.Name}";
