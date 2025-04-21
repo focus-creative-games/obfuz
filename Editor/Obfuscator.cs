@@ -46,6 +46,7 @@ namespace Obfuz
 
             _pipeline.AddPass(new DataVirtualizationPass());
             _pipeline.AddPass(new RenameSymbolPass());
+            _pipeline.AddPass(new CleanUpInstructionPass());
 
 
             _ctx = new ObfuscatorContext
