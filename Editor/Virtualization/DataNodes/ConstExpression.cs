@@ -2,6 +2,9 @@
 
 namespace Obfuz.Virtualization
 {
+    [NodeOutput(DataNodeType.Int32)]
+    [NodeOutput(DataNodeType.Int64)]
+    [NodeOutput(DataNodeType.Bytes)]
     public class ConstExpression : DataNodeAny
     {
         public IFunction function;

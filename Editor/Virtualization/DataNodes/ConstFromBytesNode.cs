@@ -11,7 +11,9 @@ namespace Obfuz.Virtualization
 
         public override void Compile(CompileContext ctx)
         {
-
+            // only support Int32, int64, bytes.
+            // string can only create from StringFromBytesNode
+            // x = memcpy array.GetRange(index, length);
         }
     }
 }

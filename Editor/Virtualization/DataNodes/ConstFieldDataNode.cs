@@ -7,7 +7,6 @@ namespace Obfuz.Virtualization
 
         public override void Compile(CompileContext ctx)
         {
-
             switch (Type)
             {
                 //case DataNodeType.Byte:
@@ -33,11 +32,6 @@ namespace Obfuz.Virtualization
                 case DataNodeType.Float64:
                 {
                     // create ldloc.r8
-                    break;
-                }
-                case DataNodeType.Null:
-                {
-                    // create ldnull
                     break;
                 }
                 case DataNodeType.String:
