@@ -1,4 +1,5 @@
-﻿using Obfuz.Utils;
+﻿using Obfuz.Emit;
+using Obfuz.Utils;
 
 namespace Obfuz.Virtualization
 {

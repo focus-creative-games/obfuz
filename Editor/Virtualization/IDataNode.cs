@@ -13,6 +13,8 @@ namespace Obfuz.Virtualization
 
         object Value { get; }
 
+        void Init(CreateExpressionOptions options);
+
         void Compile(CompileContext ctx);
     }
 }

@@ -23,18 +23,24 @@ namespace Obfuz.Virtualization
 
         public override void Stop(ObfuscatorContext ctx)
         {
-
+            _dataObfuscator.Stop();
         }
 
         public override void Process(ObfuscatorContext ctx)
         {
             foreach (var ass in ctx.assemblies)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                // ToArray to avoid modify list exception
+                foreach (TypeDef type in ass.module.GetTypes().ToArray())
                 {
-                    foreach (MethodDef method in type.Methods)
+                    if (type.Name.StartsWith("$Obfuz$"))
                     {
-                        if (!method.HasBody || !_dataObfuscatorPolicy.NeedObfuscateMethod(method))
+                        continue;
+                    }
+                    // ToArray to avoid modify list exception
+                    foreach (MethodDef method in type.Methods.ToArray())
+                    {
+                        if (!method.HasBody || method.Name.StartsWith("$Obfuz$") || !_dataObfuscatorPolicy.NeedObfuscateMethod(method))
                         {
                             continue;
                         }

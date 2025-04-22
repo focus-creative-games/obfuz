@@ -9,10 +9,11 @@ namespace Obfuz.Virtualization
     {
         private readonly Dictionary<DataNodeType, List<IFunction>> _functions = new Dictionary<DataNodeType, List<IFunction>>();
 
-        private readonly IRandom _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
+        private readonly IRandom _random;
 
-        public RandomDataNodeCreator()
+        public RandomDataNodeCreator(IRandom random)
         {
+            _random = random;
             var int32Funcs = new List<IFunction>()
             {
                 new Int32FunctionAdd(),
@@ -29,7 +30,8 @@ namespace Obfuz.Virtualization
             }
             if (options.depth >= 2)
             {
-                return new ConstDataNode() { Type = type, Value = value };
+                //return new ConstDataNode() { Type = type, Value = value };
+                return new ConstFromFieldRvaDataNode() { Type = type, Value = value };
             }
             var func = funcs[options.random.NextInt(funcs.Count)];
             ++options.depth;

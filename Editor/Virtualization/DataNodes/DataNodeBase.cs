@@ -1,4 +1,6 @@
-﻿namespace Obfuz.Virtualization
+﻿using dnlib.DotNet;
+
+namespace Obfuz.Virtualization
 {
     public abstract class DataNodeBase : IDataNode
     {
@@ -17,6 +19,11 @@
         public string StringValue => (string)Value;
 
         public byte[] BytesValue => (byte[])Value;
+
+        public virtual void Init(CreateExpressionOptions options)
+        {
+
+        }
 
         public abstract void Compile(CompileContext ctx);
     }

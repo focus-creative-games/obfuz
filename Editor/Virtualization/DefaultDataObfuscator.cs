@@ -1,5 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +9,16 @@ namespace Obfuz.Virtualization
 {
     public class DefaultDataObfuscator : IDataObfuscator
     {
-        private readonly RandomDataNodeCreator _nodeCreator = new RandomDataNodeCreator();
+        private readonly IRandom _random;
+        private readonly RandomDataNodeCreator _nodeCreator;
+        private readonly RvaDataAllocator _rvaDataAllocator;
+
+        public DefaultDataObfuscator()
+        {
+            _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
+            _nodeCreator = new RandomDataNodeCreator(_random);
+            _rvaDataAllocator = new RvaDataAllocator(_random);
+        }
 
         public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
         {
@@ -16,6 +27,7 @@ namespace Obfuz.Virtualization
             {
                 method = method,
                 output = obfuscatedInstructions,
+                rvaDataAllocator = _rvaDataAllocator,
             };
             node.Compile(ctx);
             //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value));
@@ -45,6 +57,11 @@ namespace Obfuz.Virtualization
         public void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
         {
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
+        }
+
+        public void Stop()
+        {
+            _rvaDataAllocator.SetFieldsRVA();
         }
     }
 }
