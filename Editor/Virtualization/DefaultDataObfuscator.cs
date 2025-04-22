@@ -12,7 +12,13 @@ namespace Obfuz.Virtualization
         public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
         {
             IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int32, value);
-            obfuscatedInstructions.Add(Instruction.CreateLdcI4(value));
+            var ctx = new CompileContext
+            {
+                method = method,
+                obfuscatedInstructions = obfuscatedInstructions,
+            };
+            node.Compile(ctx);
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value));
         }
 
         public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)

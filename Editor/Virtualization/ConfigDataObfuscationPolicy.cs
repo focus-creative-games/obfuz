@@ -16,12 +16,12 @@ namespace Obfuz.Virtualization
 
         public override bool NeedObfuscateInt(MethodDef method, int value)
         {
-            return value > 10000;
+            return value > 10000 || value < -10000;
         }
 
         public override bool NeedObfuscateLong(MethodDef method, long value)
         {
-            return value > 10000;
+            return value > 10000 || value < -10000;
         }
 
         public override bool NeedObfuscateFloat(MethodDef method, float value)

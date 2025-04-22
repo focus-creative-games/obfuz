@@ -137,9 +137,12 @@ namespace Obfuz.Virtualization
                 {
                     // current instruction may be the target of control flow instruction, so we can't remove it directly.
                     // we replace it with nop now, then remove it in CleanUpInstructionPass
-                    inst.OpCode = OpCodes.Nop;
-                    inst.Operand = null;
-                    resultInstructions.AddRange(obfuscatedInstructions);
+                    inst.OpCode = obfuscatedInstructions[0].OpCode;
+                    inst.Operand = obfuscatedInstructions[0].Operand;
+                    for (int k = 1; k < obfuscatedInstructions.Count; k++)
+                    {
+                        resultInstructions.Add(obfuscatedInstructions[k]);
+                    }
                 }
             }
 
