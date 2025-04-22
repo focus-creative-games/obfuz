@@ -8,6 +8,6 @@ namespace Obfuz.Virtualization
     public class CompileContext
     {
         public MethodDef method;
-        public List<Instruction> obfuscatedInstructions;
+        public List<Instruction> output;
     }
 }

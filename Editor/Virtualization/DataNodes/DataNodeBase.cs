@@ -6,6 +6,18 @@
 
         public abstract object Value { get; set; }
 
+        public int IntValue => (int)Value;
+
+        public long LongValue => (long) Value;
+
+        public float FloatValue => (float)Value;
+
+        public double DoubleValue => (double)Value;
+
+        public string StringValue => (string)Value;
+
+        public byte[] BytesValue => (byte[])Value;
+
         public abstract void Compile(CompileContext ctx);
     }
 

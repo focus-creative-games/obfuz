@@ -15,10 +15,10 @@ namespace Obfuz.Virtualization
             var ctx = new CompileContext
             {
                 method = method,
-                obfuscatedInstructions = obfuscatedInstructions,
+                output = obfuscatedInstructions,
             };
             node.Compile(ctx);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value));
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value));
         }
 
         public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)

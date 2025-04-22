@@ -33,7 +33,7 @@ namespace Obfuz.Virtualization
             }
             var func = funcs[options.random.NextInt(funcs.Count)];
             ++options.depth;
-            return func.CreateCallable(type, value, options);
+            return func.CreateExpr(type, value, options);
         }
 
         public IDataNode CreateRandom(DataNodeType type, object value)

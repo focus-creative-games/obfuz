@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dnlib.DotNet.Emit;
+using System;
 
 namespace Obfuz.Virtualization
 {
@@ -17,48 +18,18 @@ namespace Obfuz.Virtualization
             // so we only need to deal int32 and int64
             switch (Type)
             {
-                //case DataNodeType.Byte:
-                //{
-                //    // create ldloc.i4 
-                //    break;
-                //}
                 case DataNodeType.Int32:
                 {
                     // create ldloc.i4
+                    ctx.output.Add(Instruction.CreateLdcI4(IntValue));
                     break;
                 }
                 case DataNodeType.Int64:
                 {
                     // create ldloc.i8
+                    ctx.output.Add(Instruction.Create(OpCodes.Ldc_I8, LongValue));
                     break;
                 }
-                //case DataNodeType.Float32:
-                //{
-                //    // create ldloc.r4
-                //    break;
-                //}
-                //case DataNodeType.Float64:
-                //{
-                //    // create ldloc.r8
-                //    break;
-                //}
-                //case DataNodeType.Null:
-                //{
-                //    // create ldnull
-                //    break;
-                //}
-                //case DataNodeType.String:
-                //{
-                //    // create ldstr
-                //    break;
-                //}
-                //case DataNodeType.Bytes:
-                //{
-                //    // create ldstr
-
-                //    // RuntimeHelpers.InitializeArray(array, fieldHandle);
-                //    break;
-                //}
                 default:
                 {
                     throw new NotImplementedException($"Type:{Type} not implemented");

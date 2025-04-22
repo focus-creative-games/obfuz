@@ -21,7 +21,7 @@ namespace Obfuz.Virtualization
 
         public override void Compile(CompileContext ctx)
         {
-
+            function.Compile(ctx, inputs, result);
         }
     }
 }

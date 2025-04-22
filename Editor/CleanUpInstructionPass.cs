@@ -12,11 +12,6 @@ namespace Obfuz
     {
         public override void Process(ObfuscatorContext ctx)
         {
-            // TODO remove all nop instructions
-        }
-
-        public override void Start(ObfuscatorContext ctx)
-        {
             foreach (var ass in ctx.assemblies)
             {
                 foreach (TypeDef type in ass.module.GetTypes())
@@ -29,10 +24,15 @@ namespace Obfuz
                             body.SimplifyBranches();
                             body.OptimizeMacros();
                             body.OptimizeBranches();
+                            // TODO remove dup
                         }
                     }
                 }
             }
+        }
+
+        public override void Start(ObfuscatorContext ctx)
+        {
         }
 
         public override void Stop(ObfuscatorContext ctx)

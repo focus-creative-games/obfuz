@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using dnlib.DotNet.Emit;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +12,18 @@ namespace Obfuz.Virtualization
 
         public abstract void CreateArguments(DataNodeType type, object value, CreateExpressionOptions options, List<ConstValue> args);
 
-        public ConstExpression CreateCallable(DataNodeType type, object value, CreateExpressionOptions options)
+        public abstract void CompileSelf(CompileContext ctx, List<Instruction> output);
+
+        public virtual void Compile(CompileContext ctx, List<IDataNode> inputs, ConstValue result)
+        {
+            foreach (var input in inputs)
+            {
+                input.Compile(ctx);
+            }
+            CompileSelf(ctx, ctx.output);
+        }
+
+        public ConstExpression CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)
         {
             var args = new List<ConstValue>();
             CreateArguments(type, value, options, args);

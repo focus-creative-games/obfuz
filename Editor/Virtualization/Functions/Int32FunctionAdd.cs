@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dnlib.DotNet.Emit;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -20,6 +21,11 @@ namespace Obfuz.Virtualization.Functions
             int op2 = value - op1;
             args.Add(new ConstValue(DataNodeType.Int32, op1));
             args.Add(new ConstValue(DataNodeType.Int32, op2));
+        }
+
+        public override void CompileSelf(CompileContext ctx, List<Instruction> output)
+        {
+            output.Add(Instruction.Create(OpCodes.Add));
         }
     }
 }

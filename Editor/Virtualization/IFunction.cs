@@ -1,9 +1,13 @@
-﻿namespace Obfuz.Virtualization
+﻿using System.Collections.Generic;
+
+namespace Obfuz.Virtualization
 {
     public interface IFunction
     {
         DataNodeType ReturnType { get; }
 
-        ConstExpression CreateCallable(DataNodeType type, object value, CreateExpressionOptions options);
+        ConstExpression CreateExpr(DataNodeType type, object value, CreateExpressionOptions options);
+
+        void Compile(CompileContext ctx, List<IDataNode> inputs, ConstValue result);
     }
 }
