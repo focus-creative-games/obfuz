@@ -121,6 +121,7 @@ namespace Obfuz.Virtualization
                     }
                     case OperandType.InlineString:
                     {
+                        obfuscatedInstructions.Clear();
                         //RuntimeHelpers.InitializeArray
                         string value = (string)inst.Operand;
                         if (_dataObfuscatorPolicy.NeedObfuscateString(method, value))
@@ -143,7 +144,7 @@ namespace Obfuz.Virtualization
             }
 
             instructions.Clear();
-            foreach (var obInst in obfuscatedInstructions)
+            foreach (var obInst in resultInstructions)
             {
                 instructions.Add(obInst);
             }
