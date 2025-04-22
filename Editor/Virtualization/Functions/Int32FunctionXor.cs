@@ -24,7 +24,7 @@ namespace Obfuz.Virtualization.Functions
 
         public override void CompileSelf(CompileContext ctx, List<Instruction> output)
         {
-            output.Add(Instruction.Create(OpCodes.And));
+            output.Add(Instruction.Create(OpCodes.Xor));
         }
     }
 }

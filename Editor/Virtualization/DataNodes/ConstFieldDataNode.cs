@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Obfuz.Virtualization
 {
@@ -41,8 +42,8 @@ namespace Obfuz.Virtualization
                 }
                 case DataNodeType.Bytes:
                 {
-                    // create ldstr
-
+                    // ldsfld 
+                    // ldtoken 
                     // RuntimeHelpers.InitializeArray(array, fieldHandle);
                     break;
                 }

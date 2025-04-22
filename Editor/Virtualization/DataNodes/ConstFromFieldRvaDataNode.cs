@@ -116,7 +116,7 @@ namespace Obfuz.Virtualization
                     ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                     output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.offset));
                     output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
-                    output.Add(Instruction.Create(OpCodes.Newarr, new SZArraySig(mod.CorLibTypes.Byte).ToTypeDefOrRef()));
+                    output.Add(Instruction.Create(OpCodes.Newarr, mod.CorLibTypes.Byte.ToTypeDefOrRef()));
                     output.Add(Instruction.Create(OpCodes.Ldc_I4, 0));
                     output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
                     output.Add(Instruction.Create(OpCodes.Call, convertMethod));

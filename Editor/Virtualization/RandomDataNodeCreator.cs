@@ -30,10 +30,11 @@ namespace Obfuz.Virtualization
             {
                 throw new System.Exception($"No functions available for type {type}");
             }
-            if (options.depth >= 4)
+            if (options.depth >= 2)
             {
                 //return new ConstDataNode() { Type = type, Value = value };
-                return _random.NextInt(100) < 50 ?
+                //return _random.NextInt(100) < 50 ?
+                return true ?
                     new ConstFromFieldRvaDataNode() { Type = type, Value = value } :
                     new ConstDataNode() { Type = type, Value = value };
             }

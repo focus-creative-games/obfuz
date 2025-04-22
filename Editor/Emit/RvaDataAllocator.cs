@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -23,12 +24,14 @@ namespace Obfuz.Emit
         }
     }
 
-    public class RvaDataAllocator
+    public class ModuleRvaDataAllocator
     {
         // randomized
         const int maxRvaDataSize = 0x100;
 
+        private readonly ModuleDef _module;
         private readonly IRandom _random;
+
 
         class RvaField
         {
@@ -53,49 +56,50 @@ namespace Obfuz.Emit
 
         private TypeDef _rvaTypeDef;
 
-        private readonly Dictionary<(ModuleDef, int), TypeDef> _dataHolderTypeBySizes = new Dictionary<(ModuleDef, int), TypeDef>();
+        private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
 
-        public RvaDataAllocator(IRandom random)
+        public ModuleRvaDataAllocator(ModuleDef mod, IRandom random)
         {
+            _module = mod;
             _random = random;
         }
 
-        private (FieldDef, FieldDef) CreateDataHolderRvaField(ModuleDef mod, TypeDef dataHolderType)
+        private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
         {
             if (_rvaTypeDef == null)
             {
-                mod.EnableTypeDefFindCache = false;
-                //_rvaTypeDef = mod.Find("$ObfuzRVA$", false);
+                _module.EnableTypeDefFindCache = false;
+                //_rvaTypeDef = _module.Find("$ObfuzRVA$", false);
                 //if (_rvaTypeDef != null)
                 //{
                 //    throw new Exception($"can't obfuscate a obfuscated assembly");
                 //}
-                ITypeDefOrRef objectTypeRef = mod.Import(typeof(object));
-                _rvaTypeDef = new TypeDefUser("$Obfuz$RVA$",objectTypeRef);
-                mod.Types.Add(_rvaTypeDef);
-                mod.EnableTypeDefFindCache = true;
+                ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
+                _rvaTypeDef = new TypeDefUser("$Obfuz$RVA$", objectTypeRef);
+                _module.Types.Add(_rvaTypeDef);
+                _module.EnableTypeDefFindCache = true;
             }
 
 
-            var holderField = new FieldDefUser($"$RVA_Data{_rvaTypeDef.Fields.Count}",  new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
+            var holderField = new FieldDefUser($"$RVA_Data{_rvaTypeDef.Fields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
             holderField.DeclaringType = _rvaTypeDef;
 
-            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaTypeDef.Fields.Count}", new FieldSig(new SZArraySig(mod.CorLibTypes.Byte)), FieldAttributes.Static);
+            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaTypeDef.Fields.Count}", new FieldSig(new SZArraySig(_module.CorLibTypes.Byte)), FieldAttributes.Static);
             runtimeValueField.DeclaringType = _rvaTypeDef;
             return (holderField, runtimeValueField);
         }
 
-        private TypeDef GetDataHolderType(ModuleDef mod, int size)
+        private TypeDef GetDataHolderType(int size)
         {
             size = (size + 15) & ~15; // align to 6 bytes
-            if (_dataHolderTypeBySizes.TryGetValue((mod, size), out var type))
+            if (_dataHolderTypeBySizes.TryGetValue(size, out var type))
                 return type;
-            var dataHolderType = new TypeDefUser($"$ObfuzRVA$DataHolder{size}", mod.Import(typeof(ValueType)));
+            var dataHolderType = new TypeDefUser($"$ObfuzRVA$DataHolder{size}", _module.Import(typeof(ValueType)));
             dataHolderType.Layout = TypeAttributes.ExplicitLayout;
             dataHolderType.PackingSize = 1;
             dataHolderType.ClassSize = (uint)size;
-            _dataHolderTypeBySizes.Add((mod, size), dataHolderType);
-            mod.Types.Add(dataHolderType);
+            _dataHolderTypeBySizes.Add(size, dataHolderType);
+            _module.Types.Add(dataHolderType);
             return dataHolderType;
         }
 
@@ -104,10 +108,10 @@ namespace Obfuz.Emit
             return (size + alignment - 1) & ~(alignment - 1);
         }
 
-        private RvaField CreateRvaField(ModuleDef mod, int size)
+        private RvaField CreateRvaField(int size)
         {
-            TypeDef dataHolderType = GetDataHolderType(mod, size);
-            var (holderDataField, runtimeValueField) = CreateDataHolderRvaField(mod, dataHolderType);
+            TypeDef dataHolderType = GetDataHolderType(size);
+            var (holderDataField, runtimeValueField) = CreateDataHolderRvaField(dataHolderType);
             var newRvaField = new RvaField
             {
                 holderDataField = holderDataField,
@@ -119,13 +123,13 @@ namespace Obfuz.Emit
             return newRvaField;
         }
 
-        private RvaField GetRvaField(ModuleDef mod, int preservedSize, int alignment)
+        private RvaField GetRvaField(int preservedSize, int alignment)
         {
             Assert.IsTrue(preservedSize % alignment == 0);
             // for big size, create a new field
             if (preservedSize >= maxRvaDataSize)
             {
-                return CreateRvaField(mod, preservedSize);
+                return CreateRvaField(preservedSize);
             }
 
             if (_currentField != null)
@@ -147,61 +151,101 @@ namespace Obfuz.Emit
 
                 _currentField.FillPadding();
             }
-            _currentField = CreateRvaField(mod, maxRvaDataSize);
+            _currentField = CreateRvaField(maxRvaDataSize);
             return _currentField;
         }
 
-        public RvaData Allocate(ModuleDef mod, int value)
+        public RvaData Allocate(int value)
         {
-            RvaField field = GetRvaField(mod, 4, 4);
+            RvaField field = GetRvaField(4, 4);
             int offset = field.bytes.Count;
             Assert.IsTrue(offset % 4 == 0);
             field.bytes.AddRange(BitConverter.GetBytes(value));
             return new RvaData(field.runtimeValueField, offset, 4);
         }
 
-        public RvaData Allocate(ModuleDef mod, long value)
+        public RvaData Allocate(long value)
         {
-            RvaField field = GetRvaField(mod, 8, 8);
+            RvaField field = GetRvaField(8, 8);
             int offset = field.bytes.Count;
             Assert.IsTrue(offset % 8 == 0);
             field.bytes.AddRange(BitConverter.GetBytes(value));
             return new RvaData(field.runtimeValueField, offset, 8);
         }
 
-        public RvaData Allocate(ModuleDef mod, float value)
+        public RvaData Allocate(float value)
         {
-            RvaField field = GetRvaField(mod, 4, 4);
+            RvaField field = GetRvaField(4, 4);
             int offset = field.bytes.Count;
             Assert.IsTrue(offset % 4 == 0);
             field.bytes.AddRange(BitConverter.GetBytes(value));
             return new RvaData(field.runtimeValueField, offset, 4);
         }
 
-        public RvaData Allocate(ModuleDef mod, double value)
+        public RvaData Allocate(double value)
         {
-            RvaField field = GetRvaField(mod, 8, 8);
+            RvaField field = GetRvaField(8, 8);
             int offset = field.bytes.Count;
             Assert.IsTrue(offset % 8 == 0);
             field.bytes.AddRange(BitConverter.GetBytes(value));
             return new RvaData(field.runtimeValueField, offset, 8);
         }
 
-        public RvaData Allocate(ModuleDef mod, string value)
+        public RvaData Allocate(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
-            return Allocate(mod, bytes);
+            return Allocate(bytes);
         }
 
-        public RvaData Allocate(ModuleDef mod, byte[] value)
+        public RvaData Allocate(byte[] value)
         {
-            RvaField field = GetRvaField(mod, value.Length, 1);
+            RvaField field = GetRvaField(value.Length, 1);
             int offset = field.bytes.Count;
             field.bytes.AddRange(value);
             return new RvaData(field.runtimeValueField, offset, value.Length);
         }
 
-        public void SetFieldsRVA()
+        private void CreateCCtorOfRvaTypeDef()
+        {
+            if (_rvaTypeDef == null)
+            {
+                return;
+            }
+            ModuleDef mod = _rvaTypeDef.Module;
+            var cctor = new MethodDefUser(".cctor",
+                MethodSig.CreateStatic(_module.CorLibTypes.Void),
+                MethodImplAttributes.IL | MethodImplAttributes.Managed,
+                MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName | MethodAttributes.Private);
+            cctor.DeclaringType = _rvaTypeDef;
+            //_rvaTypeDef.Methods.Add(cctor);
+            var body = new CilBody();
+            cctor.Body = body;
+            var ins = body.Instructions;
+
+            IMethod method = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
+            
+            Assert.IsNotNull(method);
+            foreach (var field in _rvaFields)
+            {
+                // ldc
+                // newarr
+                // dup
+                // stsfld
+                // ldtoken
+                // RuntimeHelpers.InitializeArray(array, fieldHandle);
+                ins.Add(Instruction.Create(OpCodes.Ldc_I4, (int)field.size));
+                ins.Add(Instruction.Create(OpCodes.Newarr, field.runtimeValueField.FieldType.Next.ToTypeDefOrRef()));
+                ins.Add(Instruction.Create(OpCodes.Dup));
+                ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
+                ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
+                ins.Add(Instruction.Create(OpCodes.Call, method));
+
+                // TODO Decrpyt
+            }
+            ins.Add(Instruction.Create(OpCodes.Ret));
+        }
+
+        private void SetFieldsRVA()
         {
             foreach (var field in _rvaFields)
             {
@@ -211,6 +255,72 @@ namespace Obfuz.Emit
                     field.FillPadding();
                 }
                 field.holderDataField.InitialValue = field.bytes.ToArray();
+            }
+        }
+
+        public void Done()
+        {
+            SetFieldsRVA();
+            CreateCCtorOfRvaTypeDef();
+        }
+    }
+
+    public class RvaDataAllocator
+    {
+
+        private readonly IRandom _random;
+        private readonly Dictionary<ModuleDef, ModuleRvaDataAllocator> _modules = new Dictionary<ModuleDef, ModuleRvaDataAllocator>();
+
+        public RvaDataAllocator(IRandom random)
+        {
+            _random = random;
+        }
+
+        private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
+        {
+            if (!_modules.TryGetValue(mod, out var allocator))
+            {
+                allocator = new ModuleRvaDataAllocator(mod, _random);
+                _modules.Add(mod, allocator);
+            }
+            return allocator;
+        }
+
+        public RvaData Allocate(ModuleDef mod, int value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public RvaData Allocate(ModuleDef mod, long value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public RvaData Allocate(ModuleDef mod, float value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public RvaData Allocate(ModuleDef mod, double value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public RvaData Allocate(ModuleDef mod, string value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public RvaData Allocate(ModuleDef mod, byte[] value)
+        {
+            return GetModuleRvaDataAllocator(mod).Allocate(value);
+        }
+
+        public void Done()
+        {
+            foreach (var allocator in _modules.Values)
+            {
+                allocator.Done();
             }
         }
     }

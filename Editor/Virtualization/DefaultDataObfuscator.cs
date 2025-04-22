@@ -74,7 +74,7 @@ namespace Obfuz.Virtualization
 
         public void Stop()
         {
-            _rvaDataAllocator.SetFieldsRVA();
+            _rvaDataAllocator.Done();
         }
     }
 }
