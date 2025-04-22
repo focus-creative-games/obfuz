@@ -7,34 +7,38 @@ namespace Obfuz.Virtualization
 {
     public class DefaultDataObfuscator : IDataObfuscator
     {
-        public bool ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
+        private readonly RandomDataNodeCreator _nodeCreator = new RandomDataNodeCreator();
+
+        public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int32, value);
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(value));
         }
 
-        public bool TryObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, value));
         }
 
-        public bool TryObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R4, value));
         }
 
-        public bool TryObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R8, value));
         }
 
-        public bool TryObfuscateBytes(MethodDef method, Array value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateBytes(MethodDef method, Array value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            throw new NotSupportedException();
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value.Length));
         }
 
-        public bool TryObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
         {
-            return false;
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
         }
     }
 }

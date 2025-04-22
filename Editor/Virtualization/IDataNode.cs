@@ -13,8 +13,6 @@ namespace Obfuz.Virtualization
 
         object Value { get; }
 
-        IDataNode Expr { get; }
-
         void Compile(CompileContext ctx);
     }
 }

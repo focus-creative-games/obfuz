@@ -11,10 +11,10 @@ namespace Obfuz.Virtualization
 
         public abstract void CreateArguments(DataNodeType type, object value, CreateExpressionOptions options, List<ConstValue> args);
 
-        public ConstExpression CreateCallable(IDataNode result, CreateExpressionOptions options)
+        public ConstExpression CreateCallable(DataNodeType type, object value, CreateExpressionOptions options)
         {
             var args = new List<ConstValue>();
-            CreateArguments(result.Type, result.Value, options, args);
+            CreateArguments(type, value, options, args);
 
             options.depth += 1;
             var argNodes = new List<IDataNode>();
@@ -24,7 +24,7 @@ namespace Obfuz.Virtualization
                 argNodes.Add(argNode);
             }
             
-            return new ConstExpression(this, args.Select(a => options.expressionCreator.CreateRandom(a.type, a.value, options)).ToList(), new ConstValue(result.Type, result.Value));
+            return new ConstExpression(this, args.Select(a => options.expressionCreator.CreateRandom(a.type, a.value, options)).ToList(), new ConstValue(type, value));
         }
     }
 }

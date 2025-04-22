@@ -4,6 +4,6 @@
     {
         DataNodeType ReturnType { get; }
 
-        ConstExpression CreateCallable(IDataNode result, CreateExpressionOptions options);
+        ConstExpression CreateCallable(DataNodeType type, object value, CreateExpressionOptions options);
     }
 }

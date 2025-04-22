@@ -1,4 +1,6 @@
-﻿namespace Obfuz.Virtualization
+﻿using Obfuz.Utils;
+
+namespace Obfuz.Virtualization
 {
     public struct CreateExpressionOptions
     {

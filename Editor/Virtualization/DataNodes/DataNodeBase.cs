@@ -2,11 +2,9 @@
 {
     public abstract class DataNodeBase : IDataNode
     {
-        public DataNodeType Type { get; protected set; }
+        public DataNodeType Type { get; set; }
 
-        public IDataNode Expr { get; protected set; }
-
-        public abstract object Value { get; protected set; }
+        public abstract object Value { get; set; }
 
         public abstract void Compile(CompileContext ctx);
     }
@@ -14,12 +12,12 @@
 
     public abstract class DataNodeBase<T> : DataNodeBase
     {
-        public T Value2 { get; protected set; }
+        public T Value2 { get; set; }
 
         public override object Value
         {
             get => Value2;
-            protected set => Value2 = (T)value;
+            set => Value2 = (T)value;
         }
     }
 
@@ -31,7 +29,7 @@
         public override object Value
         {
             get => _value;
-            protected set => _value = value;
+            set => _value = value;
         }
     }
 }

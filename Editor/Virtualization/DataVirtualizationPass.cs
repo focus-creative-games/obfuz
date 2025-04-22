@@ -34,7 +34,7 @@ namespace Obfuz.Virtualization
                 {
                     foreach (MethodDef method in type.Methods)
                     {
-                        if (!method.HasBody && !_dataObfuscatorPolicy.NeedObfuscateMethod(method))
+                        if (!method.HasBody || !_dataObfuscatorPolicy.NeedObfuscateMethod(method))
                         {
                             continue;
                         }
@@ -50,7 +50,7 @@ namespace Obfuz.Virtualization
             IList<Instruction> instructions = method.Body.Instructions;
             var obfuscatedInstructions = new List<Instruction>();
             var resultInstructions = new List<Instruction>();
-            for (int i = 0; i < instructions.Count; )
+            for (int i = 0; i < instructions.Count; i++)
             {
                 Instruction inst = instructions[i];
                 bool obfuscated = false;
@@ -130,10 +130,8 @@ namespace Obfuz.Virtualization
                         }
                         break;
                     }
-                    default: throw new NotSupportedException($"Unsupported operand type: {inst.OpCode.OperandType} for instruction: {inst}");
                 }
                 resultInstructions.Add(inst);
-                i++;
                 if (obfuscated)
                 {
                     // current instruction may be the target of control flow instruction, so we can't remove it directly.
@@ -141,8 +139,13 @@ namespace Obfuz.Virtualization
                     inst.OpCode = OpCodes.Nop;
                     inst.Operand = null;
                     resultInstructions.AddRange(obfuscatedInstructions);
-                    i += obfuscatedInstructions.Count + 1;
                 }
+            }
+
+            instructions.Clear();
+            foreach (var obInst in obfuscatedInstructions)
+            {
+                instructions.Add(obInst);
             }
         }
     }

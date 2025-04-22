@@ -8,7 +8,7 @@ using static UnityEngine.Networking.UnityWebRequest;
 
 namespace Obfuz.Virtualization.Functions
 {
-    public class Int32FunctionAdd : Int32FunctionBase
+    public class Int32FunctionXor : Int32FunctionBase
     {
         public override DataNodeType ReturnType => DataNodeType.Int32;
 
@@ -17,7 +17,7 @@ namespace Obfuz.Virtualization.Functions
             int value = (int)v;
 
             int op1 = options.random.NextInt();
-            int op2 = value - op1;
+            int op2 = value ^ op1;
             args.Add(new ConstValue(DataNodeType.Int32, op1));
             args.Add(new ConstValue(DataNodeType.Int32, op2));
         }
