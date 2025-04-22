@@ -18,6 +18,8 @@ namespace Obfuz.Virtualization
             {
                 new Int32FunctionAdd(),
                 new Int32FunctionXor(),
+                //new ConstFromFieldRvaDataCreator(),
+                //new ConstDataCreator(),
             };
             _functions.Add(DataNodeType.Int32, int32Funcs);
         }
@@ -28,10 +30,12 @@ namespace Obfuz.Virtualization
             {
                 throw new System.Exception($"No functions available for type {type}");
             }
-            if (options.depth >= 2)
+            if (options.depth >= 4)
             {
                 //return new ConstDataNode() { Type = type, Value = value };
-                return new ConstFromFieldRvaDataNode() { Type = type, Value = value };
+                return _random.NextInt(100) < 50 ?
+                    new ConstFromFieldRvaDataNode() { Type = type, Value = value } :
+                    new ConstDataNode() { Type = type, Value = value };
             }
             var func = funcs[options.random.NextInt(funcs.Count)];
             ++options.depth;

@@ -9,9 +9,8 @@ using static UnityEngine.Networking.UnityWebRequest;
 
 namespace Obfuz.Virtualization.Functions
 {
-    public class Int32FunctionXor : Int32FunctionBase
+    public class Int32FunctionXor : FunctionBase
     {
-        public override DataNodeType ReturnType => DataNodeType.Int32;
 
         public override void CreateArguments(DataNodeType type, object v, CreateExpressionOptions options, List<ConstValue> args)
         {

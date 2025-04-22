@@ -20,9 +20,8 @@ namespace Obfuz.Virtualization
             _rvaDataAllocator = new RvaDataAllocator(_random);
         }
 
-        public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
+        private void CompileNode(IDataNode node, MethodDef method, List<Instruction> obfuscatedInstructions)
         {
-            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int32, value);
             var ctx = new CompileContext
             {
                 method = method,
@@ -30,21 +29,33 @@ namespace Obfuz.Virtualization
                 rvaDataAllocator = _rvaDataAllocator,
             };
             node.Compile(ctx);
+        }
+
+        public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
+        {
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int32, value);
+            CompileNode(node, method, obfuscatedInstructions);
             //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value));
         }
 
         public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)
         {
+            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int64, value);
+            //CompileNode(node, method, obfuscatedInstructions);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, value));
         }
 
         public void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)
         {
+            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float32, value);
+            //CompileNode(node, method, obfuscatedInstructions);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R4, value));
         }
 
         public void ObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions)
         {
+            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float64, value);
+            //CompileNode(node, method, obfuscatedInstructions);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R8, value));
         }
 
@@ -56,6 +67,8 @@ namespace Obfuz.Virtualization
 
         public void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
         {
+            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.String, value);
+            //CompileNode(node, method, obfuscatedInstructions);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
         }
 

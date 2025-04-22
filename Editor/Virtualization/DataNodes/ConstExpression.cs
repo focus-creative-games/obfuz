@@ -15,7 +15,7 @@ namespace Obfuz.Virtualization
         {
             this.function = function;
             this.inputs = inputs;
-            Type = function.ReturnType;
+            Type = result.type;
             this.result = result;
         }
 

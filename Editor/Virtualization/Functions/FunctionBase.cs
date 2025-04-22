@@ -8,7 +8,6 @@ namespace Obfuz.Virtualization
 
     public abstract class FunctionBase : IFunction
     {
-        public abstract DataNodeType ReturnType { get; }
 
         public abstract void CreateArguments(DataNodeType type, object value, CreateExpressionOptions options, List<ConstValue> args);
 
@@ -23,7 +22,7 @@ namespace Obfuz.Virtualization
             CompileSelf(ctx, ctx.output);
         }
 
-        public ConstExpression CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)
+        public IDataNode CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)
         {
             var args = new List<ConstValue>();
             CreateArguments(type, value, options, args);
