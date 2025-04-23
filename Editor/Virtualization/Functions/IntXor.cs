@@ -38,7 +38,7 @@ namespace Obfuz.Virtualization.Functions
             }
         }
 
-        public override void CompileSelf(CompileContext ctx, List<Instruction> output)
+        public override void CompileSelf(CompileContext ctx, List<IDataNode> inputs, List<Instruction> output)
         {
             output.Add(Instruction.Create(OpCodes.Xor));
         }

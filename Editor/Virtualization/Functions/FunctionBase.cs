@@ -11,7 +11,7 @@ namespace Obfuz.Virtualization
 
         public abstract void CreateArguments(DataNodeType type, object value, CreateExpressionOptions options, List<ConstValue> args);
 
-        public abstract void CompileSelf(CompileContext ctx, List<Instruction> output);
+        public abstract void CompileSelf(CompileContext ctx, List<IDataNode> inputs, List<Instruction> output);
 
         public virtual void Compile(CompileContext ctx, List<IDataNode> inputs, ConstValue result)
         {
@@ -19,7 +19,7 @@ namespace Obfuz.Virtualization
             {
                 input.Compile(ctx);
             }
-            CompileSelf(ctx, ctx.output);
+            CompileSelf(ctx, inputs, ctx.output);
         }
 
         public virtual IDataNode CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)

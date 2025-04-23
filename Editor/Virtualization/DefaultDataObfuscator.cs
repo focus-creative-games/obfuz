@@ -47,16 +47,16 @@ namespace Obfuz.Virtualization
 
         public void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)
         {
-            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float32, value);
-            //CompileNode(node, method, obfuscatedInstructions);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R4, value));
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float32, value);
+            CompileNode(node, method, obfuscatedInstructions);
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R4, value));
         }
 
         public void ObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions)
         {
-            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float64, value);
-            //CompileNode(node, method, obfuscatedInstructions);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R8, value));
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Float64, value);
+            CompileNode(node, method, obfuscatedInstructions);
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_R8, value));
         }
 
         public void ObfuscateBytes(MethodDef method, Array value, List<Instruction> obfuscatedInstructions)

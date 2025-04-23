@@ -1,5 +1,6 @@
 ﻿
 using Obfuz.Utils;
+using Obfuz.Virtualization.DataNodes;
 using Obfuz.Virtualization.Functions;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ namespace Obfuz.Virtualization
         public RandomDataNodeCreator(IRandom random)
         {
             _random = random;
-            var int32Funcs = new List<IFunction>()
+            var intFuncs = new List<IFunction>()
             {
                 new IntAdd(),
                 new IntXor(),
@@ -22,8 +23,15 @@ namespace Obfuz.Virtualization
                 //new ConstFromFieldRvaDataCreator(),
                 //new ConstDataCreator(),
             };
-            _functions.Add(DataNodeType.Int32, int32Funcs);
-            _functions.Add(DataNodeType.Int64, int32Funcs);
+            _functions.Add(DataNodeType.Int32, intFuncs);
+            _functions.Add(DataNodeType.Int64, intFuncs);
+
+            var floatFuncs = new List<IFunction>()
+            {
+                new MemoryCastIntAsFloat(),
+            };
+            _functions.Add(DataNodeType.Float32, floatFuncs);
+            _functions.Add(DataNodeType.Float64, floatFuncs);
         }
 
         public override IDataNode CreateRandom(DataNodeType type, object value, CreateExpressionOptions options)
@@ -41,7 +49,6 @@ namespace Obfuz.Virtualization
                     new ConstDataNode() { Type = type, Value = value };
             }
             var func = funcs[options.random.NextInt(funcs.Count)];
-            ++options.depth;
             return func.CreateExpr(type, value, options);
         }
 
