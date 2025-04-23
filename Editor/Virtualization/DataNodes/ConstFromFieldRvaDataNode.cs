@@ -53,12 +53,12 @@ namespace Obfuz.Virtualization
             {
                 return;
             }
-            s_convertInt = mod.Import(typeof(BitConverter).GetMethod("ToInt32", new[] { typeof(byte[]), typeof(int) }));
-            s_convertLong = mod.Import(typeof(BitConverter).GetMethod("ToInt64", new[] { typeof(byte[]), typeof(int) }));
-            s_convertFloat = mod.Import(typeof(BitConverter).GetMethod("ToSingle", new[] { typeof(byte[]), typeof(int) }));
-            s_convertDouble = mod.Import(typeof(BitConverter).GetMethod("ToDouble", new[] { typeof(byte[]), typeof(int) }));
-            s_convertString = mod.Import(typeof(Encoding).GetMethod("GetString", new[] { typeof(byte[]), typeof(int), typeof(int) }));
-            s_Encoding_Utf8 = mod.Import(typeof(Encoding).GetField("UTF8"));
+            s_convertInt = mod.Import(typeof(ConstUtility).GetMethod("GetInt", new[] { typeof(byte[]), typeof(int) }));
+            s_convertLong = mod.Import(typeof(ConstUtility).GetMethod("GetLong", new[] { typeof(byte[]), typeof(int) }));
+            s_convertFloat = mod.Import(typeof(ConstUtility).GetMethod("GetFloat", new[] { typeof(byte[]), typeof(int) }));
+            s_convertDouble = mod.Import(typeof(ConstUtility).GetMethod("GetDouble", new[] { typeof(byte[]), typeof(int) }));
+            s_convertString = mod.Import(typeof(ConstUtility).GetMethod("GetString", new[] { typeof(byte[]), typeof(int), typeof(int) }));
+            //s_Encoding_Utf8 = mod.Import(typeof(Encoding).GetField("UTF8"));
             s_convertBytes = mod.Import(typeof(ConstUtility).GetMethod("GetBytes", new[] { typeof(byte[]), typeof(int), typeof(int) }));
         }
 
@@ -99,26 +99,19 @@ namespace Obfuz.Virtualization
                     break;
                 }
                 case DataNodeType.String:
+                case DataNodeType.Bytes:
                 {
 
                     // Encoding.UTF8.GetString(data, offset, length);
-                    ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, s_Encoding_Utf8));
-                    ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
-                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.offset));
-                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
-                    output.Add(Instruction.Create(OpCodes.Call, convertMethod));
-                    break;
-                }
-                case DataNodeType.Bytes:
-                {
-                    // byte[] result = new byte[length];
-                    // Array.Copy(data, offset, result, 0, length);
-                    ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
-                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.offset));
-                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
-                    //output.Add(Instruction.Create(OpCodes.Newarr, mod.CorLibTypes.Byte.ToTypeDefOrRef()));
-                    //output.Add(Instruction.Create(OpCodes.Ldc_I4, 0));
+                    //ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, s_Encoding_Utf8));
+                    //ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                    //output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.offset));
                     //output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
+                    //output.Add(Instruction.Create(OpCodes.Call, convertMethod));
+
+                    ctx.output.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.offset));
+                    output.Add(Instruction.Create(OpCodes.Ldc_I4, rvaData.size));
                     output.Add(Instruction.Create(OpCodes.Call, convertMethod));
                     break;
                 }
