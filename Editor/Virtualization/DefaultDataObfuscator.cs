@@ -64,7 +64,9 @@ namespace Obfuz.Virtualization
 
         public void ObfuscateBytes(MethodDef method, Array value, List<Instruction> obfuscatedInstructions)
         {
-            throw new NotSupportedException();
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Bytes, value);
+            CompileNode(node, method, obfuscatedInstructions);
+            //throw new NotSupportedException();
             //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I4, value.Length));
         }
 

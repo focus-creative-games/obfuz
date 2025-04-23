@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 namespace Obfuz.Virtualization
 {
@@ -135,6 +136,28 @@ namespace Obfuz.Virtualization
                         {
                             _dataObfuscator.ObfuscateString(method, value, obfuscatedInstructions);
                             obfuscated = true;
+                        }
+                        break;
+                    }
+                    case OperandType.InlineMethod:
+                    {
+                        if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
+                        {
+                            Instruction prevInst = instructions[i - 1];
+                            if (prevInst.OpCode.Code == Code.Ldtoken)
+                            {
+                                IField rvaField = (IField)prevInst.Operand;
+                                FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
+                                byte[] data = ravFieldDef.InitialValue;
+                                if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, data))
+                                {
+                                    // remove prev ldtoken instruction
+                                    Assert.AreEqual(Code.Ldtoken, resultInstructions[resultInstructions.Count - 1].OpCode.Code);
+                                    resultInstructions.RemoveAt(resultInstructions.Count - 1);
+                                    _dataObfuscator.ObfuscateBytes(method, data, obfuscatedInstructions);
+                                    obfuscated = true;
+                                }
+                            }
                         }
                         break;
                     }

@@ -41,6 +41,11 @@ namespace Obfuz
             return result;
         }
 
+        public static void InitializeArray(Array array, byte[] data, int offset, int length)
+        {
+            Buffer.BlockCopy(data, offset, array, 0, length);
+        }
+
         public static int CastFloatAsInt(float value)
         {
             return UnsafeUtility.As<float, int>(ref value);

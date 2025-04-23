@@ -33,5 +33,10 @@ namespace Obfuz.Virtualization
         {
             return true;
         }
+
+        public virtual bool NeedObfuscateArray(MethodDef method, byte[] array)
+        {
+            return true;
+        }
     }
 }

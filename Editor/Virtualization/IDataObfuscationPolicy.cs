@@ -20,5 +20,7 @@ namespace Obfuz.Virtualization
         bool NeedObfuscateDouble(MethodDef method, double value);
 
         bool NeedObfuscateString(MethodDef method, string value);
+
+        bool NeedObfuscateArray(MethodDef method, byte[] array);
     }
 }
