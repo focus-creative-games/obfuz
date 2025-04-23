@@ -12,12 +12,14 @@ namespace Obfuz.Virtualization
         private readonly IRandom _random;
         private readonly RandomDataNodeCreator _nodeCreator;
         private readonly RvaDataAllocator _rvaDataAllocator;
+        private readonly ConstFieldAllocator _constFieldAllocator;
 
         public DefaultDataObfuscator()
         {
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
             _nodeCreator = new RandomDataNodeCreator(_random);
             _rvaDataAllocator = new RvaDataAllocator(_random);
+            _constFieldAllocator = new ConstFieldAllocator(_random);
         }
 
         private void CompileNode(IDataNode node, MethodDef method, List<Instruction> obfuscatedInstructions)
@@ -27,6 +29,7 @@ namespace Obfuz.Virtualization
                 method = method,
                 output = obfuscatedInstructions,
                 rvaDataAllocator = _rvaDataAllocator,
+                constFieldAllocator = _constFieldAllocator,
             };
             node.Compile(ctx);
         }
@@ -67,14 +70,15 @@ namespace Obfuz.Virtualization
 
         public void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
         {
-            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.String, value);
-            //CompileNode(node, method, obfuscatedInstructions);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.String, value);
+            CompileNode(node, method, obfuscatedInstructions);
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
         }
 
         public void Stop()
         {
             _rvaDataAllocator.Done();
+            _constFieldAllocator.Done();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
+using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Obfuz.Virtualization
@@ -8,36 +11,34 @@ namespace Obfuz.Virtualization
 
         public override void Compile(CompileContext ctx)
         {
+            ModuleDef mod = ctx.method.Module;
+            var output = ctx.output;
+            FieldDef field;
             switch (Type)
             {
-                //case DataNodeType.Byte:
-                //{
-                //    // create ldloc.i4 
-                //    break;
-                //}
                 case DataNodeType.Int32:
                 {
-                    // create ldloc.i4
+                    field = ctx.constFieldAllocator.Allocate(mod, IntValue);
                     break;
                 }
                 case DataNodeType.Int64:
                 {
-                    // create ldloc.i8
+                    field = ctx.constFieldAllocator.Allocate(mod, LongValue);
                     break;
                 }
                 case DataNodeType.Float32:
                 {
-                    // create ldloc.r4
+                    field = ctx.constFieldAllocator.Allocate(mod, FloatValue);
                     break;
                 }
                 case DataNodeType.Float64:
                 {
-                    // create ldloc.r8
+                    field = ctx.constFieldAllocator.Allocate(mod, DoubleValue);
                     break;
                 }
                 case DataNodeType.String:
                 {
-                    // create ldstr
+                    field = ctx.constFieldAllocator.Allocate(mod, StringValue);
                     break;
                 }
                 case DataNodeType.Bytes:
@@ -45,13 +46,15 @@ namespace Obfuz.Virtualization
                     // ldsfld 
                     // ldtoken 
                     // RuntimeHelpers.InitializeArray(array, fieldHandle);
-                    break;
+                    //break;
+                    throw new NotSupportedException("Bytes not supported");
                 }
                 default:
                 {
                     throw new NotImplementedException($"Type:{Type} not implemented");
                 }
             }
+            output.Add(Instruction.Create(OpCodes.Ldsfld, field));
         }
     }
 }

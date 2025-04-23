@@ -11,5 +11,6 @@ namespace Obfuz.Virtualization
         public MethodDef method;
         public List<Instruction> output;
         public RvaDataAllocator rvaDataAllocator;
+        public ConstFieldAllocator constFieldAllocator;
     }
 }

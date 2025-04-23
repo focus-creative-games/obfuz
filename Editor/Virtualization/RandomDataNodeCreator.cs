@@ -32,6 +32,12 @@ namespace Obfuz.Virtualization
             };
             _functions.Add(DataNodeType.Float32, floatFuncs);
             _functions.Add(DataNodeType.Float64, floatFuncs);
+
+            var stringFuncs = new List<IFunction>()
+            {
+                new ConstFieldDataCreator(),
+            };
+            _functions.Add(DataNodeType.String, stringFuncs);
         }
 
         public override IDataNode CreateRandom(DataNodeType type, object value, CreateExpressionOptions options)
