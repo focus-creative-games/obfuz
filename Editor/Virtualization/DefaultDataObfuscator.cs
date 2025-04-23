@@ -40,9 +40,9 @@ namespace Obfuz.Virtualization
 
         public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)
         {
-            //IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int64, value);
-            //CompileNode(node, method, obfuscatedInstructions);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, value));
+            IDataNode node = _nodeCreator.CreateRandom(DataNodeType.Int64, value);
+            CompileNode(node, method, obfuscatedInstructions);
+            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, value));
         }
 
         public void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)

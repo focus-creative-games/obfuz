@@ -16,12 +16,14 @@ namespace Obfuz.Virtualization
             _random = random;
             var int32Funcs = new List<IFunction>()
             {
-                new Int32FunctionAdd(),
-                new Int32FunctionXor(),
+                //new IntAdd(),
+                //new IntXor(),
+                new IntRotateShift(),
                 //new ConstFromFieldRvaDataCreator(),
                 //new ConstDataCreator(),
             };
             _functions.Add(DataNodeType.Int32, int32Funcs);
+            _functions.Add(DataNodeType.Int64, int32Funcs);
         }
 
         public override IDataNode CreateRandom(DataNodeType type, object value, CreateExpressionOptions options)
@@ -30,11 +32,11 @@ namespace Obfuz.Virtualization
             {
                 throw new System.Exception($"No functions available for type {type}");
             }
-            if (options.depth >= 2)
+            if (options.depth >= 3)
             {
                 //return new ConstDataNode() { Type = type, Value = value };
-                //return _random.NextInt(100) < 50 ?
-                return true ?
+                return _random.NextInt(100) < 50 ?
+                //return true ?
                     new ConstFromFieldRvaDataNode() { Type = type, Value = value } :
                     new ConstDataNode() { Type = type, Value = value };
             }

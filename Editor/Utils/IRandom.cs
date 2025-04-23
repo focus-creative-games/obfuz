@@ -7,5 +7,7 @@
         int NextInt(int max);
 
         int NextInt();
+
+        long NextLong();
     }
 }

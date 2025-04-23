@@ -54,5 +54,10 @@ namespace Obfuz.Utils
         {
             return _random.Next() ^ GetNextKeyByte();
         }
+
+        public long NextLong()
+        {
+            return ((long)NextInt() << 32) | (uint)NextInt();
+        }
     }
 }

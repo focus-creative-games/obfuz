@@ -22,7 +22,7 @@ namespace Obfuz.Virtualization
             CompileSelf(ctx, ctx.output);
         }
 
-        public IDataNode CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)
+        public virtual IDataNode CreateExpr(DataNodeType type, object value, CreateExpressionOptions options)
         {
             var args = new List<ConstValue>();
             CreateArguments(type, value, options, args);
