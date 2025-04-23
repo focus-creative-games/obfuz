@@ -39,6 +39,7 @@ namespace Obfuz.Emit
             public FieldDef runtimeValueField;
             public uint size;
             public List<byte> bytes;
+            public int minorSecret;
 
             public void FillPadding()
             {
@@ -118,6 +119,7 @@ namespace Obfuz.Emit
                 runtimeValueField = runtimeValueField,
                 size = dataHolderType.ClassSize,
                 bytes = new List<byte>((int)dataHolderType.ClassSize),
+                minorSecret = _random.NextInt(),
             };
             _rvaFields.Add(newRvaField);
             return newRvaField;
@@ -222,9 +224,10 @@ namespace Obfuz.Emit
             cctor.Body = body;
             var ins = body.Instructions;
 
-            IMethod method = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
-            
-            Assert.IsNotNull(method);
+            IMethod initializeArrayMethod = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
+            IMethod decryptArrayMethod = mod.Import(typeof(EncryptionService).GetMethod("DecryptBytes", new[] { typeof(byte[]), typeof(int) }));
+
+            Assert.IsNotNull(initializeArrayMethod);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -236,11 +239,13 @@ namespace Obfuz.Emit
                 ins.Add(Instruction.Create(OpCodes.Ldc_I4, (int)field.size));
                 ins.Add(Instruction.Create(OpCodes.Newarr, field.runtimeValueField.FieldType.Next.ToTypeDefOrRef()));
                 ins.Add(Instruction.Create(OpCodes.Dup));
+                ins.Add(Instruction.Create(OpCodes.Dup));
                 ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
                 ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
-                ins.Add(Instruction.Create(OpCodes.Call, method));
+                ins.Add(Instruction.Create(OpCodes.Call, initializeArrayMethod));
+                ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.minorSecret));
+                ins.Add(Instruction.Create(OpCodes.Call, decryptArrayMethod));
 
-                // TODO Decrpyt
             }
             ins.Add(Instruction.Create(OpCodes.Ret));
         }

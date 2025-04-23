@@ -44,7 +44,7 @@ namespace Obfuz.Virtualization
         private static IMethod s_convertDouble;
 
         private static IMethod s_convertString;
-        private static IField s_Encoding_Utf8;
+        //private static IField s_Encoding_Utf8;
         private static IMethod s_convertBytes;
 
         private void InitImportMetadatas(ModuleDef mod)
