@@ -13,12 +13,14 @@ namespace Obfuz.Virtualization
         private readonly RandomDataNodeCreator _nodeCreator;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
+        private readonly IEncryptor _encryptor;
 
         public DefaultDataObfuscator()
         {
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
+            _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
             _nodeCreator = new RandomDataNodeCreator(_random);
-            _rvaDataAllocator = new RvaDataAllocator(_random);
+            _rvaDataAllocator = new RvaDataAllocator(_random, _encryptor);
             _constFieldAllocator = new ConstFieldAllocator(_random);
         }
 

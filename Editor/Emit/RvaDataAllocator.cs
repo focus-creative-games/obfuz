@@ -31,6 +31,7 @@ namespace Obfuz.Emit
 
         private readonly ModuleDef _module;
         private readonly IRandom _random;
+        private readonly IEncryptor _encryptor;
 
 
         class RvaField
@@ -59,10 +60,11 @@ namespace Obfuz.Emit
 
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
 
-        public ModuleRvaDataAllocator(ModuleDef mod, IRandom random)
+        public ModuleRvaDataAllocator(ModuleDef mod, IRandom random, IEncryptor encryptor)
         {
             _module = mod;
             _random = random;
+            _encryptor = encryptor;
         }
 
         private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
@@ -259,7 +261,9 @@ namespace Obfuz.Emit
                 {
                     field.FillPadding();
                 }
-                field.holderDataField.InitialValue = field.bytes.ToArray();
+                byte[] data = field.bytes.ToArray();
+                _encryptor.EncryptBytes(data, field.minorSecret);
+                field.holderDataField.InitialValue = data;
             }
         }
 
@@ -274,18 +278,20 @@ namespace Obfuz.Emit
     {
 
         private readonly IRandom _random;
+        private readonly IEncryptor _encryptor;
         private readonly Dictionary<ModuleDef, ModuleRvaDataAllocator> _modules = new Dictionary<ModuleDef, ModuleRvaDataAllocator>();
 
-        public RvaDataAllocator(IRandom random)
+        public RvaDataAllocator(IRandom random, IEncryptor encryptor)
         {
             _random = random;
+            _encryptor = encryptor;
         }
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
             if (!_modules.TryGetValue(mod, out var allocator))
             {
-                allocator = new ModuleRvaDataAllocator(mod, _random);
+                allocator = new ModuleRvaDataAllocator(mod, _random, _encryptor);
                 _modules.Add(mod, allocator);
             }
             return allocator;
