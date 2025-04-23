@@ -16,8 +16,8 @@ namespace Obfuz.Virtualization
             _random = random;
             var int32Funcs = new List<IFunction>()
             {
-                //new IntAdd(),
-                //new IntXor(),
+                new IntAdd(),
+                new IntXor(),
                 new IntRotateShift(),
                 //new ConstFromFieldRvaDataCreator(),
                 //new ConstDataCreator(),
@@ -32,7 +32,7 @@ namespace Obfuz.Virtualization
             {
                 throw new System.Exception($"No functions available for type {type}");
             }
-            if (options.depth >= 3)
+            if (options.depth >= 4)
             {
                 //return new ConstDataNode() { Type = type, Value = value };
                 return _random.NextInt(100) < 50 ?

@@ -63,6 +63,7 @@ namespace Obfuz.Virtualization
                 switch (inst.OpCode.OperandType)
                 {
                     case OperandType.InlineI:
+                    case OperandType.InlineI8:
                     case OperandType.ShortInlineI:
                     case OperandType.ShortInlineR:
                     case OperandType.InlineR:
