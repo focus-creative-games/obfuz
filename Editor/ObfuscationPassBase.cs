@@ -1,4 +1,6 @@
-﻿namespace Obfuz
+﻿using Obfuz.Virtualization;
+
+namespace Obfuz
 {
     public abstract class ObfuscationPassBase : IObfuscationPass
     {
