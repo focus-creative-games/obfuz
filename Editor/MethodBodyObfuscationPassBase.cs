@@ -35,7 +35,8 @@ namespace Obfuz
         }
 
 
-        protected abstract bool TryObfuscateInstruction(MethodDef callingMethod, Instruction inst, IList<Instruction> instructions, int instructionIndex, List<Instruction> outputInstructions);
+        protected abstract bool TryObfuscateInstruction(MethodDef callingMethod, Instruction inst, IList<Instruction> instructions, int instructionIndex,
+            List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions);
 
         private void ObfuscateData(MethodDef method)
         {
@@ -45,17 +46,22 @@ namespace Obfuz
             for (int i = 0; i < instructions.Count; i++)
             {
                 Instruction inst = instructions[i];
-                totalFinalInstructions.Add(inst);
-                if (TryObfuscateInstruction(method, inst, instructions, i, outputInstructions))
+                outputInstructions.Clear();
+                if (TryObfuscateInstruction(method, inst, instructions, i, outputInstructions, totalFinalInstructions))
                 {
                     // current instruction may be the target of control flow instruction, so we can't remove it directly.
                     // we replace it with nop now, then remove it in CleanUpInstructionPass
                     inst.OpCode = outputInstructions[0].OpCode;
                     inst.Operand = outputInstructions[0].Operand;
+                    totalFinalInstructions.Add(inst);
                     for (int k = 1; k < outputInstructions.Count; k++)
                     {
                         totalFinalInstructions.Add(outputInstructions[k]);
                     }
+                }
+                else
+                {
+                    totalFinalInstructions.Add(inst);
                 }
             }
 

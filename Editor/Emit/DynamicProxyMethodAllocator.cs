@@ -27,7 +27,7 @@ namespace Obfuz.Emit
 
         public DynamicProxyMethodData Allocate(IMethod method)
         {
-            return null;
+            return default;
         }
 
         public void Done()

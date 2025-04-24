@@ -37,8 +37,10 @@ namespace Obfuz.DynamicProxy
             return _dynamicProxyPolicy.NeedDynamicProxyCallInMethod(method);
         }
 
-        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex, List<Instruction> obfuscatedInstructions)
+        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
+            List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
+            return false;
             switch (inst.OpCode.Code)
             {
                 case Code.Call:
@@ -48,7 +50,7 @@ namespace Obfuz.DynamicProxy
                     {
                         return false;
                     }
-                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, false, obfuscatedInstructions);
+                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, false, outputInstructions);
                     return true;
                 }
                 case Code.Callvirt:
@@ -62,7 +64,7 @@ namespace Obfuz.DynamicProxy
                     {
                         return false;
                     }
-                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, true, obfuscatedInstructions);
+                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, true, outputInstructions);
                     return true;
                 }
                 default: return false;

@@ -11,7 +11,7 @@ using UnityEngine.Assertions;
 namespace Obfuz.Virtualization
 {
 
-    public class DataVirtualizationPass : ObfuscationPassBase
+    public class DataVirtualizationPass : MethodBodyObfuscationPassBase
     {
         private IDataObfuscationPolicy _dataObfuscatorPolicy;
         private IDataObfuscator _dataObfuscator;
@@ -27,159 +27,113 @@ namespace Obfuz.Virtualization
             _dataObfuscator.Stop();
         }
 
-        public override void Process(ObfuscatorContext ctx)
+        protected override bool NeedObfuscateMethod(MethodDef method)
         {
-            foreach (var ass in ctx.assemblies)
-            {
-                // ToArray to avoid modify list exception
-                foreach (TypeDef type in ass.module.GetTypes().ToArray())
-                {
-                    if (type.Name.StartsWith("$Obfuz$"))
-                    {
-                        continue;
-                    }
-                    // ToArray to avoid modify list exception
-                    foreach (MethodDef method in type.Methods.ToArray())
-                    {
-                        if (!method.HasBody || method.Name.StartsWith("$Obfuz$") || !_dataObfuscatorPolicy.NeedObfuscateMethod(method))
-                        {
-                            continue;
-                        }
-                        // TODO if isGeneratedBy Obfuscator, continue
-                        ObfuscateData(method);
-                    }
-                }
-            }
+            return _dataObfuscatorPolicy.NeedObfuscateMethod(method);
         }
 
-        private void ObfuscateData(MethodDef method)
+        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
+            List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
-            IList<Instruction> instructions = method.Body.Instructions;
-            var obfuscatedInstructions = new List<Instruction>();
-            var resultInstructions = new List<Instruction>();
-            for (int i = 0; i < instructions.Count; i++)
+            switch (inst.OpCode.OperandType)
             {
-                Instruction inst = instructions[i];
-                bool obfuscated = false;
-                switch (inst.OpCode.OperandType)
+                case OperandType.InlineI:
+                case OperandType.InlineI8:
+                case OperandType.ShortInlineI:
+                case OperandType.ShortInlineR:
+                case OperandType.InlineR:
                 {
-                    case OperandType.InlineI:
-                    case OperandType.InlineI8:
-                    case OperandType.ShortInlineI:
-                    case OperandType.ShortInlineR:
-                    case OperandType.InlineR:
+                    object operand = inst.Operand;
+                    if (operand is int)
                     {
-                        obfuscatedInstructions.Clear();
-                        object operand = inst.Operand;
-                        if (operand is int)
+                        int value = (int)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
                         {
-                            int value = (int)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
-                            {
-                                _dataObfuscator.ObfuscateInt(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
+                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            return true;
                         }
-                        else if (operand is sbyte)
-                        {
-                            int value = (sbyte)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
-                            {
-                                _dataObfuscator.ObfuscateInt(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
-                        }
-                        else if (operand is byte)
-                        {
-                            int value = (byte)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
-                            {
-                                _dataObfuscator.ObfuscateInt(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
-                        }
-                        else if (operand is long)
-                        {
-                            long value = (long)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateLong(method, value))
-                            {
-                                _dataObfuscator.ObfuscateLong(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
-                        }
-                        else if (operand is float)
-                        {
-                            float value = (float)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateFloat(method, value))
-                            {
-                                _dataObfuscator.ObfuscateFloat(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
-                        }
-                        else if (operand is double)
-                        {
-                            double value = (double)operand;
-                            if (_dataObfuscatorPolicy.NeedObfuscateDouble(method, value))
-                            {
-                                _dataObfuscator.ObfuscateDouble(method, value, obfuscatedInstructions);
-                                obfuscated = true;
-                            }
-                        }
-                        break;
                     }
-                    case OperandType.InlineString:
+                    else if (operand is sbyte)
                     {
-                        obfuscatedInstructions.Clear();
-                        //RuntimeHelpers.InitializeArray
-                        string value = (string)inst.Operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateString(method, value))
+                        int value = (sbyte)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
                         {
-                            _dataObfuscator.ObfuscateString(method, value, obfuscatedInstructions);
-                            obfuscated = true;
+                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            return true;
                         }
-                        break;
                     }
-                    case OperandType.InlineMethod:
+                    else if (operand is byte)
                     {
-                        if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
+                        int value = (byte)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
                         {
-                            Instruction prevInst = instructions[i - 1];
-                            if (prevInst.OpCode.Code == Code.Ldtoken)
-                            {
-                                IField rvaField = (IField)prevInst.Operand;
-                                FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
-                                byte[] data = ravFieldDef.InitialValue;
-                                if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, data))
-                                {
-                                    // remove prev ldtoken instruction
-                                    Assert.AreEqual(Code.Ldtoken, resultInstructions[resultInstructions.Count - 1].OpCode.Code);
-                                    resultInstructions.RemoveAt(resultInstructions.Count - 1);
-                                    _dataObfuscator.ObfuscateBytes(method, data, obfuscatedInstructions);
-                                    obfuscated = true;
-                                }
-                            }
+                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            return true;
                         }
-                        break;
                     }
+                    else if (operand is long)
+                    {
+                        long value = (long)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateLong(method, value))
+                        {
+                            _dataObfuscator.ObfuscateLong(method, value, outputInstructions);
+                            return true;
+                        }
+                    }
+                    else if (operand is float)
+                    {
+                        float value = (float)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateFloat(method, value))
+                        {
+                            _dataObfuscator.ObfuscateFloat(method, value, outputInstructions);
+                            return true;
+                        }
+                    }
+                    else if (operand is double)
+                    {
+                        double value = (double)operand;
+                        if (_dataObfuscatorPolicy.NeedObfuscateDouble(method, value))
+                        {
+                            _dataObfuscator.ObfuscateDouble(method, value, outputInstructions);
+                            return true;
+                        }
+                    }
+                    return false;
                 }
-                resultInstructions.Add(inst);
-                if (obfuscated)
+                case OperandType.InlineString:
                 {
-                    // current instruction may be the target of control flow instruction, so we can't remove it directly.
-                    // we replace it with nop now, then remove it in CleanUpInstructionPass
-                    inst.OpCode = obfuscatedInstructions[0].OpCode;
-                    inst.Operand = obfuscatedInstructions[0].Operand;
-                    for (int k = 1; k < obfuscatedInstructions.Count; k++)
+                    //RuntimeHelpers.InitializeArray
+                    string value = (string)inst.Operand;
+                    if (_dataObfuscatorPolicy.NeedObfuscateString(method, value))
                     {
-                        resultInstructions.Add(obfuscatedInstructions[k]);
+                        _dataObfuscator.ObfuscateString(method, value, outputInstructions);
+                        return true;
                     }
+                    return false;
                 }
-            }
-
-            instructions.Clear();
-            foreach (var obInst in resultInstructions)
-            {
-                instructions.Add(obInst);
+                case OperandType.InlineMethod:
+                {
+                    if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
+                    {
+                        Instruction prevInst = instructions[instructionIndex - 1];
+                        if (prevInst.OpCode.Code == Code.Ldtoken)
+                        {
+                            IField rvaField = (IField)prevInst.Operand;
+                            FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
+                            byte[] data = ravFieldDef.InitialValue;
+                            if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, data))
+                            {
+                                // remove prev ldtoken instruction
+                                Assert.AreEqual(Code.Ldtoken, totalFinalInstructions[totalFinalInstructions.Count - 1].OpCode.Code);
+                                totalFinalInstructions.RemoveAt(totalFinalInstructions.Count - 1);
+                                _dataObfuscator.ObfuscateBytes(method, data, outputInstructions);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                default: return false;
             }
         }
     }
