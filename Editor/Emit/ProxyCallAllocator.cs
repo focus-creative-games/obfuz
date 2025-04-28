@@ -106,9 +106,10 @@ namespace Obfuz.Emit
 
         private MethodSig CreateDispatchMethodSig(IMethod method)
         {
-            MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method));
+            //MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method));
+            MethodSig methodSig = MetaUtil.GetInflatedMethodSig(method).Clone();
             //methodSig.Params
-            switch(MetaUtil.GetThisArgType(method))
+            switch (MetaUtil.GetThisArgType(method))
             {
                 case ThisArgType.Class:
                 {
