@@ -24,6 +24,10 @@ namespace Obfuz.DynamicProxy
             {
                 return false;
             }
+            if (method.Name == ".ctor")
+            {
+                return false;
+            }
             return true;
         }
     }
