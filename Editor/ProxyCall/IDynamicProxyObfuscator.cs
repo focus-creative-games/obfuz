@@ -11,5 +11,7 @@ namespace Obfuz.DynamicProxy
     public interface IDynamicProxyObfuscator
     {
         void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
+
+        void Done();
     }
 }

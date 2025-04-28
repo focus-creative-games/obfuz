@@ -7,5 +7,6 @@ namespace Obfuz.DynamicProxy
     public abstract class DynamicProxyObfuscatorBase : IDynamicProxyObfuscator
     {
         public abstract void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
+        public abstract void Done();
     }
 }

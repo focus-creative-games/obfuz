@@ -5,8 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public static class MetaUtil
     {
@@ -165,9 +166,9 @@ namespace Obfuz
                 case ElementType.R4:
                 case ElementType.R8:
                 case ElementType.String:
-                    return true;
+                return true;
                 case ElementType.Class:
-                    return IsScriptOrSerializableType(typeSig.ToTypeDefOrRef().ResolveTypeDefThrow());
+                return IsScriptOrSerializableType(typeSig.ToTypeDefOrRef().ResolveTypeDefThrow());
                 case ElementType.ValueType:
                 {
                     TypeDef typeDef = typeSig.ToTypeDefOrRef().ResolveTypeDefThrow();
@@ -419,6 +420,224 @@ namespace Obfuz
                 anyChange = true;
             }
             return anyChange;
+        }
+
+        //public static bool ContainsContainsGenericParameter1(MethodDef method)
+        //{
+        //    Assert.IsTrue(!(method.DeclaringType.ContainsGenericParameter || method.MethodSig.ContainsGenericParameter));
+        //    return false;
+        //}
+
+        public static bool ContainsContainsGenericParameter1(MethodSpec methodSpec)
+        {
+            if (methodSpec.GenericInstMethodSig.ContainsGenericParameter)
+            {
+                return true;
+            }
+            IMethodDefOrRef method = methodSpec.Method;
+            if (method.IsMethodDef)
+            {
+                return false;// ContainsContainsGenericParameter1((MethodDef)method);
+            }
+            if (method.IsMemberRef)
+            {
+                return ContainsContainsGenericParameter1((MemberRef)method);
+            }
+            throw new Exception($"unknown method: {method}");
+        }
+
+        public static bool ContainsContainsGenericParameter1(MemberRef memberRef)
+        {
+            IMemberRefParent parent = memberRef.Class;
+            if (parent is TypeSpec typeSpec)
+            {
+                return typeSpec.ContainsGenericParameter;
+            }
+            return false;
+        }
+
+        public static bool ContainsContainsGenericParameter(IMethod method)
+        {
+            Assert.IsTrue(method.IsMethod);
+            if (method is MethodDef methodDef)
+            {
+                return false;
+            }
+
+            if (method is MethodSpec methodSpec)
+            {
+                return ContainsContainsGenericParameter1(methodSpec);
+            }
+            if (method is MemberRef memberRef)
+            {
+                return ContainsContainsGenericParameter1(memberRef);
+            }
+            throw new Exception($"unknown method: {method}");
+        }
+
+
+
+        public static TypeSig Inflate(TypeSig sig, GenericArgumentContext ctx)
+        {
+            if (!sig.ContainsGenericParameter)
+            {
+                return sig;
+            }
+            return ctx.Resolve(sig);
+        }
+
+
+        public static MethodSig InflateMethodSig(MethodSig methodSig, GenericArgumentContext genericArgumentContext)
+        {
+            var newReturnType = Inflate(methodSig.RetType, genericArgumentContext);
+            var newParams = new List<TypeSig>();
+            foreach (var param in methodSig.Params)
+            {
+                newParams.Add(Inflate(param, genericArgumentContext));
+            }
+            var newParamsAfterSentinel = new List<TypeSig>();
+            if (methodSig.ParamsAfterSentinel != null)
+            {
+                throw new NotSupportedException($"methodSig.ParamsAfterSentinel is not supported: {methodSig}");
+                //foreach (var param in methodSig.ParamsAfterSentinel)
+                //{
+                //    newParamsAfterSentinel.Add(Inflate(param, genericArgumentContext));
+                //}
+            }
+            return new MethodSig(methodSig.CallingConvention, methodSig.GenParamCount, newReturnType, newParams, null);
+        }
+
+        public static IList<TypeSig> GetGenericArguments(IMemberRefParent type)
+        {
+            if (type is TypeDef typeDef)
+            {
+                return null;
+            }
+            if (type is TypeRef typeRef)
+            {
+                return null;
+            }
+            if (type is TypeSpec typeSpec)
+            {
+                GenericInstSig genericInstSig = typeSpec.TypeSig.ToGenericInstSig();
+                return genericInstSig?.GenericArguments;
+            }
+            throw new NotSupportedException($"type:{type}");
+        }
+
+        public static MethodSig GetInflatedMethodSig(IMethod method)
+        {
+            if (method is MethodDef methodDef)
+            {
+                return methodDef.MethodSig;
+            }
+            if (method is MemberRef memberRef)
+            {
+                return InflateMethodSig(memberRef.MethodSig, new GenericArgumentContext(GetGenericArguments(memberRef.Class), null));
+            }
+            if (method is MethodSpec methodSpec)
+            {
+                var genericInstMethodSig = methodSpec.GenericInstMethodSig;
+                if (methodSpec.Method is MethodDef methodDef2)
+                {
+                    return InflateMethodSig(methodDef2.MethodSig, new GenericArgumentContext(null, genericInstMethodSig.GenericArguments));
+                }
+                if (methodSpec.Method is MemberRef memberRef2)
+                {
+                    return InflateMethodSig(memberRef2.MethodSig, new GenericArgumentContext(GetGenericArguments(memberRef2.Class), genericInstMethodSig.GenericArguments));
+                }
+
+            }
+            throw new NotSupportedException($" method: {method}");
+        }
+
+        public static MethodSig ToSharedMethodSig(ICorLibTypes corTypes, MethodSig methodSig)
+        {
+            var newReturnType = ToShareTypeSig(corTypes, methodSig.RetType);
+            var newParams = new List<TypeSig>();
+            foreach (var param in methodSig.Params)
+            {
+                newParams.Add(ToShareTypeSig(corTypes, param));
+            }
+            if (methodSig.ParamsAfterSentinel != null)
+            {
+                //foreach (var param in methodSig.ParamsAfterSentinel)
+                //{
+                //    newParamsAfterSentinel.Add(ToShareTypeSig(corTypes, param));
+                //}
+                throw new NotSupportedException($"methodSig.ParamsAfterSentinel is not supported: {methodSig}");
+            }
+            return new MethodSig(methodSig.CallingConvention, methodSig.GenParamCount, newReturnType, newParams, null);
+        }
+
+        public static TypeSig ToShareTypeSig(ICorLibTypes corTypes, TypeSig typeSig)
+        {
+            var a = typeSig.RemovePinnedAndModifiers();
+            switch (a.ElementType)
+            {
+                case ElementType.Void: return corTypes.Void;
+                case ElementType.Boolean: return corTypes.Byte;
+                case ElementType.Char: return corTypes.UInt16;
+                case ElementType.I1: return corTypes.SByte;
+                case ElementType.U1: return corTypes.Byte;
+                case ElementType.I2: return corTypes.Int16;
+                case ElementType.U2: return corTypes.UInt16;
+                case ElementType.I4: return corTypes.Int32;
+                case ElementType.U4: return corTypes.UInt32;
+                case ElementType.I8: return corTypes.Int64;
+                case ElementType.U8: return corTypes.UInt64;
+                case ElementType.R4: return corTypes.Single;
+                case ElementType.R8: return corTypes.Double;
+                case ElementType.String: return corTypes.Object;
+                case ElementType.TypedByRef: return corTypes.TypedReference;
+                case ElementType.I: return corTypes.IntPtr;
+                case ElementType.U: return corTypes.UIntPtr;
+                case ElementType.Object: return corTypes.Object;
+                case ElementType.Sentinel: return typeSig;
+                case ElementType.Ptr: return corTypes.UIntPtr;
+                case ElementType.ByRef: return corTypes.UIntPtr;
+                case ElementType.SZArray: return corTypes.Object;
+                case ElementType.Array: return corTypes.Object;
+                case ElementType.ValueType:
+                {
+                    TypeDef typeDef = a.ToTypeDefOrRef().ResolveTypeDef();
+                    if (typeDef == null)
+                    {
+                        throw new Exception($"type:{a} definition could not be found");
+                    }
+                    if (typeDef.IsEnum)
+                    {
+                        return ToShareTypeSig(corTypes, typeDef.GetEnumUnderlyingType());
+                    }
+                    return typeSig;
+                }
+                case ElementType.Var:
+                case ElementType.MVar:
+                case ElementType.Class: return corTypes.Object;
+                case ElementType.GenericInst:
+                {
+                    var gia = (GenericInstSig)a;
+                    TypeDef typeDef = gia.GenericType.ToTypeDefOrRef().ResolveTypeDef();
+                    if (typeDef == null)
+                    {
+                        throw new Exception($"type:{a} definition could not be found");
+                    }
+                    if (typeDef.IsEnum)
+                    {
+                        return ToShareTypeSig(corTypes, typeDef.GetEnumUnderlyingType());
+                    }
+                    if (!typeDef.IsValueType)
+                    {
+                        return corTypes.Object;
+                    }
+                    return new GenericInstSig(gia.GenericType, gia.GenericArguments.Select(ga => ToShareTypeSig(corTypes, ga)).ToList());
+                }
+                case ElementType.FnPtr: return corTypes.UIntPtr;
+                case ElementType.ValueArray: return typeSig;
+                case ElementType.Module: return typeSig;
+                default:
+                throw new NotSupportedException(typeSig.ToString());
+            }
         }
     }
 }

@@ -16,6 +16,14 @@ namespace Obfuz.DynamicProxy
 
         public override bool NeedDynamicProxyCalledMethod(IMethod method, bool callVir)
         {
+            
+            ITypeDefOrRef declaringType = method.DeclaringType;
+            TypeDef typeDef = declaringType.ResolveTypeDef();
+            // doesn't proxy call if the method is a delegate
+            if (typeDef != null && typeDef.IsDelegate)
+            {
+                return false;
+            }
             return true;
         }
     }

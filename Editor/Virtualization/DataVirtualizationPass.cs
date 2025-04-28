@@ -24,7 +24,7 @@ namespace Obfuz.Virtualization
 
         public override void Stop(ObfuscatorContext ctx)
         {
-            _dataObfuscator.Stop();
+            _dataObfuscator.Done();
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)

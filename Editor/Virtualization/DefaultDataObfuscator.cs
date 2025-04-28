@@ -79,7 +79,7 @@ namespace Obfuz.Virtualization
             //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldstr, value));
         }
 
-        public void Stop()
+        public void Done()
         {
             _rvaDataAllocator.Done();
             _constFieldAllocator.Done();

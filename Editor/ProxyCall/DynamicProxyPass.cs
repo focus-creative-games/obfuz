@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Utils;
 using Obfuz.Virtualization;
 using System;
 using System.Collections.Generic;
@@ -13,18 +14,20 @@ namespace Obfuz.DynamicProxy
 {
     public class DynamicProxyPass : MethodBodyObfuscationPassBase
     {
+        private readonly IRandom _random;
         private readonly IDynamicProxyPolicy _dynamicProxyPolicy;
         private readonly IDynamicProxyObfuscator _dynamicProxyObfuscator;
 
         public DynamicProxyPass()
         {
+            _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
             _dynamicProxyPolicy = new ConfigDynamicProxyPolicy();
-            _dynamicProxyObfuscator = new DefaultDynamicProxyObfuscator();
+            _dynamicProxyObfuscator = new DefaultDynamicProxyObfuscator(_random);
         }
 
         public override void Stop(ObfuscatorContext ctx)
         {
-
+            _dynamicProxyObfuscator.Done();
         }
 
         public override void Start(ObfuscatorContext ctx)
@@ -40,12 +43,20 @@ namespace Obfuz.DynamicProxy
         protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
-            return false;
+            IMethod calledMethod = inst.Operand as IMethod;
+            if (calledMethod == null || !calledMethod.IsMethod)
+            {
+                return false;
+            }
+            if (MetaUtil.ContainsContainsGenericParameter(calledMethod))
+            {
+                return false;
+            }
+
             switch (inst.OpCode.Code)
             {
                 case Code.Call:
                 {
-                    IMethod calledMethod = (IMethod)inst.Operand;
                     if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(calledMethod, false))
                     {
                         return false;
@@ -59,7 +70,6 @@ namespace Obfuz.DynamicProxy
                     {
                         return false;
                     }
-                    IMethod calledMethod = (IMethod)inst.Operand;
                     if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(calledMethod, true))
                     {
                         return false;

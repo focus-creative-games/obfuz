@@ -1,5 +1,6 @@
 using dnlib.DotNet;
 using Obfuz.Rename;
+using Obfuz.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;

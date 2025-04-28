@@ -19,6 +19,7 @@ namespace Obfuz.Virtualization
         void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions);
 
         void ObfuscateBytes(MethodDef method, Array value, List<Instruction> obfuscatedInstructions);
-        void Stop();
+
+        void Done();
     }
 }

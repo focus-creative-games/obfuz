@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
