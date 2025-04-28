@@ -6,9 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 namespace Obfuz.Utils
 {
+    public enum ThisArgType
+    {
+        None,
+        ValueType,
+        Class,
+    }
+
     public static class MetaUtil
     {
         public static string GetModuleNameWithoutExt(string moduleName)
@@ -547,6 +555,32 @@ namespace Obfuz.Utils
                     return InflateMethodSig(memberRef2.MethodSig, new GenericArgumentContext(GetGenericArguments(memberRef2.Class), genericInstMethodSig.GenericArguments));
                 }
 
+            }
+            throw new NotSupportedException($" method: {method}");
+        }
+
+        public static ThisArgType GetThisArgType(IMethod method)
+        {
+            if (!method.MethodSig.HasThis)
+            {
+                return ThisArgType.None;
+            }
+            if (method is MethodDef methodDef)
+            {
+                return methodDef.DeclaringType.IsValueType ? ThisArgType.ValueType : ThisArgType.Class;
+            }
+            if (method is MemberRef memberRef)
+            {
+                TypeDef typeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(memberRef.Class);
+                if (typeDef == null)
+                {
+                    return ThisArgType.Class;
+                }
+                return typeDef.IsValueType ? ThisArgType.ValueType : ThisArgType.Class;
+            }
+            if (method is MethodSpec methodSpec)
+            {
+                return GetThisArgType(methodSpec.Method);
             }
             throw new NotSupportedException($" method: {method}");
         }

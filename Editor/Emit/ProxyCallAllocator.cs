@@ -56,11 +56,18 @@ namespace Obfuz.Emit
 
 
         const int maxProxyMethodPerDispatchMethod = 1000;
+
+        class CallInfo
+        {
+            public IMethod method;
+            public bool callVir;
+        }
+
         class DispatchMethodInfo
         {
             public MethodDef methodDef;
             public int secret;
-            public List<IMethod> methods = new List<IMethod>();
+            public List<CallInfo> methods = new List<CallInfo>();
         }
 
         private readonly Dictionary<MethodSig, List<DispatchMethodInfo>> _dispatchMethods = new Dictionary<MethodSig, List<DispatchMethodInfo>>(SignatureEqualityComparer.Instance);
@@ -100,9 +107,23 @@ namespace Obfuz.Emit
         private MethodSig CreateDispatchMethodSig(IMethod method)
         {
             MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method));
+            //methodSig.Params
+            switch(MetaUtil.GetThisArgType(method))
+            {
+                case ThisArgType.Class:
+                {
+                    methodSig.Params.Insert(0, _module.CorLibTypes.Object);
+                    break;
+                }
+                case ThisArgType.ValueType:
+                {
+                    methodSig.Params.Insert(0, _module.CorLibTypes.UIntPtr);
+                    break;
+                }
+            }
             // extra param for secret
             methodSig.Params.Add(_module.CorLibTypes.Int32);
-            return methodSig;
+            return MethodSig.CreateStatic(methodSig.RetType, methodSig.Params.ToArray());
         }
 
         private DispatchMethodInfo GetDispatchMethod(IMethod method)
@@ -136,7 +157,7 @@ namespace Obfuz.Emit
                     proxyMethod = methodDispatcher.methodDef,
                     secret = methodDispatcher.methods.Count,
                 };
-                methodDispatcher.methods.Add(method);
+                methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir});
                 _methodProxys.Add(key, proxyInfo);
             }
             return new ProxyCallMethodData { proxyMethod = proxyInfo.proxyMethod, secret = proxyInfo.secret };
@@ -154,7 +175,24 @@ namespace Obfuz.Emit
                 var body = new CilBody();
                 methodDef.Body = body;
                 var ins = body.Instructions;
-                ins.Add(Instruction.Create(OpCodes.Ret));
+
+                foreach (Parameter param in methodDef.Parameters)
+                {
+                    ins.Add(Instruction.Create(OpCodes.Ldarg, param));
+                }
+
+                var switchCases = new List<Instruction>();
+                var switchInst = Instruction.Create(OpCodes.Switch, switchCases);
+                ins.Add(switchInst);
+                var ret = Instruction.Create(OpCodes.Ret);
+                foreach (CallInfo ci in dispatchMethod.methods)
+                {
+                    var callTargetMethod = Instruction.Create(ci.callVir ? OpCodes.Callvirt : OpCodes.Call, ci.method);
+                    switchCases.Add(callTargetMethod);
+                    ins.Add(callTargetMethod);
+                    ins.Add(Instruction.Create(OpCodes.Br, ret));
+                }
+                ins.Add(ret);
             }
         }
     }
