@@ -650,6 +650,7 @@ namespace Obfuz.Utils
                 case ElementType.Class: return corTypes.Object;
                 case ElementType.GenericInst:
                 {
+                    return typeSig;
                     var gia = (GenericInstSig)a;
                     TypeDef typeDef = gia.GenericType.ToTypeDefOrRef().ResolveTypeDef();
                     if (typeDef == null)
