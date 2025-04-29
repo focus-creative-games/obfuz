@@ -12,17 +12,17 @@ using UnityEngine.Assertions;
 
 namespace Obfuz.DynamicProxy
 {
-    public class DynamicProxyPass : MethodBodyObfuscationPassBase
+    public class ProxyCallPass : MethodBodyObfuscationPassBase
     {
         private readonly IRandom _random;
-        private readonly IDynamicProxyPolicy _dynamicProxyPolicy;
-        private readonly IDynamicProxyObfuscator _dynamicProxyObfuscator;
+        private readonly IProxyCallPolicy _dynamicProxyPolicy;
+        private readonly IProxyCallObfuscator _dynamicProxyObfuscator;
 
-        public DynamicProxyPass()
+        public ProxyCallPass()
         {
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
-            _dynamicProxyPolicy = new ConfigDynamicProxyPolicy();
-            _dynamicProxyObfuscator = new DefaultDynamicProxyObfuscator(_random);
+            _dynamicProxyPolicy = new ConfigProxyCallPolicy();
+            _dynamicProxyObfuscator = new DefaultProxyCallObfuscator(_random);
         }
 
         public override void Stop(ObfuscatorContext ctx)

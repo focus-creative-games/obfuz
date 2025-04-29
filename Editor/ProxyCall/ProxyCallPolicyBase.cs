@@ -2,7 +2,7 @@
 
 namespace Obfuz.DynamicProxy
 {
-    public abstract class DynamicProxyPolicyBase : IDynamicProxyPolicy
+    public abstract class ProxyCallPolicyBase : IProxyCallPolicy
     {
         public abstract bool NeedDynamicProxyCallInMethod(MethodDef method);
 

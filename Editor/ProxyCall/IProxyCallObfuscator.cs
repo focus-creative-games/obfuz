@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.DynamicProxy
 {
-    public interface IDynamicProxyObfuscator
+    public interface IProxyCallObfuscator
     {
         void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
 

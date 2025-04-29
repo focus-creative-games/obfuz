@@ -6,12 +6,12 @@ using Obfuz.Emit;
 
 namespace Obfuz.DynamicProxy
 {
-    public class DefaultDynamicProxyObfuscator : DynamicProxyObfuscatorBase
+    public class DefaultProxyCallObfuscator : ProxyCallObfuscatorBase
     {
         private readonly IRandom _random;
         private readonly ProxyCallAllocator _proxyCallAllocator;
 
-        public DefaultDynamicProxyObfuscator(IRandom random)
+        public DefaultProxyCallObfuscator(IRandom random)
         {
             _random = random;
             _proxyCallAllocator = new ProxyCallAllocator(random);

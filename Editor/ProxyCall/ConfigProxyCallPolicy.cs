@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.DynamicProxy
 {
-    public class ConfigDynamicProxyPolicy : DynamicProxyPolicyBase
+    public class ConfigProxyCallPolicy : ProxyCallPolicyBase
     {
         public override bool NeedDynamicProxyCallInMethod(MethodDef method)
         {
