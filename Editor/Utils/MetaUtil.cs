@@ -650,22 +650,23 @@ namespace Obfuz.Utils
                 case ElementType.Class: return corTypes.Object;
                 case ElementType.GenericInst:
                 {
+                    // il2cpp will raise error when try to share generic value type
                     return typeSig;
-                    var gia = (GenericInstSig)a;
-                    TypeDef typeDef = gia.GenericType.ToTypeDefOrRef().ResolveTypeDef();
-                    if (typeDef == null)
-                    {
-                        throw new Exception($"type:{a} definition could not be found");
-                    }
-                    if (typeDef.IsEnum)
-                    {
-                        return ToShareTypeSig(corTypes, typeDef.GetEnumUnderlyingType());
-                    }
-                    if (!typeDef.IsValueType)
-                    {
-                        return corTypes.Object;
-                    }
-                    return new GenericInstSig(gia.GenericType, gia.GenericArguments.Select(ga => ToShareTypeSig(corTypes, ga)).ToList());
+                    //var gia = (GenericInstSig)a;
+                    //TypeDef typeDef = gia.GenericType.ToTypeDefOrRef().ResolveTypeDef();
+                    //if (typeDef == null)
+                    //{
+                    //    throw new Exception($"type:{a} definition could not be found");
+                    //}
+                    //if (typeDef.IsEnum)
+                    //{
+                    //    return ToShareTypeSig(corTypes, typeDef.GetEnumUnderlyingType());
+                    //}
+                    //if (!typeDef.IsValueType)
+                    //{
+                    //    return corTypes.Object;
+                    //}
+                    //return new GenericInstSig(gia.GenericType, gia.GenericArguments.Select(ga => ToShareTypeSig(corTypes, ga)).ToList());
                 }
                 case ElementType.FnPtr: return corTypes.UIntPtr;
                 case ElementType.ValueArray: return typeSig;
