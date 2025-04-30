@@ -46,6 +46,7 @@ namespace Obfuz
             _obfuscationAssemblyNames = options.obfuscationAssemblyNames;
             _assemblyCache = new AssemblyCache(new PathAssemblyResolver(options.assemblySearchDirs.ToArray()));
 
+            _pipeline.AddPass(new MemoryEncryptionPass());
             _pipeline.AddPass(new ProxyCallPass());
             _pipeline.AddPass(new ExprObfuscationPass());
             _pipeline.AddPass(new DataVirtualizationPass());
