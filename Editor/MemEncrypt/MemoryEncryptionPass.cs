@@ -12,6 +12,7 @@ namespace Obfuz.MemEncrypt
     public class MemoryEncryptionPass : MethodBodyObfuscationPassBase
     {
         private readonly IEncryptionPolicy _encryptionPolicy = new ConfigEncryptionPolicy();
+        private readonly IMemoryEncryptor _memoryEncryptor = new DefaultMemoryEncryptor();
 
         public override void Start(ObfuscatorContext ctx)
         {
@@ -57,22 +58,31 @@ namespace Obfuz.MemEncrypt
             {
                 return false;
             }
+            var ctx = new MemoryEncryptionContext
+            {
+                module = callingMethod.Module,
+                currentInstruction = inst,
+            };
             switch (code)
             {
                 case Code.Ldfld:
                 {
+                    _memoryEncryptor.Decrypt(fieldDef, outputInstructions, ctx);
                     break;
                 }
                 case Code.Stfld:
                 {
+                    _memoryEncryptor.Encrypt(fieldDef, outputInstructions, ctx);
                     break;
                 }
                 case Code.Ldsfld:
                 {
+                    _memoryEncryptor.Decrypt(fieldDef, outputInstructions, ctx);
                     break;
                 }
                 case Code.Stsfld:
                 {
+                    _memoryEncryptor.Encrypt(fieldDef, outputInstructions, ctx);
                     break;
                 }
                 case Code.Ldflda:
@@ -83,7 +93,6 @@ namespace Obfuz.MemEncrypt
                 default: return false;
             }
             Debug.Log($"memory encrypt field: {field}");
-            outputInstructions.Add(inst);
             return true;
         }
     }

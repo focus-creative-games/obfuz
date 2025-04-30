@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet;
 using Obfuz.DynamicProxy;
 using Obfuz.ExprObfuscation;
+using Obfuz.MemEncrypt;
 using Obfuz.Rename;
 using Obfuz.Virtualization;
 using System;
