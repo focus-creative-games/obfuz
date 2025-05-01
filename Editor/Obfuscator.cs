@@ -3,7 +3,7 @@ using Obfuz.DynamicProxy;
 using Obfuz.ExprObfuscation;
 using Obfuz.MemEncrypt;
 using Obfuz.Rename;
-using Obfuz.Virtualization;
+using Obfuz.Emit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Obfuz.Virtualization;
 
 namespace Obfuz
 {

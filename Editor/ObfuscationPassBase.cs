@@ -1,4 +1,4 @@
-﻿using Obfuz.Virtualization;
+﻿using Obfuz.Emit;
 
 namespace Obfuz
 {

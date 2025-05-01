@@ -1,4 +1,4 @@
-﻿using Obfuz.Virtualization;
+﻿using Obfuz.Emit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
