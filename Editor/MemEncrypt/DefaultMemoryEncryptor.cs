@@ -1,5 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine.Assertions;
@@ -42,44 +44,32 @@ namespace Obfuz.MemEncrypt
                 Assert.IsNotNull(s_castDoubleAsLong, "CastDoubleAsLong not found");
             }
 
+
+            private VariableEncryption CreateEncryption(ElementType type)
+            {
+                IRandom random = new RandomWithKey(new byte[16], 1234);
+                switch (type)
+                {
+                    case ElementType.I4:
+                    return new VariableEncryption(DataNodeType.Int32, random);
+                    case ElementType.I8:
+                    return new VariableEncryption(DataNodeType.Int64, random);
+                    case ElementType.R4:
+                    return new VariableEncryption(DataNodeType.Float32, random);
+                    case ElementType.R8:
+                    return new VariableEncryption(DataNodeType.Float64, random);
+                    default: throw new Exception($"Unsupported type {type} for MemoryEncryptor");
+                }
+            }
+
             public void Encrypt(FieldDef field, List<Instruction> outputInstructions, MemoryEncryptionContext ctx)
             {
-                ElementType type = field.FieldType.RemovePinnedAndModifiers().ElementType;
-                if (type == ElementType.R4)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castFloatAsInt));
-                    type = ElementType.I4;
-                }
-                else if (type == ElementType.R8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castDoubleAsLong));
-                    type = ElementType.I8;
-                }
 
-                if (type == ElementType.I4)
-                {
-                    outputInstructions.Add(Instruction.CreateLdcI4(100));
-                    outputInstructions.Add(Instruction.Create(OpCodes.Add));
-                }
-                else if (type == ElementType.I8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, 100L));
-                    outputInstructions.Add(Instruction.Create(OpCodes.Add));
-                }
-                else
-                {
-                    throw new NotSupportedException($"Unsupported type {type} for MemoryEncryptor");
-                }
-                if (type == ElementType.R4)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castIntAsFloat));
-                    type = ElementType.I4;
-                }
-                else if (type == ElementType.R8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castLongAsDouble));
-                    type = ElementType.I8;
-                }
+                ElementType type = field.FieldType.RemovePinnedAndModifiers().ElementType;
+                var encryption = CreateEncryption(type);
+
+                encryption.EmitTransform(outputInstructions, new EncryptionCompileContext { module = _module });
+
                 outputInstructions.Add(ctx.currentInstruction.Clone());
             }
 
@@ -87,41 +77,9 @@ namespace Obfuz.MemEncrypt
             {
                 outputInstructions.Add(ctx.currentInstruction.Clone());
                 ElementType type = field.FieldType.RemovePinnedAndModifiers().ElementType;
-                if (type == ElementType.R4)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castFloatAsInt));
-                    type = ElementType.I4;
-                }
-                else if (type == ElementType.R8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castDoubleAsLong));
-                    type = ElementType.I8;
-                }
+                var encryption = CreateEncryption(type);
 
-                if (type == ElementType.I4)
-                {
-                    outputInstructions.Add(Instruction.CreateLdcI4(100));
-                    outputInstructions.Add(Instruction.Create(OpCodes.Sub));
-                }
-                else if (type == ElementType.I8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, 100L));
-                    outputInstructions.Add(Instruction.Create(OpCodes.Sub));
-                }
-                else
-                {
-                    throw new NotSupportedException($"Unsupported type {type} for MemoryEncryptor");
-                }
-                if (type == ElementType.R4)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castIntAsFloat));
-                    type = ElementType.I4;
-                }
-                else if (type == ElementType.R8)
-                {
-                    outputInstructions.Add(Instruction.Create(OpCodes.Call, s_castLongAsDouble));
-                    type = ElementType.I8;
-                }
+                encryption.EmitRevertTransform(outputInstructions, new EncryptionCompileContext { module = _module });
             }
         }
 
