@@ -11,10 +11,10 @@ namespace Obfuz
 
         public override void Process(ObfuscatorContext ctx)
         {
-            foreach (var ass in ctx.assemblies)
+            foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {
                 // ToArray to avoid modify list exception
-                foreach (TypeDef type in ass.module.GetTypes().ToArray())
+                foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
                     if (type.Name.StartsWith("$Obfuz$"))
                     {

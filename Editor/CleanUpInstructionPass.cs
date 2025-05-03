@@ -21,9 +21,9 @@ namespace Obfuz
 
         public override void Process(ObfuscatorContext ctx)
         {
-            foreach (var ass in ctx.assemblies)
+            foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     foreach (MethodDef method in type.Methods)
                     {

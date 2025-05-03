@@ -15,7 +15,7 @@ namespace Obfuz.Rename
             _underlyingPolicy = underlyingPolicy;
         }
 
-        public override bool NeedRename(ModuleDefMD mod)
+        public override bool NeedRename(ModuleDef mod)
         {
             if (!_computeCache.TryGetValue(mod, out var value))
             {

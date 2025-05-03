@@ -4,9 +4,9 @@ namespace Obfuz.Rename
 {
     public abstract class RenamePolicyBase : IRenamePolicy
     {
-        public virtual bool NeedRename(ModuleDefMD mod)
+        public virtual bool NeedRename(ModuleDef mod)
         {
-            return true;
+            return false;
         }
 
         public virtual bool NeedRename(TypeDef typeDef)

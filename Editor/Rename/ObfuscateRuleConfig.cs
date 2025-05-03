@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Obfuz
 {
 
-    public class ObfuscateRuleConfig : IRenamePolicy
+    public class ObfuscateRuleConfig : RenamePolicyBase
     {
         enum ObfuscationType
         {
@@ -610,7 +610,7 @@ namespace Obfuz
             }
         }
 
-        public bool NeedRename(ModuleDefMD mod)
+        public override bool NeedRename(ModuleDef mod)
         {
             //string name = mod.Assembly.Name;
             //if (!_assemblyRuleSpecs.TryGetValue(name, out var assemblyRuleSpec))
@@ -839,13 +839,13 @@ namespace Obfuz
             return cache;
         }
 
-        public bool NeedRename(TypeDef typeDef)
+        public override bool NeedRename(TypeDef typeDef)
         {
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
             return cache.obfuscateName;
         }
 
-        public bool NeedRename(MethodDef methodDef)
+        public override bool NeedRename(MethodDef methodDef)
         {
             TypeDef typeDef = methodDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
@@ -856,28 +856,28 @@ namespace Obfuz
             return methodCache.obfuscateName;
         }
 
-        public bool NeedRename(FieldDef fieldDef)
+        public override bool NeedRename(FieldDef fieldDef)
         {
             TypeDef typeDef = fieldDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
             return !cache.notObfuscatedFields.Contains(fieldDef);
         }
 
-        public bool NeedRename(PropertyDef propertyDef)
+        public override bool NeedRename(PropertyDef propertyDef)
         {
             TypeDef typeDef = propertyDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
             return !cache.notObfuscatedProperties.Contains(propertyDef);
         }
 
-        public bool NeedRename(EventDef eventDef)
+        public override bool NeedRename(EventDef eventDef)
         {
             TypeDef typeDef = eventDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
             return !cache.notObfuscatedEvents.Contains(eventDef);
         }
 
-        public bool NeedRename(ParamDef paramDef)
+        public override bool NeedRename(ParamDef paramDef)
         {
             MethodDef methodDef = paramDef.DeclaringMethod;
             TypeDef typeDef = methodDef.DeclaringType;

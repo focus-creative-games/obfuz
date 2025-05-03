@@ -16,11 +16,10 @@ namespace Obfuz
         private readonly string _obfuscatedAssemblyOutputDir;
         private readonly AssemblyCache _assemblyCache;
 
-        private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies = new List<ObfuzAssemblyInfo>();
-
-
         private readonly List<string> _toObfuscatedAssemblyNames;
         private readonly List<string> _notObfuscatedAssemblyNamesReferencingObfuscated;
+        private readonly List<ModuleDef> _toObfuscatedModules = new List<ModuleDef>();
+        private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
 
         private readonly ObfuzPipeline _pipeline = new ObfuzPipeline();
 
@@ -63,7 +62,8 @@ namespace Obfuz
             _ctx = new ObfuscatorContext
             {
                 assemblyCache = _assemblyCache,
-                assemblies = _obfuzAssemblies,
+                toObfuscatedModules = _toObfuscatedModules,
+                obfuscatedAndNotObfuscatedModules = _obfuscatedAndNotObfuscatedModules,
                 toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
                 notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
                 obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
@@ -73,7 +73,7 @@ namespace Obfuz
 
         private void LoadAssemblies()
         {
-            foreach (string assName in _toObfuscatedAssemblyNames)
+            foreach (string assName in _toObfuscatedAssemblyNames.Concat(_notObfuscatedAssemblyNamesReferencingObfuscated))
             {
                 ModuleDefMD mod = _assemblyCache.TryLoadModule(assName);
                 if (mod == null)
@@ -81,28 +81,11 @@ namespace Obfuz
                     Debug.Log($"assembly: {assName} not found! ignore.");
                     continue;
                 }
-                var obfuzAsm = new ObfuzAssemblyInfo
+                if (_toObfuscatedAssemblyNames.Contains(assName))
                 {
-                    name = assName,
-                    module = mod,
-                    referenceMeAssemblies = new List<ObfuzAssemblyInfo>(),
-                };
-                obfuzAsm.referenceMeAssemblies.Add(obfuzAsm);
-                _obfuzAssemblies.Add(obfuzAsm);
-            }
-            
-            var assByName = _obfuzAssemblies.ToDictionary(x => x.name);
-            foreach (var ass in _obfuzAssemblies)
-            {
-                foreach (var refAss in ass.module.GetAssemblyRefs())
-                {
-                    string refAssName = refAss.Name.ToString();
-                    if (assByName.TryGetValue(refAssName, out var refAssembly))
-                    {
-                        //UnityEngine.Debug.Log($"assembly:{ass.name} reference to {refAssName}");
-                        refAssembly.referenceMeAssemblies.Add(ass);
-                    }
+                    _toObfuscatedModules.Add(mod);
                 }
+                _obfuscatedAndNotObfuscatedModules.Add(mod);
             }
         }
 
@@ -117,11 +100,12 @@ namespace Obfuz
         {
             _pipeline.Stop(_ctx);
 
-            foreach (var ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
-                string outputFile = $"{_obfuscatedAssemblyOutputDir}/{ass.module.Name}";
-                ass.module.Write(outputFile);
-                Debug.Log($"save module. oldName:{ass.name} newName:{ass.module.Name} output:{outputFile}");
+                string assNameWithExt = mod.Name;
+                string outputFile = $"{_obfuscatedAssemblyOutputDir}/{assNameWithExt}";
+                mod.Write(outputFile);
+                Debug.Log($"save module. name:{mod.Assembly.Name} output:{outputFile}");
             }
         }
     }

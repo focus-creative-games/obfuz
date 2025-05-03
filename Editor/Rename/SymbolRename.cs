@@ -18,12 +18,26 @@ namespace Obfuz
 
     public class SymbolRename
     {
+        class AssemblyReferenceInfo
+        {
+            public string name;
+
+            public bool needObfuscated;
+
+            public ModuleDef module;
+
+            public List<AssemblyReferenceInfo> referenceMeAssemblies;
+        }
+
         private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
 
         private AssemblyCache _assemblyCache;
-        private List<ObfuzAssemblyInfo> _obfuzAssemblies;
-        private HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
+
+        private List<ModuleDef> _toObfuscatedModules;
+        private List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
+        private List<AssemblyReferenceInfo> _obfuzAssemblies;
+        private HashSet<ModuleDef> _toObfuscatedModuleSet;
         private ObfuscateRuleConfig _obfuscateRuleConfig;
         private IRenamePolicy _renamePolicy;
         private INameMaker _nameMaker;
@@ -50,17 +64,47 @@ namespace Obfuz
         public void Init(ObfuscatorContext ctx)
         {
             _assemblyCache = ctx.assemblyCache;
-            _obfuzAssemblies = ctx.assemblies;
+            _toObfuscatedModules = ctx.toObfuscatedModules;
+            _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
+            _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
+            _obfuzAssemblies = BuildAssemblyReferenceInfos(ctx);
             _obfuscateRuleConfig = new ObfuscateRuleConfig(ctx.toObfuscatedAssemblyNames);
             _obfuscateRuleConfig.LoadXmls(_obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
-
-            foreach (var mod in ctx.assemblies)
-            {
-                _obfuscatedModules.Add(mod.module);
-            }
             BuildCustomAttributeArguments();
+        }
+
+        private static List<AssemblyReferenceInfo> BuildAssemblyReferenceInfos(ObfuscatorContext ctx)
+        {
+            var obfuzAssemblies = new List<AssemblyReferenceInfo>();
+            foreach (ModuleDef mod in ctx.obfuscatedAndNotObfuscatedModules)
+            {
+                var obfuzAsm = new AssemblyReferenceInfo
+                {
+                    name = mod.Assembly.Name,
+                    needObfuscated = ctx.toObfuscatedModules.Contains(mod),
+                    module = mod,
+                    referenceMeAssemblies = new List<AssemblyReferenceInfo>(),
+                };
+                obfuzAsm.referenceMeAssemblies.Add(obfuzAsm);
+                obfuzAssemblies.Add(obfuzAsm);
+            }
+
+            var assByName = obfuzAssemblies.ToDictionary(x => x.name);
+            foreach (var ass in obfuzAssemblies)
+            {
+                foreach (var refAss in ass.module.GetAssemblyRefs())
+                {
+                    string refAssName = refAss.Name;
+                    if (assByName.TryGetValue(refAssName, out var refAssembly))
+                    {
+                        //UnityEngine.Debug.Log($"assembly:{ass.name} reference to {refAssName}");
+                        refAssembly.referenceMeAssemblies.Add(ass);
+                    }
+                }
+            }
+            return obfuzAssemblies;
         }
 
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
@@ -94,11 +138,11 @@ namespace Obfuz
 
         private void BuildCustomAttributeArguments()
         {
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
                 var customAttributes = new List<CustomAttributeInfo>();
-                CollectCArgumentWithTypeOf(ass.module, customAttributes);
-                foreach (TypeDef type in ass.module.GetTypes())
+                CollectCArgumentWithTypeOf(mod, customAttributes);
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     CollectCArgumentWithTypeOf(type, customAttributes);
                     foreach (FieldDef field in type.Fields)
@@ -126,13 +170,13 @@ namespace Obfuz
                     }
                 }
 
-                _customAttributeArgumentsWithTypeByMods.Add(ass.module, customAttributes);
+                _customAttributeArgumentsWithTypeByMods.Add(mod, customAttributes);
             }
         }
 
         public void Process()
         {
-            _renameRecordMap.Init(_obfuzAssemblies, _nameMaker);
+            _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
             RenameModules();
             RenameTypes();
             RenameFields();
@@ -141,7 +185,7 @@ namespace Obfuz
             RenameEvents();
         }
 
-        private List<ObfuzAssemblyInfo> GetReferenceMeAssemblies(ModuleDef mod)
+        private List<AssemblyReferenceInfo> GetReferenceMeAssemblies(ModuleDef mod)
         {
             return _obfuzAssemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
         }
@@ -149,11 +193,11 @@ namespace Obfuz
         private void RenameModules()
         {
             Debug.Log("Rename Modules begin");
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                if (_renamePolicy.NeedRename(ass.module))
+                if (_renamePolicy.NeedRename(mod))
                 {
-                    Rename(ass.module);
+                    Rename(mod);
                 }
             }
             Debug.Log("Rename Modules end");
@@ -169,9 +213,9 @@ namespace Obfuz
 
         private void BuildRefTypeDefMetasMap(Dictionary<TypeDef, RefTypeDefMetas> refTypeDefMetasMap)
         {
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeRef typeRef in ass.module.GetTypeRefs())
+                foreach (TypeRef typeRef in mod.GetTypeRefs())
                 {
                     TypeDef typeDef = typeRef.ResolveThrow();
                     if (!refTypeDefMetasMap.TryGetValue(typeDef, out var typeDefMetas))
@@ -244,9 +288,9 @@ namespace Obfuz
             BuildRefTypeDefMetasMap(_refTypeRefMetasMap);
             _assemblyCache.EnableTypeDefCache = false;
 
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     if (_renamePolicy.NeedRename(type))
                     {
@@ -279,9 +323,9 @@ namespace Obfuz
 
         private void BuildRefFieldMetasMap(Dictionary<FieldDef, RefFieldMetas> refFieldMetasMap)
         {
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                foreach (MemberRef memberRef in mod.GetMemberRefs())
                 {
                     if (!memberRef.IsFieldRef)
                     {
@@ -348,9 +392,9 @@ namespace Obfuz
             var refFieldMetasMap = new Dictionary<FieldDef, RefFieldMetas>();
             BuildRefFieldMetasMap(refFieldMetasMap);
 
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     foreach (FieldDef field in type.Fields)
                     {
@@ -371,9 +415,9 @@ namespace Obfuz
 
         private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (MemberRef memberRef in ass.module.GetMemberRefs())
+                foreach (MemberRef memberRef in mod.GetMemberRefs())
                 {
                     if (!memberRef.IsMethodRef)
                     {
@@ -410,9 +454,9 @@ namespace Obfuz
             var virtualMethods = new List<MethodDef>();
             var refMethodMetasMap = new Dictionary<MethodDef, RefMethodMetas>();
             BuildRefMethodMetasMap(refMethodMetasMap);
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     _virtualMethodGroupCalculator.CalculateType(type);
                     foreach (MethodDef method in type.Methods)
@@ -444,7 +488,7 @@ namespace Obfuz
                 VirtualMethodGroup group = _virtualMethodGroupCalculator.GetMethodGroup(method);
                 if (!groupNeedRenames.TryGetValue(group, out var needRename))
                 {
-                    needRename = group.methods.All(m => _obfuscatedModules.Contains(m.DeclaringType.Module) && _renamePolicy.NeedRename(m));
+                    needRename = group.methods.All(m => _toObfuscatedModuleSet.Contains(m.DeclaringType.Module) && _renamePolicy.NeedRename(m));
                     groupNeedRenames.Add(group, needRename);
                     if (needRename)
                     {
@@ -522,9 +566,9 @@ namespace Obfuz
             Debug.Log("Rename properties begin");
             var refPropertyMetasMap = new Dictionary<PropertyDef, RefPropertyMetas>();
             BuildRefPropertyMetasMap(refPropertyMetasMap);
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     foreach (PropertyDef property in type.Properties)
                     {
@@ -541,9 +585,9 @@ namespace Obfuz
         private void RenameEvents()
         {
             Debug.Log("Rename events begin");
-            foreach (ObfuzAssemblyInfo ass in _obfuzAssemblies)
+            foreach (ModuleDef mod in _toObfuscatedModules)
             {
-                foreach (TypeDef type in ass.module.GetTypes())
+                foreach (TypeDef type in mod.GetTypes())
                 {
                     foreach (EventDef eventDef in type.Events)
                     {
@@ -557,7 +601,7 @@ namespace Obfuz
             Debug.Log("Rename events begin");
         }
 
-        private void Rename(ModuleDefMD mod)
+        private void Rename(ModuleDef mod)
         {
             string oldName = mod.Assembly.Name;
             string newName = _renameRecordMap.TryGetExistRenameMapping(mod, out var n) ? n :  _nameMaker.GetNewName(mod, oldName);
@@ -565,7 +609,7 @@ namespace Obfuz
             mod.Assembly.Name = newName;
             mod.Name = $"{newName}.dll";
             //Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
-            foreach (ObfuzAssemblyInfo ass in GetReferenceMeAssemblies(mod))
+            foreach (AssemblyReferenceInfo ass in GetReferenceMeAssemblies(mod))
             {
                 foreach (AssemblyRef assRef in ass.module.GetAssemblyRefs())
                 {

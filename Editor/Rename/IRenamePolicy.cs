@@ -4,7 +4,7 @@ namespace Obfuz.Rename
 {
     public interface IRenamePolicy
     {
-        bool NeedRename(ModuleDefMD mod);
+        bool NeedRename(ModuleDef mod);
 
         bool NeedRename(TypeDef typeDef);
 

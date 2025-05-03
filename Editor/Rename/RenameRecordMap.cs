@@ -93,7 +93,7 @@ namespace Obfuz
         private readonly Dictionary<string, RenameMappingAssembly> _assemblies = new Dictionary<string, RenameMappingAssembly>();
 
 
-        private readonly Dictionary<ModuleDefMD, RenameRecord> _modRenames = new Dictionary<ModuleDefMD, RenameRecord>();
+        private readonly Dictionary<ModuleDef, RenameRecord> _modRenames = new Dictionary<ModuleDef, RenameRecord>();
         private readonly Dictionary<TypeDef, RenameRecord> _typeRenames = new Dictionary<TypeDef, RenameRecord>();
         private readonly Dictionary<MethodDef, RenameRecord> _methodRenames = new Dictionary<MethodDef, RenameRecord>();
         private readonly Dictionary<ParamDef, RenameRecord> _paramRenames = new Dictionary<ParamDef, RenameRecord>();
@@ -108,12 +108,11 @@ namespace Obfuz
             _mappingFile = mappingFile;
         }
 
-        public void Init(List<ObfuzAssemblyInfo> assemblies, INameMaker nameMaker)
+        public void Init(List<ModuleDef> assemblies, INameMaker nameMaker)
         {
             LoadXmlMappingFile(_mappingFile);
-            foreach (var ObfuzAssemblyInfo in assemblies)
+            foreach (ModuleDef mod in assemblies)
             {
-                ModuleDefMD mod = ObfuzAssemblyInfo.module;
                 string name = mod.Assembly.Name;
                 nameMaker.AddPreservedName(mod, name);
 
@@ -406,7 +405,7 @@ namespace Obfuz
             doc.AppendChild(root);
             foreach (var kvp in _modRenames)
             {
-                ModuleDefMD mod = kvp.Key;
+                ModuleDef mod = kvp.Key;
                 RenameRecord record = kvp.Value;
                 var assemblyNode = doc.CreateElement("assembly");
                 assemblyNode.SetAttribute("name", mod.Assembly.Name);
@@ -619,7 +618,7 @@ namespace Obfuz
             methodEle.AppendChild(paramNode);
         }
 
-        public void AddRename(ModuleDefMD mod, string newName)
+        public void AddRename(ModuleDef mod, string newName)
         {
             RenameRecord record = _modRenames[mod];
             record.status = RenameStatus.Renamed;
@@ -680,7 +679,7 @@ namespace Obfuz
             record.newName = newName;
         }
 
-        public bool TryGetExistRenameMapping(ModuleDefMD mod, out string newName)
+        public bool TryGetExistRenameMapping(ModuleDef mod, out string newName)
         {
             if (_modRenames.TryGetValue(mod, out var record) && record.renameMappingData != null)
             {

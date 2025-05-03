@@ -12,7 +12,7 @@ namespace Obfuz.Rename
             _policies = policies;
         }
 
-        public bool NeedRename(ModuleDefMD mod)
+        public bool NeedRename(ModuleDef mod)
         {
             return _policies.All(policy => policy.NeedRename(mod));
         }

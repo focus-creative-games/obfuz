@@ -26,7 +26,7 @@ namespace Obfuz.Rename
             return nameScope;
         }
 
-        public void AddPreservedName(ModuleDefMD mod, string name)
+        public void AddPreservedName(ModuleDef mod, string name)
         {
             GetNameScope(mod).AddPreservedName(name);
         }
@@ -67,7 +67,7 @@ namespace Obfuz.Rename
         }
 
 
-        public string GetNewName(ModuleDefMD mod, string originalName)
+        public string GetNewName(ModuleDef mod, string originalName)
         {
             return GetDefaultNewName(this, originalName);
         }
