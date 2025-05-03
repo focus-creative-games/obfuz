@@ -30,6 +30,7 @@ namespace Obfuz
 
         public class ObfuscationEndEventArgs : EventArgs
         {
+            public bool success;
             public string originalScriptAssembliesPath;
             public string obfuscatedScriptAssembliesPath;
         }
@@ -65,9 +66,10 @@ namespace Obfuz
             {
                 return;
             }
-            if (!s_obfuscated)
+            string scriptAssembliesPath = GetScriptAssembliesPath();
+            if (!s_obfuscated && Directory.Exists(scriptAssembliesPath))
             {
-                RunObfuscate(GetScriptAssembliesPath());
+                RunObfuscate(scriptAssembliesPath);
                 s_obfuscated = true;
             }
         }
@@ -88,12 +90,6 @@ namespace Obfuz
 
             Debug.Log("Obfuscation begin...");
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            string obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(buildTarget);
-            OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs
-            {
-                scriptAssembliesPath = scriptAssembliesPath,
-                obfuscatedScriptAssembliesPath = obfuscatedAssemblyOutputDir,
-            });
 
             string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
             FileUtil.CopyDir(scriptAssembliesPath, backupPlayerScriptAssembliesPath);
@@ -118,24 +114,43 @@ namespace Obfuz
                 };
             obfuscatorBuilder.InsertTopPriorityAssemblySearchDirs(assemblySearchDirs);
 
-            Obfuscator obfuz = obfuscatorBuilder.Build();
-            obfuz.Run();
 
-            foreach (var dllName in settings.toObfuscatedAssemblyNames)
+            OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs
             {
-                string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
-                string dst = $"{scriptAssembliesPath}/{dllName}.dll";
+                scriptAssembliesPath = scriptAssembliesPath,
+                obfuscatedScriptAssembliesPath = obfuscatorBuilder.ObfuscatedAssemblyOutputDir,
+            });
+            bool succ = false;
 
-                if (!File.Exists(src))
+            try
+            {
+                Obfuscator obfuz = obfuscatorBuilder.Build();
+                obfuz.Run();
+
+                foreach (var dllName in settings.toObfuscatedAssemblyNames)
                 {
-                    Debug.LogWarning($"obfuscation assembly not found! skip copy. path:{src}");
-                    continue;
+                    string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
+                    string dst = $"{scriptAssembliesPath}/{dllName}.dll";
+
+                    if (!File.Exists(src))
+                    {
+                        Debug.LogWarning($"obfuscation assembly not found! skip copy. path:{src}");
+                        continue;
+                    }
+                    File.Copy(src, dst, true);
+                    Debug.Log($"obfuscate dll:{dst}");
                 }
-                File.Copy(src, dst, true);
-                Debug.Log($"obfuscate dll:{dst}");
+                succ = true;
+            }
+            catch (Exception e)
+            {
+                succ = false;
+                Debug.LogException(e);
+                Debug.LogError($"Obfuscation failed.");
             }
             OnObfuscationEnd?.Invoke(new ObfuscationEndEventArgs
             {
+                success = succ,
                 originalScriptAssembliesPath = backupPlayerScriptAssembliesPath,
                 obfuscatedScriptAssembliesPath = scriptAssembliesPath,
             });

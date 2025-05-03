@@ -24,7 +24,7 @@ namespace Obfuz
 
         private readonly ObfuzPipeline _pipeline = new ObfuzPipeline();
 
-        private readonly ObfuscatorContext _ctx;
+        private ObfuscatorContext _ctx;
 
         public Obfuscator(List<string> toObfuscatedAssemblyNames,
             List<string> notObfuscatedAssemblyNamesReferencingObfuscated,
@@ -46,15 +46,6 @@ namespace Obfuz
             _pipeline.AddPass(new CleanUpInstructionPass());
 
 
-            _ctx = new ObfuscatorContext
-            {
-                assemblyCache = _assemblyCache,
-                assemblies = _obfuzAssemblies,
-                toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
-                notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
-                obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
-            };
-
         }
 
         public void Run()
@@ -67,6 +58,16 @@ namespace Obfuz
         private void OnPreObfuscation()
         {
             LoadAssemblies();
+
+
+            _ctx = new ObfuscatorContext
+            {
+                assemblyCache = _assemblyCache,
+                assemblies = _obfuzAssemblies,
+                toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
+                notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
+                obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
+            };
             _pipeline.Start(_ctx);
         }
 
