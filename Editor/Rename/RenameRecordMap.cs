@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
@@ -26,6 +27,7 @@ namespace Obfuz
             public string signature;
             public string oldName;
             public string newName;
+            public string oldStackTraceSignature; // only for MethodDef
             public object renameMappingData;
         }
 
@@ -169,6 +171,7 @@ namespace Obfuz
                             oldName = method.Name,
                             newName = null,
                             renameMappingData = rmm,
+                            oldStackTraceSignature = MetaUtil.CreateMethodDefIl2CppStackTraceSignature(method),
                         });
                         foreach (Parameter param in method.Parameters)
                         {
@@ -568,6 +571,8 @@ namespace Obfuz
             var methodNode = typeEle.OwnerDocument.CreateElement("method");
             methodNode.SetAttribute("signature", record.signature);
             methodNode.SetAttribute("newName", record.newName);
+            methodNode.SetAttribute("oldStackTraceSignature", record.oldStackTraceSignature);
+            methodNode.SetAttribute("newStackTraceSignature", MetaUtil.CreateMethodDefIl2CppStackTraceSignature(method));
             //methodNode.SetAttribute("status", record != null ? record.status.ToString() : RenameStatus.NotRenamed.ToString());
             foreach (Parameter param in method.Parameters)
             {
