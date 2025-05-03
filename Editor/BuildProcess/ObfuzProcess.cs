@@ -16,11 +16,27 @@ namespace Obfuz
 {
 
 #if UNITY_2019_1_OR_NEWER
-    internal class ObfuzProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+    public class ObfuzProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
 
         public int callbackOrder => 10000;
+
+        public class ObfuscationBeginEventArgs : EventArgs
+        {
+            public string scriptAssembliesPath;
+            public string obfuscatedScriptAssembliesPath;
+        }
+
+        public class ObfuscationEndEventArgs : EventArgs
+        {
+            public string originalScriptAssembliesPath;
+            public string obfuscatedScriptAssembliesPath;
+        }
+
+        public static event Action<ObfuscationBeginEventArgs> OnObfuscationBegin;
+
+        public static event Action<ObfuscationEndEventArgs> OnObfuscationEnd;
 
         [InitializeOnLoadMethod]
         private static void Init()
@@ -72,7 +88,12 @@ namespace Obfuz
 
             Debug.Log("Obfuscation begin...");
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-
+            string obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(buildTarget);
+            OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs
+            {
+                scriptAssembliesPath = scriptAssembliesPath,
+                obfuscatedScriptAssembliesPath = obfuscatedAssemblyOutputDir,
+            });
 
             string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
             FileUtil.CopyDir(scriptAssembliesPath, backupPlayerScriptAssembliesPath);
@@ -98,7 +119,7 @@ namespace Obfuz
                 }.Concat(settings.extraAssemblySearchDirs).ToList(),
                 obfuscationRuleFiles = settings.ruleFiles.ToList(),
                 mappingXmlPath = settings.mappingFile,
-                outputDir = ObfuzSettings.Instance.GetObfuscatedAssemblyOutputDir(buildTarget),
+                outputDir = obfuscatedAssemblyOutputDir,
             };
             var obfuz = new Obfuscator(opt);
             obfuz.Run();
@@ -116,6 +137,11 @@ namespace Obfuz
                 File.Copy(src, dst, true);
                 Debug.Log($"obfuscate dll:{dst}");
             }
+            OnObfuscationEnd?.Invoke(new ObfuscationEndEventArgs
+            {
+                originalScriptAssembliesPath = backupPlayerScriptAssembliesPath,
+                obfuscatedScriptAssembliesPath = scriptAssembliesPath,
+            });
 
             Debug.Log("Obfuscation end.");
         }
