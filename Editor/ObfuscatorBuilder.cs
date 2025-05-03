@@ -71,11 +71,27 @@ namespace Obfuz
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
             };
-            builder.AddPass(new MemoryEncryptionPass());
-            builder.AddPass(new ProxyCallPass());
-            builder.AddPass(new ExprObfuscationPass());
-            builder.AddPass(new DataVirtualizationPass());
-            builder.AddPass(new RenameSymbolPass(settings.ruleFiles.ToList(), settings.mappingFile));
+            ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.MemoryEncryption))
+            {
+                builder.AddPass(new MemoryEncryptionPass());
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
+            {
+                builder.AddPass(new ProxyCallPass());
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncryption))
+            {
+                builder.AddPass(new DataVirtualizationPass());
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfuscation))
+            {
+                builder.AddPass(new ExprObfuscationPass());
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfuscation))
+            {
+                builder.AddPass(new RenameSymbolPass(settings.ruleFiles.ToList(), settings.mappingFile));
+            }
             return builder;
         }
     }

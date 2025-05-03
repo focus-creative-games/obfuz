@@ -43,11 +43,6 @@ namespace Obfuz
                 _pipeline.AddPass(pass);
             }
 
-            //_pipeline.AddPass(new MemoryEncryptionPass());
-            ////_pipeline.AddPass(new ProxyCallPass());
-            //_pipeline.AddPass(new ExprObfuscationPass());
-            //_pipeline.AddPass(new DataVirtualizationPass());
-            //_pipeline.AddPass(new RenameSymbolPass());
             _pipeline.AddPass(new CleanUpInstructionPass());
 
 

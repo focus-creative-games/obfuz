@@ -31,6 +31,7 @@ namespace Obfuz
         private SerializedProperty _enable;
         private SerializedProperty _toObfuscatedAssemblyNames;
         private SerializedProperty _notObfuscatedAssemblyNamesReferencingObfuscated;
+        private SerializedProperty _enabledObfuscationPasses;
         private SerializedProperty _mappingFile;
         private SerializedProperty _ruleFiles;
         private SerializedProperty _extraAssemblySearchDirs;
@@ -53,6 +54,7 @@ namespace Obfuz
             _enable = _serializedObject.FindProperty("enable");
             _toObfuscatedAssemblyNames = _serializedObject.FindProperty("toObfuscatedAssemblyNames");
             _notObfuscatedAssemblyNamesReferencingObfuscated = _serializedObject.FindProperty("notObfuscatedAssemblyNamesReferencingObfuscated");
+            _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
             _mappingFile = _serializedObject.FindProperty("mappingFile");
             _ruleFiles = _serializedObject.FindProperty("ruleFiles");
             _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
@@ -78,6 +80,7 @@ namespace Obfuz
                 EditorGUILayout.PropertyField(_enable);
                 EditorGUILayout.PropertyField(_toObfuscatedAssemblyNames);
                 EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
+                EditorGUILayout.PropertyField(_enabledObfuscationPasses);
                 EditorGUILayout.PropertyField(_mappingFile);
                 EditorGUILayout.PropertyField(_ruleFiles);
                 EditorGUILayout.PropertyField(_extraAssemblySearchDirs);

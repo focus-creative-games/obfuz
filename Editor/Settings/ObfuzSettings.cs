@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
@@ -7,6 +8,24 @@ using UnityEngine;
 
 namespace Obfuz
 {
+    [Flags]
+    public enum ObfuscationPassType
+    {
+        None = 0,
+
+        ConstEncryption = 0x1,
+        MemoryEncryption = 0x2,
+
+        SymbolObfuscation = 0x100,
+        CallProxy = 0x200,
+        ExprObfuscation = 0x400,
+        ControlFlowObfuscation = 0x800,
+
+
+        AllDataEncryption = ConstEncryption | MemoryEncryption,
+        AllCodeObfuscation = SymbolObfuscation | CallProxy | ExprObfuscation | ControlFlowObfuscation,
+        All = AllDataEncryption | AllCodeObfuscation,
+    }
 
     public class ObfuzSettings : ScriptableObject
     {
@@ -18,6 +37,9 @@ namespace Obfuz
 
         [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
         public string[] notObfuscatedAssemblyNamesReferencingObfuscated;
+
+        [Tooltip("enable obfuscation pass")]
+        public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
 
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/mapping.xml";
