@@ -18,16 +18,18 @@ namespace Obfuz
 
     public class SymbolRename
     {
+        private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
-        private readonly AssemblyCache _assemblyCache;
-        private readonly List<ObfuzAssemblyInfo> _obfuzAssemblies;
-        private readonly HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
-        private readonly ObfuscateRuleConfig _obfuscateRuleConfig;
-        private readonly IRenamePolicy _renamePolicy;
-        private readonly INameMaker _nameMaker;
+
+        private AssemblyCache _assemblyCache;
+        private List<ObfuzAssemblyInfo> _obfuzAssemblies;
+        private HashSet<ModuleDef> _obfuscatedModules = new HashSet<ModuleDef>();
+        private ObfuscateRuleConfig _obfuscateRuleConfig;
+        private IRenamePolicy _renamePolicy;
+        private INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap;
-        private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
+        private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator;
 
         class CustomAttributeInfo
         {
@@ -37,13 +39,20 @@ namespace Obfuz
             public List<CANamedArgument> namedArguments;
         }
 
-        public SymbolRename(ObfuscatorContext ctx)
+        public SymbolRename(string mappingXmlPath, List<string> obfuscationRuleFiles)
         {
-            _mappingXmlPath = ctx.mappingXmlPath;
+            _mappingXmlPath = mappingXmlPath;
+            _obfuscationRuleFiles = obfuscationRuleFiles;
+            _renameRecordMap = new RenameRecordMap(mappingXmlPath);
+            _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
+        }
+
+        public void Init(ObfuscatorContext ctx)
+        {
             _assemblyCache = ctx.assemblyCache;
             _obfuzAssemblies = ctx.assemblies;
-            _obfuscateRuleConfig = new ObfuscateRuleConfig(ctx.obfuscationAssemblyNames);
-            _obfuscateRuleConfig.LoadXmls(ctx.obfuscationRuleFiles);
+            _obfuscateRuleConfig = new ObfuscateRuleConfig(ctx.toObfuscatedAssemblyNames);
+            _obfuscateRuleConfig.LoadXmls(_obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
             _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
 
@@ -52,8 +61,6 @@ namespace Obfuz
                 _obfuscatedModules.Add(mod.module);
             }
             BuildCustomAttributeArguments();
-
-            _renameRecordMap = new RenameRecordMap(ctx.mappingXmlPath);
         }
 
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)

@@ -100,10 +100,9 @@ namespace Obfuz
 
             string applicationContentsPath = EditorApplication.applicationContentsPath;
 
-            var opt = new Obfuscator.Options
-            {
-                obfuscationAssemblyNames = settings.obfuscationAssemblyNames.ToList(),
-                assemblySearchDirs = new List<string>
+            var obfuscatorBuilder = ObfuscatorBuilder.FromObfuzSettings(settings, buildTarget);
+
+            var assemblySearchDirs = new List<string>
                 {
 #if UNITY_2021_1_OR_NEWER
                     Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
@@ -116,17 +115,15 @@ namespace Obfuz
 #endif
                     Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
                    backupPlayerScriptAssembliesPath,
-                }.Concat(settings.extraAssemblySearchDirs).ToList(),
-                obfuscationRuleFiles = settings.ruleFiles.ToList(),
-                mappingXmlPath = settings.mappingFile,
-                outputDir = obfuscatedAssemblyOutputDir,
-            };
-            var obfuz = new Obfuscator(opt);
+                };
+            obfuscatorBuilder.InsertTopPriorityAssemblySearchDirs(assemblySearchDirs);
+
+            Obfuscator obfuz = obfuscatorBuilder.Build();
             obfuz.Run();
 
-            foreach (var dllName in settings.obfuscationAssemblyNames)
+            foreach (var dllName in settings.toObfuscatedAssemblyNames)
             {
-                string src = $"{opt.outputDir}/{dllName}.dll";
+                string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
                 string dst = $"{scriptAssembliesPath}/{dllName}.dll";
 
                 if (!File.Exists(src))

@@ -13,8 +13,11 @@ namespace Obfuz
         [Tooltip("enable Obfuz")]
         public bool enable = true;
 
-        [Tooltip("obfuscation assembly names")]
-        public string[] obfuscationAssemblyNames;
+        [Tooltip("name of assemblies to obfuscated")]
+        public string[] toObfuscatedAssemblyNames;
+
+        [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
+        public string[] notObfuscatedAssemblyNamesReferencingObfuscated;
 
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/mapping.xml";

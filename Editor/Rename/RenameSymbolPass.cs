@@ -10,9 +10,14 @@ namespace Obfuz.Rename
     {
         private SymbolRename _symbolRename;
 
+        public RenameSymbolPass(List<string> obfuscationRuleFiles, string mappingXmlPath)
+        {
+            _symbolRename = new SymbolRename(mappingXmlPath, obfuscationRuleFiles);
+        }
+
         public override void Start(ObfuscatorContext ctx)
         {
-            _symbolRename = new SymbolRename(ctx);
+            _symbolRename.Init(ctx);
         }
 
         public override void Stop(ObfuscatorContext ctx)
