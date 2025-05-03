@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
@@ -674,6 +675,114 @@ namespace Obfuz.Utils
                 default:
                 throw new NotSupportedException(typeSig.ToString());
             }
+        }
+
+
+        public static void AppendIl2CppStackTraceNameOfTypeSig(StringBuilder sb, TypeSig typeSig)
+        {
+            typeSig = typeSig.RemovePinnedAndModifiers();
+            
+            switch (typeSig.ElementType)
+            {
+                case ElementType.Void: sb.Append("Void"); break;
+                case ElementType.Boolean: sb.Append("Boolean"); break;
+                case ElementType.Char: sb.Append("Char"); break;
+                case ElementType.I1: sb.Append("SByte"); break;
+                case ElementType.U1: sb.Append("Byte"); break;
+                case ElementType.I2: sb.Append("Int16"); break;
+                case ElementType.U2: sb.Append("UInt16"); break;
+                case ElementType.I4: sb.Append("Int32"); break;
+                case ElementType.U4: sb.Append("UInt32"); break;
+                case ElementType.I8: sb.Append("Int64"); break;
+                case ElementType.U8: sb.Append("UInt64"); break;
+                case ElementType.R4: sb.Append("Single"); break;
+                case ElementType.R8: sb.Append("Double"); break;
+                case ElementType.String: sb.Append("String"); break;
+                case ElementType.Ptr: AppendIl2CppStackTraceNameOfTypeSig(sb, typeSig.Next); sb.Append("*"); break;
+                case ElementType.ByRef: AppendIl2CppStackTraceNameOfTypeSig(sb, typeSig.Next); sb.Append("&"); break;
+                case ElementType.ValueType:
+                case ElementType.Class:
+                {
+                    var classOrValueTypeSig = (ClassOrValueTypeSig)typeSig;
+                    TypeDef typeDef = classOrValueTypeSig.TypeDefOrRef.ResolveTypeDef();
+                    if (typeDef == null)
+                    {
+                        throw new Exception($"type:{classOrValueTypeSig} definition could not be found");
+                    }
+                    sb.Append(typeDef.Name);
+                    break;
+                }
+                case ElementType.GenericInst:
+                {
+                    var genericInstSig = (GenericInstSig)typeSig;
+                    AppendIl2CppStackTraceNameOfTypeSig(sb, genericInstSig.GenericType);
+                    break;
+                }
+                case ElementType.Var:
+                case ElementType.MVar:
+                {
+                    var varSig = (GenericSig)typeSig;
+                    sb.Append(varSig.GenericParam.Name);
+                    break;
+                }
+                case ElementType.I: sb.Append("IntPtr"); break;
+                case ElementType.U: sb.Append("UIntPtr"); break;
+                case ElementType.FnPtr: sb.Append("IntPtr"); break;
+                case ElementType.Object: sb.Append("Object"); break;
+                case ElementType.SZArray:
+                {
+                    var szArraySig = (SZArraySig)typeSig;
+                    AppendIl2CppStackTraceNameOfTypeSig(sb, szArraySig.Next);
+                    sb.Append("[]");
+                    break;
+                }
+                default:
+                throw new NotSupportedException(typeSig.ToString());
+            }
+        }
+
+        public static TypeDef GetRootDeclaringType(TypeDef type)
+        {
+            TypeDef cur = type;
+            while (true)
+            {
+                TypeDef declaringType = cur.DeclaringType;
+                if (declaringType == null)
+                {
+                    return cur;
+                }
+                cur = declaringType;
+            }
+        }
+
+        public static string CreateMethodDefIl2CppStackTraceSignature(MethodDef method)
+        {
+            var result = new StringBuilder();
+            TypeDef declaringType = method.DeclaringType;
+
+            string namespaze = GetRootDeclaringType(declaringType).Namespace;
+            if (!string.IsNullOrEmpty(namespaze))
+            {
+                result.Append(namespaze);
+                result.Append(".");
+            }
+            result.Append(declaringType.Name);
+            result.Append(":");
+            result.Append(method.Name);
+            result.Append("(");
+
+            int index = 0;
+            foreach (TypeSig p in method.GetParams())
+            {
+                if (index > 0)
+                {
+                    result.Append(", ");
+                }
+                AppendIl2CppStackTraceNameOfTypeSig(result, p);
+                ++index;
+            }
+            result.Append(")");
+            return result.ToString();
         }
     }
 }
