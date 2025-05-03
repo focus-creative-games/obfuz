@@ -92,7 +92,7 @@ namespace Obfuz.MemEncrypt
                 }
                 default: return false;
             }
-            Debug.Log($"memory encrypt field: {field}");
+            //Debug.Log($"memory encrypt field: {field}");
             return true;
         }
     }

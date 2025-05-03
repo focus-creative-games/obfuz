@@ -10,6 +10,15 @@ namespace Obfuz
 {
     public class CleanUpInstructionPass : ObfuscationPassBase
     {
+        public override void Start(ObfuscatorContext ctx)
+        {
+        }
+
+        public override void Stop(ObfuscatorContext ctx)
+        {
+
+        }
+
         public override void Process(ObfuscatorContext ctx)
         {
             foreach (var ass in ctx.assemblies)
@@ -29,15 +38,6 @@ namespace Obfuz
                     }
                 }
             }
-        }
-
-        public override void Start(ObfuscatorContext ctx)
-        {
-        }
-
-        public override void Stop(ObfuscatorContext ctx)
-        {
-
         }
     }
 }

@@ -51,8 +51,8 @@ namespace Obfuz
 
             _pipeline.AddPass(new MemoryEncryptionPass());
             //_pipeline.AddPass(new ProxyCallPass());
-            //_pipeline.AddPass(new ExprObfuscationPass());
-            //_pipeline.AddPass(new DataVirtualizationPass());
+            _pipeline.AddPass(new ExprObfuscationPass());
+            _pipeline.AddPass(new DataVirtualizationPass());
             _pipeline.AddPass(new RenameSymbolPass());
             _pipeline.AddPass(new CleanUpInstructionPass());
 
@@ -105,7 +105,7 @@ namespace Obfuz
                     string refAssName = refAss.Name.ToString();
                     if (assByName.TryGetValue(refAssName, out var refAssembly))
                     {
-                        UnityEngine.Debug.Log($"assembly:{ass.name} reference to {refAssName}");
+                        //UnityEngine.Debug.Log($"assembly:{ass.name} reference to {refAssName}");
                         refAssembly.referenceMeAssemblies.Add(ass);
                     }
                 }
