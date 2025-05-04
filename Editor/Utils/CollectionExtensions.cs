@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public static class CollectionExtensions
     {
@@ -16,7 +16,7 @@ namespace Obfuz
             }
         }
 
-        public static V GetValueOrDefault<K, V>(this IDictionary<K, V> dic, K key)
+        public static V GetValueOrDefault<K, V>(this Dictionary<K, V> dic, K key)
         {
             return dic.TryGetValue(key, out  V v) ? v : default(V);
         }

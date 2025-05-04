@@ -16,13 +16,13 @@ namespace Obfuz.Virtualization
         private IDataObfuscationPolicy _dataObfuscatorPolicy;
         private IDataObfuscator _dataObfuscator;
 
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
             _dataObfuscatorPolicy = new ConfigDataObfuscationPolicy();
             _dataObfuscator = new DefaultDataObfuscator();
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
             _dataObfuscator.Done();
         }

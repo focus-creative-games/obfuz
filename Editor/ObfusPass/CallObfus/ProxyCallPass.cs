@@ -25,12 +25,12 @@ namespace Obfuz.DynamicProxy
             _dynamicProxyObfuscator = new DefaultProxyCallObfuscator(_random);
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
             _dynamicProxyObfuscator.Done();
         }
 
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
 
         }

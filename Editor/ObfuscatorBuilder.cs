@@ -1,11 +1,11 @@
 ﻿using Obfuz.DynamicProxy;
-using Obfuz.ExprObfuscation;
 using Obfuz.MemEncrypt;
 using Obfuz.Rename;
 using System.Collections.Generic;
 using System.Linq;
 using Obfuz.Virtualization;
 using UnityEditor;
+using Obfuz.ExprObfus;
 
 namespace Obfuz
 {

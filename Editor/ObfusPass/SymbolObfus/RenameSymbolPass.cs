@@ -15,17 +15,17 @@ namespace Obfuz.Rename
             _symbolRename = new SymbolRename(mappingXmlPath, obfuscationRuleFiles);
         }
 
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
             _symbolRename.Init(ctx);
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
             _symbolRename.Save();
         }
 
-        public override void Process(ObfuscatorContext ctx)
+        public override void Process(ObfuscationPassContext ctx)
         {
             _symbolRename.Process();
         }

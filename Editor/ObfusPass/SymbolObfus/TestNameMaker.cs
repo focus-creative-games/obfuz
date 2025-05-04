@@ -9,7 +9,7 @@ namespace Obfuz.Rename
             private int _nextIndex;
             protected override void BuildNewName(StringBuilder nameBuilder, string originalName)
             {
-                nameBuilder.Append($"{originalName}>{_nextIndex++}");
+                nameBuilder.Append($"<{originalName}>{_nextIndex++}");
             }
         }
 

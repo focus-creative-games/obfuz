@@ -8,10 +8,10 @@ namespace Obfuz
 {
     public interface IObfuscationPass
     {
-        void Start(ObfuscatorContext ctx);
+        void Start(ObfuscationPassContext ctx);
 
-        void Stop(ObfuscatorContext ctx);
+        void Stop(ObfuscationPassContext ctx);
 
-        void Process(ObfuscatorContext ctx);
+        void Process(ObfuscationPassContext ctx);
     }
 }

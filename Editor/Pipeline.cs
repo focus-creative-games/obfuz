@@ -2,17 +2,17 @@
 
 namespace Obfuz
 {
-    public class ObfuzPipeline
+    public class Pipeline
     {
         private readonly List<IObfuscationPass> _passes = new List<IObfuscationPass>();
 
-        public ObfuzPipeline AddPass(IObfuscationPass pass)
+        public Pipeline AddPass(IObfuscationPass pass)
         {
             _passes.Add(pass);
             return this;
         }
 
-        public void Start(ObfuscatorContext ctx)
+        public void Start(ObfuscationPassContext ctx)
         {
             foreach (var pass in _passes)
             {
@@ -20,7 +20,7 @@ namespace Obfuz
             }
         }
 
-        public void Stop(ObfuscatorContext ctx)
+        public void Stop(ObfuscationPassContext ctx)
         {
 
             foreach (var pass in _passes)
@@ -29,7 +29,7 @@ namespace Obfuz
             }
         }
 
-        public void Run(ObfuscatorContext ctx)
+        public void Run(ObfuscationPassContext ctx)
         {
             foreach (var pass in _passes)
             {

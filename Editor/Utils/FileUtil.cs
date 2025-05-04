@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public static class FileUtil
     {

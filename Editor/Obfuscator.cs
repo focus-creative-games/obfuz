@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Emit;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,9 +22,9 @@ namespace Obfuz
         private readonly List<ModuleDef> _toObfuscatedModules = new List<ModuleDef>();
         private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
 
-        private readonly ObfuzPipeline _pipeline = new ObfuzPipeline();
+        private readonly Pipeline _pipeline = new Pipeline();
 
-        private ObfuscatorContext _ctx;
+        private ObfuscationPassContext _ctx;
 
         public Obfuscator(List<string> toObfuscatedAssemblyNames,
             List<string> notObfuscatedAssemblyNamesReferencingObfuscated,
@@ -43,8 +44,6 @@ namespace Obfuz
             }
 
             _pipeline.AddPass(new CleanUpInstructionPass());
-
-
         }
 
         public void Run()
@@ -58,8 +57,7 @@ namespace Obfuz
         {
             LoadAssemblies();
 
-
-            _ctx = new ObfuscatorContext
+            _ctx = new ObfuscationPassContext
             {
                 assemblyCache = _assemblyCache,
                 toObfuscatedModules = _toObfuscatedModules,

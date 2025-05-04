@@ -61,7 +61,7 @@ namespace Obfuz
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
         }
 
-        public void Init(ObfuscatorContext ctx)
+        public void Init(ObfuscationPassContext ctx)
         {
             _assemblyCache = ctx.assemblyCache;
             _toObfuscatedModules = ctx.toObfuscatedModules;
@@ -75,7 +75,7 @@ namespace Obfuz
             BuildCustomAttributeArguments();
         }
 
-        private static List<AssemblyReferenceInfo> BuildAssemblyReferenceInfos(ObfuscatorContext ctx)
+        private static List<AssemblyReferenceInfo> BuildAssemblyReferenceInfos(ObfuscationPassContext ctx)
         {
             var obfuzAssemblies = new List<AssemblyReferenceInfo>();
             foreach (ModuleDef mod in ctx.obfuscatedAndNotObfuscatedModules)

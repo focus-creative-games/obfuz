@@ -9,7 +9,7 @@ namespace Obfuz
     {
         protected abstract bool NeedObfuscateMethod(MethodDef method);
 
-        public override void Process(ObfuscatorContext ctx)
+        public override void Process(ObfuscationPassContext ctx)
         {
             foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {

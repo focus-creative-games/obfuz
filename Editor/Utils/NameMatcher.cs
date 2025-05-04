@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public class NameMatcher
     {

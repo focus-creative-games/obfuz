@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 using UnityEditor.Build;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
-using UnityEngine.SceneManagement;
 using UnityEngine;
 using UnityEditor.Compilation;
-using System.Reflection;
+using Obfuz.Utils;
+using FileUtil = Obfuz.Utils.FileUtil;
 
-namespace Obfuz
+namespace Obfuz.BuildProcess
 {
 
 #if UNITY_2019_1_OR_NEWER
-    public class ObfuzProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+    public class ObfuscationProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private static bool s_obfuscated = false;
 

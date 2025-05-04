@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public static class TypeSigUtil
     {

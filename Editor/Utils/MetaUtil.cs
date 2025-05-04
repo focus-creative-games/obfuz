@@ -11,12 +11,6 @@ using UnityEngine.UIElements;
 
 namespace Obfuz.Utils
 {
-    public enum ThisArgType
-    {
-        None,
-        ValueType,
-        Class,
-    }
 
     public static class MetaUtil
     {

@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Rename;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace Obfuz
 {
 
-    public class ObfuscatorContext
+    public class ObfuscationPassContext
     {
         public AssemblyCache assemblyCache;
 

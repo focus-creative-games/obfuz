@@ -10,16 +10,16 @@ namespace Obfuz
 {
     public class CleanUpInstructionPass : ObfuscationPassBase
     {
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
 
         }
 
-        public override void Process(ObfuscatorContext ctx)
+        public override void Process(ObfuscationPassContext ctx)
         {
             foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {

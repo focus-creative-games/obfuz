@@ -42,8 +42,13 @@ namespace Obfuz
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            EditorStatusWatcher.OnEditorFocused += OnEditorFocused;
             InitGUI();
+        }
+
+        public override void OnDeactivate()
+        {
+            base.OnDeactivate();
+            ObfuzSettings.Save();
         }
 
         private void InitGUI()
@@ -60,51 +65,28 @@ namespace Obfuz
             _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
         }
 
-        private void OnEditorFocused()
-        {
-            InitGUI();
-            Repaint();
-        }
-
         public override void OnGUI(string searchContext)
         {
-            using (CreateSettingsWindowGUIScope())
+            if (_serializedObject == null||!_serializedObject.targetObject)
             {
-                if (_serializedObject == null||!_serializedObject.targetObject)
-                {
-                    InitGUI();
-                }
-                _serializedObject.Update();
-                EditorGUI.BeginChangeCheck();
-
-                EditorGUILayout.PropertyField(_enable);
-                EditorGUILayout.PropertyField(_toObfuscatedAssemblyNames);
-                EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
-                EditorGUILayout.PropertyField(_enabledObfuscationPasses);
-                EditorGUILayout.PropertyField(_mappingFile);
-                EditorGUILayout.PropertyField(_ruleFiles);
-                EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
-
-                if (EditorGUI.EndChangeCheck())
-                {
-                    _serializedObject.ApplyModifiedProperties();
-                    ObfuzSettings.Save();
-                }
+                InitGUI();
             }
-        }
+            _serializedObject.Update();
+            EditorGUI.BeginChangeCheck();
 
-        private IDisposable CreateSettingsWindowGUIScope()
-        {
-            var unityEditorAssembly = Assembly.GetAssembly(typeof(EditorWindow));
-            var type = unityEditorAssembly.GetType("UnityEditor.SettingsWindow+GUIScope");
-            return Activator.CreateInstance(type) as IDisposable;
-        }
+            EditorGUILayout.PropertyField(_enable);
+            EditorGUILayout.PropertyField(_toObfuscatedAssemblyNames);
+            EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
+            EditorGUILayout.PropertyField(_enabledObfuscationPasses);
+            EditorGUILayout.PropertyField(_mappingFile);
+            EditorGUILayout.PropertyField(_ruleFiles);
+            EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
 
-        public override void OnDeactivate()
-        {
-            base.OnDeactivate();
-            EditorStatusWatcher.OnEditorFocused -= OnEditorFocused;
-            ObfuzSettings.Save();
+            if (EditorGUI.EndChangeCheck())
+            {
+                _serializedObject.ApplyModifiedProperties();
+                ObfuzSettings.Save();
+            }
         }
     }
 }

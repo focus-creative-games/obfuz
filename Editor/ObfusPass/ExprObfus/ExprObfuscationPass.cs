@@ -6,18 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ExprObfuscation
+namespace Obfuz.ExprObfus
 {
     public class ExprObfuscationPass : MethodBodyObfuscationPassBase
     {
 
 
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
 
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
 
         }

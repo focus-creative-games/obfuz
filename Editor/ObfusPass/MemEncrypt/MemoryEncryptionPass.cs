@@ -14,12 +14,12 @@ namespace Obfuz.MemEncrypt
         private readonly IEncryptionPolicy _encryptionPolicy = new ConfigEncryptionPolicy();
         private readonly IMemoryEncryptor _memoryEncryptor = new DefaultMemoryEncryptor();
 
-        public override void Start(ObfuscatorContext ctx)
+        public override void Start(ObfuscationPassContext ctx)
         {
 
         }
 
-        public override void Stop(ObfuscatorContext ctx)
+        public override void Stop(ObfuscationPassContext ctx)
         {
 
         }

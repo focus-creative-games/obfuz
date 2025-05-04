@@ -72,7 +72,7 @@ namespace Obfuz.Emit
             if (_rvaTypeDef == null)
             {
                 _module.EnableTypeDefFindCache = false;
-                //_rvaTypeDef = _module.Find("$ObfuzRVA$", false);
+                //_rvaTypeDef = _module.Find("$ObfuzRVA$", true);
                 //if (_rvaTypeDef != null)
                 //{
                 //    throw new Exception($"can't obfuscate a obfuscated assembly");

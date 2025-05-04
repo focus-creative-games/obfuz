@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Obfuz
+namespace Obfuz.Utils
 {
     public class PathAssemblyResolver : AssemblyResolverBase
     {
