@@ -1,11 +1,14 @@
-﻿using Obfuz.DynamicProxy;
-using Obfuz.MemEncrypt;
-using Obfuz.Rename;
+﻿using Obfuz.ObfusPasses;
+using Obfuz.ObfusPasses.CallObfus;
+using Obfuz.ObfusPasses.CleanUp;
+using Obfuz.ObfusPasses.ConstObfus;
+using Obfuz.ObfusPasses.ExprObfus;
+using Obfuz.ObfusPasses.MemEncrypt;
+using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.Settings;
 using System.Collections.Generic;
 using System.Linq;
-using Obfuz.Virtualization;
 using UnityEditor;
-using Obfuz.ExprObfus;
 
 namespace Obfuz
 {
@@ -92,6 +95,7 @@ namespace Obfuz
             {
                 builder.AddPass(new RenameSymbolPass(settings.ruleFiles.ToList(), settings.mappingFile));
             }
+            builder.AddPass(new CleanUpInstructionPass());
             return builder;
         }
     }

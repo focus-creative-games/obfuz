@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Emit;
+using Obfuz.ObfusPasses;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -42,8 +43,6 @@ namespace Obfuz
             {
                 _pipeline.AddPass(pass);
             }
-
-            _pipeline.AddPass(new CleanUpInstructionPass());
         }
 
         public void Run()

@@ -5,7 +5,7 @@ using UnityEditor.Presets;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Obfuz
+namespace Obfuz.Settings
 {
     public class ObfuzSettingsProvider : SettingsProvider
     {
