@@ -12,6 +12,8 @@ namespace Obfuz.Settings
     {
         public bool debug;
 
+        public string obfuscatedNamePrefix = "$";
+
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/SymbolObfus/mapping.xml";
 

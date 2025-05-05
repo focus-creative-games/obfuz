@@ -14,7 +14,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             return new DebugNameMaker();
         }
 
-        public static INameMaker CreateNameMakerBaseASCIICharSet()
+        public static INameMaker CreateNameMakerBaseASCIICharSet(string namePrefix)
         {
             var words = new List<string>();
             for (int i = 0; i < 26; i++)
@@ -22,7 +22,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 words.Add(((char)('a' + i)).ToString());
                 words.Add(((char)('A' + i)).ToString());
             }
-            return new NameMaker(words);
+            return new NameMaker(namePrefix, words);
         }
     }
 }

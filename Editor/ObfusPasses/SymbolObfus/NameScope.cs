@@ -7,17 +7,20 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
     public class NameScope : NameScopeBase
     {
+        private readonly string _namePrefix;
         private readonly List<string> _wordSet;
         private int _nextIndex;
 
-        public NameScope(List<string> wordSet)
+        public NameScope(string namePrefix, List<string> wordSet)
         {
+            _namePrefix = namePrefix;
             _wordSet = wordSet;
             _nextIndex = 0;
         }
 
         protected override void BuildNewName(StringBuilder nameBuilder, string originalName, string lastName)
         {
+            nameBuilder.Append(_namePrefix);
             for (int i = _nextIndex++; ;)
             {
                 nameBuilder.Append(_wordSet[i % _wordSet.Count]);

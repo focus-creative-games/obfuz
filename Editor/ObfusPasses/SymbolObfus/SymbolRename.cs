@@ -58,7 +58,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
             _renameRecordMap = new RenameRecordMap(settings.mappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
-            _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet();
+            _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
         }
 
         public void Init(ObfuscationPassContext ctx)
