@@ -4,8 +4,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public interface INameMaker
     {
-        void AddPreservedName(ModuleDef mod, string name);
-        
         void AddPreservedName(TypeDef typeDef, string name);
 
         void AddPreservedNamespace(TypeDef typeDef, string name);
@@ -19,8 +17,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         void AddPreservedName(PropertyDef propertyDef, string name);
 
         void AddPreservedName(EventDef eventDef, string name);
-
-        string GetNewName(ModuleDef mod, string originalName);
 
         string GetNewName(TypeDef typeDef, string originalName);
 

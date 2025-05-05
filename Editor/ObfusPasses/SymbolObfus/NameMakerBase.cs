@@ -26,11 +26,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             return nameScope;
         }
 
-        public void AddPreservedName(ModuleDef mod, string name)
-        {
-            GetNameScope(mod).AddPreservedName(name);
-        }
-
         public void AddPreservedName(TypeDef typeDef, string name)
         {
             GetNameScope(typeDef.Module).AddPreservedName(name);
@@ -66,12 +61,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             GetNameScope(_namespaceScope).AddPreservedName(name);
         }
 
-
-        public string GetNewName(ModuleDef mod, string originalName)
-        {
-            return GetDefaultNewName(this, originalName);
-        }
-
         private string GetDefaultNewName(object scope, string originName)
         {
             return GetNameScope(scope).GetNewName(originName, false);
@@ -96,7 +85,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             return GetDefaultNewName(methodDef.DeclaringType, originalName);
         }
 
-        public string GetNewName(ParamDef param, string originalName)
+        public virtual string GetNewName(ParamDef param, string originalName)
         {
             return "1";
         }

@@ -81,9 +81,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private class RenameMappingAssembly
         {
-            public RenameStatus status;
-            public string oldAssName;
-            public string newAssName;
+            public string assName;
 
             public Dictionary<string, RenameMappingType> types = new Dictionary<string, RenameMappingType>();
         }
@@ -113,13 +111,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             foreach (ModuleDef mod in assemblies)
             {
                 string name = mod.Assembly.Name;
-                nameMaker.AddPreservedName(mod, name);
 
                 RenameMappingAssembly rma = _assemblies.GetValueOrDefault(name);
-                if (rma != null && rma.status == RenameStatus.Renamed)
-                {
-                    nameMaker.AddPreservedName(mod, rma.newAssName);
-                }
 
                 _modRenames.Add(mod, new RenameRecord
                 {
@@ -270,12 +263,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
 
             var assemblyName = ele.Attributes["name"].Value;
-            var newAssemblyName = ele.Attributes["newName"].Value;
             var rma = new RenameMappingAssembly
             {
-                oldAssName = assemblyName,
-                newAssName = newAssemblyName,
-                status = (RenameStatus)System.Enum.Parse(typeof(RenameStatus), ele.Attributes["status"].Value),
+                assName = assemblyName,
             };
             foreach (XmlNode node in ele.ChildNodes)
             {
@@ -408,8 +398,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 RenameRecord record = kvp.Value;
                 var assemblyNode = doc.CreateElement("assembly");
                 assemblyNode.SetAttribute("name", mod.Assembly.Name);
-                assemblyNode.SetAttribute("newName", record.status == RenameStatus.Renamed ? record.newName : "");
-                assemblyNode.SetAttribute("status", record.status.ToString());
                 foreach (TypeDef type in mod.GetTypes())
                 {
                     WriteTypeMapping(assemblyNode, type);
@@ -418,14 +406,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
             foreach (RenameMappingAssembly ass in _assemblies.Values)
             {
-                if (_modRenames.Keys.Any(m => m.Assembly.Name == ass.oldAssName))
+                if (_modRenames.Keys.Any(m => m.Assembly.Name == ass.assName))
                 {
                     continue;
                 }
                 var assemblyNode = doc.CreateElement("assembly");
-                assemblyNode.SetAttribute("name", ass.oldAssName);
-                assemblyNode.SetAttribute("newName", ass.status == RenameStatus.Renamed ? ass.newAssName : "");
-                assemblyNode.SetAttribute("status", ass.status.ToString());
+                assemblyNode.SetAttribute("name", ass.assName);
                 foreach (var e in ass.types)
                 {
                     WriteTypeMapping(assemblyNode, e.Key, e.Value);
@@ -676,17 +662,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             RenameRecord record = _eventRenames[eventDef];
             record.status = RenameStatus.Renamed;
             record.newName = newName;
-        }
-
-        public bool TryGetExistRenameMapping(ModuleDef mod, out string newName)
-        {
-            if (_modRenames.TryGetValue(mod, out var record) && record.renameMappingData != null)
-            {
-                newName = ((RenameMappingAssembly)record.renameMappingData).newAssName;
-                return true;
-            }
-            newName = null;
-            return false;
         }
 
         public bool TryGetExistRenameMapping(TypeDef type, out string newNamespace, out string newName)

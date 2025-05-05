@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using dnlib.DotNet;
+using System.Text;
 
 namespace Obfuz.ObfusPasses.SymbolObfus
 {
-    public class TestNameMaker : NameMakerBase
+    public class DebugNameMaker : NameMakerBase
     {
         private class TestNameScope : NameScopeBase
         {
@@ -18,5 +19,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             return new TestNameScope();
         }
 
+        public override string GetNewName(ParamDef param, string originalName)
+        {
+            return $"${originalName}";
+        }
     }
 }

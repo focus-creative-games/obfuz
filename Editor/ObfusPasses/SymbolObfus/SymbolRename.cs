@@ -586,27 +586,27 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             Debug.Log("Rename events begin");
         }
 
-        private void Rename(ModuleDef mod)
-        {
-            string oldName = mod.Assembly.Name;
-            string newName = _renameRecordMap.TryGetExistRenameMapping(mod, out var n) ? n :  _nameMaker.GetNewName(mod, oldName);
-            _renameRecordMap.AddRename(mod, newName);
-            mod.Assembly.Name = newName;
-            mod.Name = $"{newName}.dll";
-            //Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
-            foreach (AssemblyReferenceInfo ass in GetReferenceMeAssemblies(mod))
-            {
-                foreach (AssemblyRef assRef in ass.module.GetAssemblyRefs())
-                {
-                    if (assRef.Name == oldName)
-                    {
-                        _renameRecordMap.AddRename(mod, newName);
-                        assRef.Name = newName;
-                       // Debug.Log($"rename assembly:{ass.name}  ref oldName:{oldName} newName:{newName}");
-                    }
-                }
-            }
-        }
+        //private void Rename(ModuleDef mod)
+        //{
+        //    string oldName = mod.Assembly.Name;
+        //    string newName = _renameRecordMap.TryGetExistRenameMapping(mod, out var n) ? n :  _nameMaker.GetNewName(mod, oldName);
+        //    _renameRecordMap.AddRename(mod, newName);
+        //    mod.Assembly.Name = newName;
+        //    mod.Name = $"{newName}.dll";
+        //    //Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
+        //    foreach (AssemblyReferenceInfo ass in GetReferenceMeAssemblies(mod))
+        //    {
+        //        foreach (AssemblyRef assRef in ass.module.GetAssemblyRefs())
+        //        {
+        //            if (assRef.Name == oldName)
+        //            {
+        //                _renameRecordMap.AddRename(mod, newName);
+        //                assRef.Name = newName;
+        //               // Debug.Log($"rename assembly:{ass.name}  ref oldName:{oldName} newName:{newName}");
+        //            }
+        //        }
+        //    }
+        //}
 
         private void Rename(TypeDef type, RefTypeDefMetas refTypeDefMeta)
         {

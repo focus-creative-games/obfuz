@@ -11,7 +11,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
     {
         public static INameMaker CreateDebugNameMaker()
         {
-            return new TestNameMaker();
+            return new DebugNameMaker();
         }
 
         public static INameMaker CreateNameMakerBaseASCIICharSet()
