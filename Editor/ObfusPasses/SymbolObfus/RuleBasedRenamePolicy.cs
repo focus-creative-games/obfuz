@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace Obfuz.ObfusPasses.SymbolObfus
@@ -585,16 +586,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
                 switch (element.Name)
                 {
-                    case "rule":
+                    case "rules":
                     {
-                        string ruleName = element.GetAttribute("name");
-                        RuleType ruleType = ParseRuleType(element.GetAttribute("type"));
-                        var key = (ruleName, ruleType);
-                        if (_rawRuleElements.ContainsKey(key))
-                        {
-                            throw new Exception($"Invalid xml file {xmlFile}, duplicate rule name:{ruleName} type:{ruleType}");
-                        }
-                        _rawRuleElements.Add(key, element);
+                        ParseRules(xmlFile, element);
                         break;
                     }
                     case "assembly":
@@ -608,6 +602,27 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     }
                 }
             }
+        }
+
+        void ParseRules(string xmlFile, XmlElement rulesNode)
+        {
+            foreach (XmlNode node in rulesNode)
+            {
+                if (!(node is XmlElement ruleEle))
+                {
+                    continue;
+                }
+                string ruleName = ruleEle.GetAttribute("name");
+                string ruleTypeName = ruleEle.Name;
+                RuleType ruleType = ParseRuleType(ruleTypeName);
+                var key = (ruleName, ruleType);
+                if (_rawRuleElements.ContainsKey(key))
+                {
+                    throw new Exception($"Invalid xml file {xmlFile}, duplicate rule name:{ruleName} type:{ruleType}");
+                }
+                _rawRuleElements.Add(key, ruleEle);
+            }
+
         }
 
         private ModifierType ComputeModifierType(TypeAttributes visibility)
