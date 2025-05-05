@@ -1,13 +1,13 @@
 ﻿using dnlib.DotNet;
 using System.Linq;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
-    public class CombineRenamePolicy : IRenamePolicy
+    public class CombineRenamePolicy : IObfuscationPolicy
     {
-        private readonly IRenamePolicy[] _policies;
+        private readonly IObfuscationPolicy[] _policies;
 
-        public CombineRenamePolicy(params IRenamePolicy[] policies)
+        public CombineRenamePolicy(params IObfuscationPolicy[] policies)
         {
             _policies = policies;
         }

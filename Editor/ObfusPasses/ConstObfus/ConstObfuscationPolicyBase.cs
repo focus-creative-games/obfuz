@@ -2,7 +2,7 @@
 
 namespace Obfuz.ObfusPasses.ConstObfus
 {
-    public abstract class DataObfuscationPolicyBase : IDataObfuscationPolicy
+    public abstract class ConstObfuscationPolicyBase : IConstObfuscationPolicy
     {
         public virtual bool NeedObfuscateMethod(MethodDef method)
         {

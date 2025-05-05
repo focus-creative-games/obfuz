@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.ConstObfus
 {
-    public interface IDataObfuscationPolicy
+    public interface IConstObfuscationPolicy
     {
         bool NeedObfuscateMethod(MethodDef method);
 

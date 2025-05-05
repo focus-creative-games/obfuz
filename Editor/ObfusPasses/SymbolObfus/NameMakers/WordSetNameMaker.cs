@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
 
-    public class NameMaker : NameMakerBase
+    public class WordSetNameMaker : NameMakerBase
     {
         private readonly string _namePrefix;
         private readonly List<string> _wordSet;
 
-        public NameMaker(string namePrefix, List<string> wordSet)
+        public WordSetNameMaker(string namePrefix, List<string> wordSet)
         {
             _namePrefix = namePrefix;
             _wordSet = wordSet;

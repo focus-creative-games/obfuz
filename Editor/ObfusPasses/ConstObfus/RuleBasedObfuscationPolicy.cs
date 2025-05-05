@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.ConstObfus
 {
-    public class ConfigDataObfuscationPolicy : DataObfuscationPolicyBase
+    public class RuleBasedObfuscationPolicy : ConstObfuscationPolicyBase
     {
         public override bool NeedObfuscateMethod(MethodDef method)
         {

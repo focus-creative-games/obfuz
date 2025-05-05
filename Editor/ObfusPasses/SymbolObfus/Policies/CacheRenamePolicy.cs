@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
-    public class CacheRenamePolicy : RenamePolicyBase
+    public class CacheRenamePolicy : ObfuscationPolicyBase
     {
-        private readonly IRenamePolicy _underlyingPolicy;
+        private readonly IObfuscationPolicy _underlyingPolicy;
 
         private readonly Dictionary<object, bool> _computeCache = new Dictionary<object, bool>();
 
-        public CacheRenamePolicy(IRenamePolicy underlyingPolicy)
+        public CacheRenamePolicy(IObfuscationPolicy underlyingPolicy)
         {
             _underlyingPolicy = underlyingPolicy;
         }

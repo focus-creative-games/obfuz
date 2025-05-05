@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
 
     public class NameScope : NameScopeBase

@@ -9,10 +9,10 @@ using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
 
-    public class RuleBasedRenamePolicy : RenamePolicyBase
+    public class RuleBasedRenamePolicy : ObfuscationPolicyBase
     {
         enum ObfuscationType
         {
@@ -500,7 +500,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             return rule;
         }
 
-        public void LoadXmls(List<string> xmlFiles)
+        private void LoadXmls(List<string> xmlFiles)
         {
             var rawAssemblySpecElements = new List<XmlElement>();
             foreach (string file in xmlFiles)
@@ -709,9 +709,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private readonly HashSet<string> _obfuscationAssemblyNames;
 
-        public RuleBasedRenamePolicy(List<string> obfuscationAssemblyNames)
+        public RuleBasedRenamePolicy(List<string> obfuscationAssemblyNames, List<string> xmlFiles)
         {
             this._obfuscationAssemblyNames = obfuscationAssemblyNames.ToHashSet();
+            LoadXmls(xmlFiles);
         }
 
         private TypeDefComputeCache GetOrCreateTypeDefRenameComputeCache(TypeDef typeDef)

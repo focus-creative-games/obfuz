@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
 
-    public class UnityRenamePolicy : RenamePolicyBase
+    public class UnityRenamePolicy : ObfuscationPolicyBase
     {
         private static HashSet<string> s_monoBehaviourEvents = new HashSet<string> {
     "Awake",

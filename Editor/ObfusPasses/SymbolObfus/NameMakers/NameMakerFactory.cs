@@ -5,7 +5,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
     public static class NameMakerFactory
     {
@@ -22,7 +22,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 words.Add(((char)('a' + i)).ToString());
                 words.Add(((char)('A' + i)).ToString());
             }
-            return new NameMaker(namePrefix, words);
+            return new WordSetNameMaker(namePrefix, words);
         }
     }
 }

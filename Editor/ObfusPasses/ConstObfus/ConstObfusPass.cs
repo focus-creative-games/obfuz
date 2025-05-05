@@ -11,14 +11,14 @@ using UnityEngine.Assertions;
 namespace Obfuz.ObfusPasses.ConstObfus
 {
 
-    public class DataVirtualizationPass : InstructionObfuscationPassBase
+    public class ConstObfusPass : InstructionObfuscationPassBase
     {
-        private IDataObfuscationPolicy _dataObfuscatorPolicy;
+        private IConstObfuscationPolicy _dataObfuscatorPolicy;
         private IDataObfuscator _dataObfuscator;
 
         public override void Start(ObfuscationPassContext ctx)
         {
-            _dataObfuscatorPolicy = new ConfigDataObfuscationPolicy();
+            _dataObfuscatorPolicy = new RuleBasedObfuscationPolicy();
             _dataObfuscator = new DefaultDataObfuscator();
         }
 

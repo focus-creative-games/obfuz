@@ -1,8 +1,8 @@
 ﻿using dnlib.DotNet;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
-    public abstract class RenamePolicyBase : IRenamePolicy
+    public abstract class ObfuscationPolicyBase : IObfuscationPolicy
     {
 
         public virtual bool NeedRename(TypeDef typeDef)

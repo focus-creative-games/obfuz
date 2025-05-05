@@ -1,5 +1,7 @@
 using dnlib.DotNet;
 using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.ObfusPasses.SymbolObfus.NameMakers;
+using Obfuz.ObfusPasses.SymbolObfus.Policies;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
@@ -38,8 +40,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
         private List<AssemblyReferenceInfo> _obfuzAssemblies;
         private HashSet<ModuleDef> _toObfuscatedModuleSet;
-        private RuleBasedRenamePolicy _obfuscateRuleConfig;
-        private IRenamePolicy _renamePolicy;
+        private IObfuscationPolicy _renamePolicy;
         private INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap;
@@ -70,9 +71,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
             _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
             _obfuzAssemblies = BuildAssemblyReferenceInfos(ctx);
-            _obfuscateRuleConfig = new RuleBasedRenamePolicy(ctx.toObfuscatedAssemblyNames);
-            _obfuscateRuleConfig.LoadXmls(_obfuscationRuleFiles);
-            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
+            var obfuscateRuleConfig = new RuleBasedRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
+            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
         }
 

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses
+namespace Obfuz
 {
 
     public class ObfuscationPassContext

@@ -1,4 +1,4 @@
-﻿namespace Obfuz.ObfusPasses.SymbolObfus
+﻿namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
     public interface INameScope
     {

@@ -2,7 +2,7 @@
 
 namespace Obfuz.ObfusPasses.SymbolObfus
 {
-    public interface IRenamePolicy
+    public interface IObfuscationPolicy
     {
         bool NeedRename(TypeDef typeDef);
 

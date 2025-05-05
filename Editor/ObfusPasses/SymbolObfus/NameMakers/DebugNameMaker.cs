@@ -1,7 +1,7 @@
 ﻿using dnlib.DotNet;
 using System.Text;
 
-namespace Obfuz.ObfusPasses.SymbolObfus
+namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
     public class DebugNameMaker : NameMakerBase
     {
