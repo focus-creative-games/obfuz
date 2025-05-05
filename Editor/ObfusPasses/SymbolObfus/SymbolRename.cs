@@ -28,6 +28,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public List<AssemblyReferenceInfo> referenceMeAssemblies;
         }
 
+        private readonly bool _useConsistentNamespaceObfuscation;
         private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
 
@@ -54,6 +55,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public SymbolRename(SymbolObfusSettings settings)
         {
+            _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
             _mappingXmlPath = settings.mappingFile;
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
             _renameRecordMap = new RenameRecordMap(settings.mappingFile);
@@ -625,7 +627,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
             else
             {
-                newNamespace = _nameMaker.GetNewNamespace(type, oldNamespace, true);
+                newNamespace = _nameMaker.GetNewNamespace(type, oldNamespace, _useConsistentNamespaceObfuscation);
                 newName = _nameMaker.GetNewName(type, oldName);
             }
 

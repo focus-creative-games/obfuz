@@ -12,7 +12,11 @@ namespace Obfuz.Settings
     {
         public bool debug;
 
+        [Tooltip("prefix for obfuscated name to avoid name confliction with original name")]
         public string obfuscatedNamePrefix = "$";
+
+        [Tooltip("obfuscate same namespace to same name")]
+        public bool useConsistentNamespaceObfuscation = true;
 
         [Tooltip("path of mapping.xml")]
         public string mappingFile = "Assets/Obfuz/SymbolObfus/mapping.xml";
