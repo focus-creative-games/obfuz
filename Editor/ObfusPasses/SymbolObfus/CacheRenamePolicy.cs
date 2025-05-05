@@ -15,16 +15,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _underlyingPolicy = underlyingPolicy;
         }
 
-        public override bool NeedRename(ModuleDef mod)
-        {
-            if (!_computeCache.TryGetValue(mod, out var value))
-            {
-                value = _underlyingPolicy.NeedRename(mod);
-                _computeCache.Add(mod, value);
-            }
-            return value;
-        }
-
         public override bool NeedRename(TypeDef typeDef)
         {
             if (!_computeCache.TryGetValue(typeDef, out var value))

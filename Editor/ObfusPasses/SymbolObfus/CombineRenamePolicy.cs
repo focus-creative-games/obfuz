@@ -12,11 +12,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _policies = policies;
         }
 
-        public bool NeedRename(ModuleDef mod)
-        {
-            return _policies.All(policy => policy.NeedRename(mod));
-        }
-
         public bool NeedRename(TypeDef typeDef)
         {
             return _policies.All(policy => policy.NeedRename(typeDef));

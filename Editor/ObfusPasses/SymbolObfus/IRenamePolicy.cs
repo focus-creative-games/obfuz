@@ -4,8 +4,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public interface IRenamePolicy
     {
-        bool NeedRename(ModuleDef mod);
-
         bool NeedRename(TypeDef typeDef);
 
         bool NeedRename(MethodDef methodDef);

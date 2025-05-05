@@ -176,7 +176,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         public void Process()
         {
             _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
-            RenameModules();
+
             RenameTypes();
             RenameFields();
             RenameMethods();
@@ -188,20 +188,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             return _obfuzAssemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
         }
-
-        private void RenameModules()
-        {
-            Debug.Log("Rename Modules begin");
-            foreach (ModuleDef mod in _toObfuscatedModules)
-            {
-                if (_renamePolicy.NeedRename(mod))
-                {
-                    Rename(mod);
-                }
-            }
-            Debug.Log("Rename Modules end");
-        }
-
 
         class RefTypeDefMetas
         {

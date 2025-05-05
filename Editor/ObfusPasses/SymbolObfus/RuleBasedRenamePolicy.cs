@@ -610,19 +610,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
-        public override bool NeedRename(ModuleDef mod)
-        {
-            //string name = mod.Assembly.Name;
-            //if (!_assemblyRuleSpecs.TryGetValue(name, out var assemblyRuleSpec))
-            //{
-            //    return false;
-            //}
-            //return assemblyRuleSpec.rule.obfuscateName;
-
-            // TODO support rename assembly
-            return false;
-        }
-
         private ModifierType ComputeModifierType(TypeAttributes visibility)
         {
             if (visibility == TypeAttributes.NotPublic || visibility == TypeAttributes.NestedPrivate)

@@ -4,10 +4,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public abstract class RenamePolicyBase : IRenamePolicy
     {
-        public virtual bool NeedRename(ModuleDef mod)
-        {
-            return false;
-        }
 
         public virtual bool NeedRename(TypeDef typeDef)
         {
