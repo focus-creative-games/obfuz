@@ -1,5 +1,6 @@
 using dnlib.DotNet;
 using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections;
@@ -36,7 +37,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
         private List<AssemblyReferenceInfo> _obfuzAssemblies;
         private HashSet<ModuleDef> _toObfuscatedModuleSet;
-        private ObfuscateRuleConfig _obfuscateRuleConfig;
+        private RuleBasedRenamePolicy _obfuscateRuleConfig;
         private IRenamePolicy _renamePolicy;
         private INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
@@ -51,12 +52,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public List<CANamedArgument> namedArguments;
         }
 
-        public SymbolRename(string mappingXmlPath, List<string> obfuscationRuleFiles)
+        public SymbolRename(SymbolObfusSettings settings)
         {
-            _mappingXmlPath = mappingXmlPath;
-            _obfuscationRuleFiles = obfuscationRuleFiles;
-            _renameRecordMap = new RenameRecordMap(mappingXmlPath);
+            _mappingXmlPath = settings.mappingFile;
+            _obfuscationRuleFiles = settings.ruleFiles.ToList();
+            _renameRecordMap = new RenameRecordMap(settings.mappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
+            _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet();
         }
 
         public void Init(ObfuscationPassContext ctx)
@@ -66,10 +68,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
             _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
             _obfuzAssemblies = BuildAssemblyReferenceInfos(ctx);
-            _obfuscateRuleConfig = new ObfuscateRuleConfig(ctx.toObfuscatedAssemblyNames);
+            _obfuscateRuleConfig = new RuleBasedRenamePolicy(ctx.toObfuscatedAssemblyNames);
             _obfuscateRuleConfig.LoadXmls(_obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), _obfuscateRuleConfig));
-            _nameMaker = NameMakerFactory.CreateNameMakerBaseASCIICharSet();
             BuildCustomAttributeArguments();
         }
 

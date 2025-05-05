@@ -23,11 +23,8 @@ namespace Obfuz.Settings
         [Tooltip("enable obfuscation pass")]
         public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
 
-        [Tooltip("path of mapping.xml")]
-        public string mappingFile = "Assets/Obfuz/mapping.xml";
-
-        [Tooltip("obfuscation rule files for assemblies")]
-        public string[] ruleFiles;
+        [Tooltip("symbol obfuscation settings")]
+        public SymbolObfusSettings symbolObfusSettings;
 
         [Tooltip("extra assembly search dirs")]
         public string[] extraAssemblySearchDirs;

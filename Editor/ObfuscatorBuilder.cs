@@ -93,7 +93,7 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfuscation))
             {
-                builder.AddPass(new RenameSymbolPass(settings.ruleFiles.ToList(), settings.mappingFile));
+                builder.AddPass(new SymbolObfusPass(settings.symbolObfusSettings));
             }
             builder.AddPass(new CleanUpInstructionPass());
             return builder;

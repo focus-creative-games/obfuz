@@ -24,7 +24,7 @@ namespace Obfuz.Utils
                 string assPath = Path.Combine(path, assemblyName + ".dll");
                 if (File.Exists(assPath))
                 {
-                    Debug.Log($"resolve {assemblyName} at {assPath}");
+                    //Debug.Log($"resolve {assemblyName} at {assPath}");
                     return assPath;
                 }
             }

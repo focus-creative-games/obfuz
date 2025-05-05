@@ -9,6 +9,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public static class NameMakerFactory
     {
+        public static INameMaker CreateDebugNameMaker()
+        {
+            return new TestNameMaker();
+        }
+
         public static INameMaker CreateNameMakerBaseASCIICharSet()
         {
             var words = new List<string>();

@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Obfuz.ObfusPasses.SymbolObfus
 {
 
-    public class ObfuscateRuleConfig : RenamePolicyBase
+    public class RuleBasedRenamePolicy : RenamePolicyBase
     {
         enum ObfuscationType
         {
@@ -707,7 +707,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private readonly HashSet<string> _obfuscationAssemblyNames;
 
-        public ObfuscateRuleConfig(List<string> obfuscationAssemblyNames)
+        public RuleBasedRenamePolicy(List<string> obfuscationAssemblyNames)
         {
             this._obfuscationAssemblyNames = obfuscationAssemblyNames.ToHashSet();
         }
