@@ -16,7 +16,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _nextIndex = 0;
         }
 
-        protected override void BuildNewName(StringBuilder nameBuilder, string originalName)
+        protected override void BuildNewName(StringBuilder nameBuilder, string originalName, string lastName)
         {
             for (int i = _nextIndex++; ;)
             {

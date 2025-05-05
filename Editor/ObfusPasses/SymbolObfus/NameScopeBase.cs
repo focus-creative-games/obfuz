@@ -20,16 +20,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         }
 
 
-        protected abstract void BuildNewName(StringBuilder nameBuilder, string originalName);
+        protected abstract void BuildNewName(StringBuilder nameBuilder, string originalName, string lastName);
 
         private string CreateNewName(string originalName)
         {
             var nameBuilder = new StringBuilder();
+            string lastName = null;
             while (true)
             {
                 nameBuilder.Clear();
-                BuildNewName(nameBuilder, originalName);
+                BuildNewName(nameBuilder, originalName, lastName);
                 string newName = nameBuilder.ToString();
+                lastName = newName;
                 if (_preservedNames.Add(newName))
                 {
                     return newName;

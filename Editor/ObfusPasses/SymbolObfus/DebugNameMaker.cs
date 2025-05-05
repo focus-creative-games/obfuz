@@ -8,20 +8,22 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private class TestNameScope : NameScopeBase
         {
             private int _nextIndex;
-            protected override void BuildNewName(StringBuilder nameBuilder, string originalName)
+            protected override void BuildNewName(StringBuilder nameBuilder, string originalName, string lastName)
             {
-                nameBuilder.Append($"<{originalName}>{_nextIndex++}");
+                if (string.IsNullOrEmpty(lastName))
+                {
+                    nameBuilder.Append($"${originalName}");
+                }
+                else
+                {
+                    nameBuilder.Append($"${originalName}{_nextIndex++}");
+                }
             }
         }
 
         protected override INameScope CreateNameScope()
         {
             return new TestNameScope();
-        }
-
-        public override string GetNewName(ParamDef param, string originalName)
-        {
-            return $"${originalName}";
         }
     }
 }
