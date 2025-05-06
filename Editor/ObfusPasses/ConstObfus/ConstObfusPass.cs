@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.ObfusPasses.ConstObfus.Policies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
     public class ConstObfusPass : InstructionObfuscationPassBase
     {
-        private IConstObfuscationPolicy _dataObfuscatorPolicy;
+        private IObfuscationPolicy _dataObfuscatorPolicy;
         private IDataObfuscator _dataObfuscator;
 
         public override void Start(ObfuscationPassContext ctx)

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.ConstObfus
+namespace Obfuz.ObfusPasses.ConstObfus.Policies
 {
-    public class RuleBasedObfuscationPolicy : ConstObfuscationPolicyBase
+    public class RuleBasedObfuscationPolicy : ObfuscationPolicyBase
     {
         public override bool NeedObfuscateMethod(MethodDef method)
         {

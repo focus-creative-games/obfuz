@@ -9,26 +9,21 @@ namespace Obfuz.Utils
 {
     public class RandomWithKey : IRandom
     {
+        // LCG 参数（使用经典的数值）
+        private const long a = 1664525;
+        private const long c = 1013904223;
+        private const long m = 4294967296; // 2^32
+
         private readonly byte[] _key;
 
-        private readonly Random _random;
-
         private int _nextIndex;
+
+        private int _seed;
 
         public RandomWithKey(byte[] key, int seed)
         {
             _key = key;
-            // TODO use key and seed to generate a random number
-            _random = new Random(GenerateSeed(key, seed));
-        }
-
-        private int GenerateSeed(byte[] key, int seed)
-        {
-            foreach (var b in key)
-            {
-                seed = seed * 31 + b;
-            }
-            return seed;
+            _seed = seed;
         }
 
         public int NextInt(int min, int max)
@@ -52,7 +47,8 @@ namespace Obfuz.Utils
 
         public int NextInt()
         {
-            return _random.Next() ^ GetNextKeyByte();
+            _seed = (int)((a * _seed + c) % m);
+            return _seed ^ GetNextKeyByte();
         }
 
         public long NextLong()

@@ -7,7 +7,6 @@ namespace Obfuz.ObfusPasses.ConstObfus
 {
     public interface IDataObfuscator
     {
-
         void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions);
 
         void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions);
