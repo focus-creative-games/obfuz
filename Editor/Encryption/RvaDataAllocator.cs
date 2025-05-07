@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
 
-namespace Obfuz.Emit
+namespace Obfuz.Encryption
 {
     public struct RvaData
     {
@@ -24,7 +25,7 @@ namespace Obfuz.Emit
         }
     }
 
-    public class ModuleRvaDataAllocator
+    public class ModuleRvaDataAllocator : ModuleEmitManagerBase
     {
         // randomized
         const int maxRvaDataSize = 0x100;
@@ -32,7 +33,6 @@ namespace Obfuz.Emit
         private readonly ModuleDef _module;
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
-
 
         class RvaField
         {
@@ -74,6 +74,11 @@ namespace Obfuz.Emit
             _module = mod;
             _random = random;
             _encryptor = encryptor;
+        }
+
+        public override void Init(ModuleDef mod)
+        {
+
         }
 
         private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
@@ -230,10 +235,7 @@ namespace Obfuz.Emit
             cctorMethod.Body = body;
             var ins = body.Instructions;
 
-            IMethod initializeArrayMethod = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
-            IMethod decryptArrayMethod = mod.Import(typeof(EncryptionService).GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long),  typeof(int) }));
-
-            Assert.IsNotNull(initializeArrayMethod);
+            DefaultModuleMetadataImporter importer = MetadataImporter.Instance.GetDefaultModuleMetadataImporter(mod);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -248,12 +250,12 @@ namespace Obfuz.Emit
                 ins.Add(Instruction.Create(OpCodes.Dup));
                 ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
                 ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
-                ins.Add(Instruction.Create(OpCodes.Call, initializeArrayMethod));
+                ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArrayMethod));
 
                 // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
                 ins.Add(Instruction.Create(OpCodes.Ldc_I8, field.encryptionOps));
                 ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.salt));
-                ins.Add(Instruction.Create(OpCodes.Call, decryptArrayMethod));
+                ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptBlock));
 
             }
             ins.Add(Instruction.Create(OpCodes.Ret));
@@ -286,7 +288,6 @@ namespace Obfuz.Emit
 
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
-        private readonly Dictionary<ModuleDef, ModuleRvaDataAllocator> _modules = new Dictionary<ModuleDef, ModuleRvaDataAllocator>();
 
         public RvaDataAllocator(IRandom random, IEncryptor encryptor)
         {
@@ -296,12 +297,7 @@ namespace Obfuz.Emit
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            if (!_modules.TryGetValue(mod, out var allocator))
-            {
-                allocator = new ModuleRvaDataAllocator(mod, _random, _encryptor);
-                _modules.Add(mod, allocator);
-            }
-            return allocator;
+            return EmitManager.Ins.GetEmitManager<ModuleRvaDataAllocator>(mod, mod => new ModuleRvaDataAllocator(mod, _random, _encryptor));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)
@@ -336,7 +332,7 @@ namespace Obfuz.Emit
 
         public void Done()
         {
-            foreach (var allocator in _modules.Values)
+            foreach (var allocator in EmitManager.Ins.GetEmitManagers<ModuleRvaDataAllocator>())
             {
                 allocator.Done();
             }

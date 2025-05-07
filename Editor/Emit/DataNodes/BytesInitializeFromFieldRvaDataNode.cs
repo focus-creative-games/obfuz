@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static UnityEngine.Networking.UnityWebRequest;
 using UnityEngine.UIElements;
+using Obfuz.Encryption;
 
 namespace Obfuz.Emit
 {

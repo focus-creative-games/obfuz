@@ -9,12 +9,18 @@ using System.Threading.Tasks;
 using MethodImplAttributes = dnlib.DotNet.MethodImplAttributes;
 using TypeAttributes = dnlib.DotNet.TypeAttributes;
 
-namespace Obfuz.Emit
+namespace Obfuz.ObfusPasses.CallObfus
 {
     public struct ProxyCallMethodData
     {
-        public MethodDef proxyMethod;
-        public int secret;
+        public readonly MethodDef proxyMethod;
+        public readonly int secret;
+
+        public ProxyCallMethodData(MethodDef proxyMethod, int secret)
+        {
+            this.proxyMethod = proxyMethod;
+            this.secret = secret;
+        }
     }
 
     class ModuleDynamicProxyMethodAllocator
@@ -161,7 +167,7 @@ namespace Obfuz.Emit
                 methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir});
                 _methodProxys.Add(key, proxyInfo);
             }
-            return new ProxyCallMethodData { proxyMethod = proxyInfo.proxyMethod, secret = proxyInfo.secret };
+            return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.secret);
         }
 
         public void Done()

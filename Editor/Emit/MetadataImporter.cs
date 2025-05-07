@@ -8,64 +8,67 @@ using UnityEngine.Assertions;
 
 namespace Obfuz.Emit
 {
-    public class ModuleMetadataImporter
+    public interface IModuleMetadataImporter
     {
-        private readonly ModuleDef _module;
-        public ModuleMetadataImporter(ModuleDef module)
-        {
-            _module = module;
-            _module = module;
-            InitMetadatas(module);
-        }
+        void Init(ModuleDef mod);
+    }
 
-        private static IMethod s_castIntAsFloat;
-        private static IMethod s_castLongAsDouble;
-        private static IMethod s_castFloatAsInt;
-        private static IMethod s_castDoubleAsLong;
+    public abstract class ModuleMetadataImporterBase : IModuleMetadataImporter
+    {
+        public abstract void Init(ModuleDef mod);
+    }
 
-        private void InitMetadatas(ModuleDef mod)
+    public class DefaultModuleMetadataImporter : ModuleMetadataImporterBase
+    {
+        public override void Init(ModuleDef mod)
         {
-            if (s_castFloatAsInt != null)
-            {
-                return;
-            }
+            _module = mod;
             var constUtilityType = typeof(ConstUtility);
 
-            s_castIntAsFloat = mod.Import(constUtilityType.GetMethod("CastIntAsFloat"));
-            Assert.IsNotNull(s_castIntAsFloat, "CastIntAsFloat not found");
-            s_castLongAsDouble = mod.Import(constUtilityType.GetMethod("CastLongAsDouble"));
-            Assert.IsNotNull(s_castLongAsDouble, "CastLongAsDouble not found");
-            s_castFloatAsInt = mod.Import(constUtilityType.GetMethod("CastFloatAsInt"));
-            Assert.IsNotNull(s_castFloatAsInt, "CastFloatAsInt not found");
-            s_castDoubleAsLong = mod.Import(constUtilityType.GetMethod("CastDoubleAsLong"));
-            Assert.IsNotNull(s_castDoubleAsLong, "CastDoubleAsLong not found");
+            _castIntAsFloat = mod.Import(constUtilityType.GetMethod("CastIntAsFloat"));
+            Assert.IsNotNull(_castIntAsFloat, "CastIntAsFloat not found");
+            _castLongAsDouble = mod.Import(constUtilityType.GetMethod("CastLongAsDouble"));
+            Assert.IsNotNull(_castLongAsDouble, "CastLongAsDouble not found");
+            _castFloatAsInt = mod.Import(constUtilityType.GetMethod("CastFloatAsInt"));
+            Assert.IsNotNull(_castFloatAsInt, "CastFloatAsInt not found");
+            _castDoubleAsLong = mod.Import(constUtilityType.GetMethod("CastDoubleAsLong"));
+            Assert.IsNotNull(_castDoubleAsLong, "CastDoubleAsLong not found");
+
+            _initializeArray = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
+            Assert.IsNotNull(_initializeArray);
+            _encryptBlock = mod.Import(typeof(EncryptionService).GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+            Assert.IsNotNull(_encryptBlock);
+            _decryptBlock = mod.Import(typeof(EncryptionService).GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+            Assert.IsNotNull(_decryptBlock);
         }
 
-        public IMethod GetCastIntAsFloat()
-        {
-            return s_castIntAsFloat;
-        }
+        private ModuleDef _module;
+        private IMethod _castIntAsFloat;
+        private IMethod _castLongAsDouble;
+        private IMethod _castFloatAsInt;
+        private IMethod _castDoubleAsLong;
+        private IMethod _initializeArray;
+        private IMethod _encryptBlock;
+        private IMethod _decryptBlock;
 
-        public IMethod GetCastLongAsDouble()
-        {
-            return s_castLongAsDouble;
-        }
+        public IMethod CastIntAsFloat => _castIntAsFloat;
 
-        public IMethod GetCastFloatAsInt()
-        {
-            return s_castFloatAsInt;
-        }
+        public IMethod CastLongAsDouble => _castLongAsDouble;
 
-        public IMethod GetCastDoubleAsLong()
-        {
-            return s_castDoubleAsLong;
-        }
+        public IMethod CastFloatAsInt => _castFloatAsInt;
+
+        public IMethod CastDoubleAsLong => _castDoubleAsLong;
+
+        public IMethod InitializedArrayMethod => _initializeArray;
+
+        public IMethod EncryptBlock => _encryptBlock;
+
+        public IMethod DecryptBlock => _decryptBlock;
     }
 
     public class MetadataImporter
     {
-
-        private readonly Dictionary<ModuleDef, ModuleMetadataImporter> _moduleMetadataImporters = new Dictionary<ModuleDef, ModuleMetadataImporter>();
+        private readonly Dictionary<(ModuleDef, Type), IModuleMetadataImporter> _customModuleMetadataImporters = new Dictionary<(ModuleDef, Type), IModuleMetadataImporter>();
 
         public static MetadataImporter Instance { get; private set; }
 
@@ -74,14 +77,46 @@ namespace Obfuz.Emit
             Instance = new MetadataImporter();
         }
 
-        public ModuleMetadataImporter GetModuleMetadataImporter(ModuleDef module)
+        public DefaultModuleMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module)
         {
-            if (!_moduleMetadataImporters.TryGetValue(module, out var importer))
+            return GetCustomModuleMetadataImporter<DefaultModuleMetadataImporter>(module);
+        }
+
+        public List<DefaultModuleMetadataImporter> GetDefaultModuleMetadataImporters()
+        {
+            return GetCustomModuleMetadataImporters<DefaultModuleMetadataImporter>();
+        }
+
+        public T GetCustomModuleMetadataImporter<T>(ModuleDef module, Func<ModuleDef, T> creator = null) where T : IModuleMetadataImporter
+        {
+            var key = (module, typeof(T));
+            if (!_customModuleMetadataImporters.TryGetValue(key, out var importer))
             {
-                importer = new ModuleMetadataImporter(module);
-                _moduleMetadataImporters[module] = importer;
+                if (creator != null)
+                {
+                    importer = creator(module);
+                }
+                else
+                {
+                    importer = (IModuleMetadataImporter)Activator.CreateInstance(typeof(T), module);
+                }
+                importer.Init(module);
+                _customModuleMetadataImporters[key] = importer;
             }
-            return importer;
+            return (T)importer;
+        }
+
+        public List<T> GetCustomModuleMetadataImporters<T>()
+        {
+            var result = new List<T>();
+            foreach (var kvp in _customModuleMetadataImporters)
+            {
+                if (kvp.Key.Item2 == typeof(T))
+                {
+                    result.Add((T)kvp.Value);
+                }
+            }
+            return result;
         }
     }
 }

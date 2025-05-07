@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
+using Obfuz.Encryption;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;

@@ -13,6 +13,8 @@ namespace Obfuz.Emit
     public class EncryptionCompileContext
     {
         public ModuleDef module;
+
+        public DefaultModuleMetadataImporter DefaultModuleMetadataImporter => MetadataImporter.Instance.GetDefaultModuleMetadataImporter(module);
     }
 
     public interface IVariableTransformer
@@ -234,10 +236,10 @@ namespace Obfuz.Emit
             switch (_outputType)
             {
                 case DataNodeType.Int32:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastFloatAsInt()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastFloatAsInt));
                 break;
                 case DataNodeType.Int64:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastDoubleAsLong()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastDoubleAsLong));
                 break;
                 default: throw new NotSupportedException($"Unsupported type: {_outputType}");
             }
@@ -248,10 +250,10 @@ namespace Obfuz.Emit
             switch (_outputType)
             {
                 case DataNodeType.Int32:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastIntAsFloat()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastIntAsFloat));
                 break;
                 case DataNodeType.Int64:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastLongAsDouble()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastLongAsDouble));
                 break;
                 default: throw new NotSupportedException($"Unsupported type: {_outputType}");
             }
@@ -312,10 +314,10 @@ namespace Obfuz.Emit
             switch (_outputType)
             {
                 case DataNodeType.Float32:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastIntAsFloat()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastIntAsFloat));
                 break;
                 case DataNodeType.Float64:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastLongAsDouble()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastLongAsDouble));
                 break;
                 default: throw new NotSupportedException($"Unsupported type: {_outputType}");
             }
@@ -326,10 +328,10 @@ namespace Obfuz.Emit
             switch (_outputType)
             {
                 case DataNodeType.Float32:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastFloatAsInt()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastFloatAsInt));
                 break;
                 case DataNodeType.Float64:
-                output.Add(Instruction.Create(OpCodes.Call, MetadataImporter.Instance.GetModuleMetadataImporter(ctx.module).GetCastDoubleAsLong()));
+                output.Add(Instruction.Create(OpCodes.Call, ctx.DefaultModuleMetadataImporter.CastDoubleAsLong));
                 break;
                 default: throw new NotSupportedException($"Unsupported type: {_outputType}");
             }
