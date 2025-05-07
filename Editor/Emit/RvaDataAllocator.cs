@@ -38,11 +38,20 @@ namespace Obfuz.Emit
         {
             public FieldDef holderDataField;
             public FieldDef runtimeValueField;
+            public long encryptionOps;
             public uint size;
             public List<byte> bytes;
-            public int minorSecret;
+            public int salt;
 
-            public void FillPadding()
+            public void FillPaddingToSize(int newSize)
+            {
+                for (int i = bytes.Count; i < newSize; i++)
+                {
+                    bytes.Add(0xAB);
+                }
+            }
+
+            public void FillPaddingToEnd()
             {
                 // fill with random value
                 for (int i = bytes.Count; i < size; i++)
@@ -121,7 +130,8 @@ namespace Obfuz.Emit
                 runtimeValueField = runtimeValueField,
                 size = dataHolderType.ClassSize,
                 bytes = new List<byte>((int)dataHolderType.ClassSize),
-                minorSecret = _random.NextInt(),
+                encryptionOps = _random.NextLong(),
+                salt = _random.NextInt(),
             };
             _rvaFields.Add(newRvaField);
             return newRvaField;
@@ -143,17 +153,11 @@ namespace Obfuz.Emit
                 int expectedSize = offset + preservedSize;
                 if (expectedSize <= _currentField.size)
                 {
-                    // insert random padding
-                    for (int i = _currentField.bytes.Count; i < offset; i++)
-                    {
-                        //_currentField.bytes.Add((byte)_random.NextInt(0, 256));
-                        // TODO replace with random value
-                        _currentField.bytes.Add(0xAB);
-                    }
+                    _currentField.FillPaddingToSize(offset);
                     return _currentField;
                 }
 
-                _currentField.FillPadding();
+                _currentField.FillPaddingToEnd();
             }
             _currentField = CreateRvaField(maxRvaDataSize);
             return _currentField;
@@ -216,18 +220,18 @@ namespace Obfuz.Emit
                 return;
             }
             ModuleDef mod = _rvaTypeDef.Module;
-            var cctor = new MethodDefUser(".cctor",
+            var cctorMethod = new MethodDefUser(".cctor",
                 MethodSig.CreateStatic(_module.CorLibTypes.Void),
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
                 MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName | MethodAttributes.Private);
-            cctor.DeclaringType = _rvaTypeDef;
+            cctorMethod.DeclaringType = _rvaTypeDef;
             //_rvaTypeDef.Methods.Add(cctor);
             var body = new CilBody();
-            cctor.Body = body;
+            cctorMethod.Body = body;
             var ins = body.Instructions;
 
             IMethod initializeArrayMethod = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
-            IMethod decryptArrayMethod = mod.Import(typeof(EncryptionService).GetMethod("DecryptBytes", new[] { typeof(byte[]), typeof(int) }));
+            IMethod decryptArrayMethod = mod.Import(typeof(EncryptionService).GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long),  typeof(int) }));
 
             Assert.IsNotNull(initializeArrayMethod);
             foreach (var field in _rvaFields)
@@ -245,7 +249,10 @@ namespace Obfuz.Emit
                 ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
                 ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
                 ins.Add(Instruction.Create(OpCodes.Call, initializeArrayMethod));
-                ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.minorSecret));
+
+                // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
+                ins.Add(Instruction.Create(OpCodes.Ldc_I8, field.encryptionOps));
+                ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.salt));
                 ins.Add(Instruction.Create(OpCodes.Call, decryptArrayMethod));
 
             }
@@ -259,10 +266,10 @@ namespace Obfuz.Emit
                 Assert.IsTrue(field.bytes.Count <= field.size);
                 if (field.bytes.Count < field.size)
                 {
-                    field.FillPadding();
+                    field.FillPaddingToEnd();
                 }
                 byte[] data = field.bytes.ToArray();
-                _encryptor.EncryptBytes(data, field.minorSecret);
+                _encryptor.EncryptBlock(data, field.encryptionOps, field.salt);
                 field.holderDataField.InitialValue = data;
             }
         }
