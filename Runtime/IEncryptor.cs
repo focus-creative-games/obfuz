@@ -8,7 +8,7 @@ namespace Obfuz
 {
     public interface IEncryptor
     {
-        void EncryptBytes(byte[] data, int minorSecret);
-        void DecryptBytes(byte[] data, int minorSecret);
+        void EncryptBlock(byte[] data, long ops, int salt);
+        void DecryptBlock(byte[] data, long ops, int salt);
     }
 }

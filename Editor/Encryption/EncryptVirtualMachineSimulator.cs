@@ -10,6 +10,8 @@ namespace Obfuz.Encryption
 {
     public class VirtualMachine
     {
+        public const int SecretKeyLength = 1024;
+
         public readonly int vmSeed;
         public readonly EncryptOpCode[] opCodes;
 
@@ -27,22 +29,27 @@ namespace Obfuz.Encryption
 
     public class RandomVirtualMachineCreator : IVirtualMachineCreator
     {
+        private readonly int[] _debugSecretKey;
 
         public RandomVirtualMachineCreator()
         {
-
+            _debugSecretKey = new int[VirtualMachine.SecretKeyLength];
+            for (int i = 0; i < _debugSecretKey.Length; i++)
+            {
+                _debugSecretKey[i] = i;
+            }
         }
 
-        private IEncryptInstruction CreateRandomInstruction(IRandom random, int opCodeCount)
+        private IEncryptInstruction CreateRandomInstruction(IRandom random, int secretKeyLength)
         {
             switch (random.NextInt(3))
             {
                 case 0:
-                    return new AddInstruction(random.NextInt(), random.NextInt(opCodeCount));
+                    return new AddInstruction(random.NextInt(), random.NextInt(secretKeyLength));
                 case 1:
-                    return new XorInstruction(random.NextInt(), random.NextInt(opCodeCount));
+                    return new XorInstruction(random.NextInt(), random.NextInt(secretKeyLength));
                 case 2:
-                    return new BitRotateInstruction(random.NextInt(32), random.NextInt(opCodeCount));
+                    return new BitRotateInstruction(random.NextInt(32), random.NextInt(secretKeyLength));
                 default:
                 throw new System.Exception("Invalid instruction type");
             }
@@ -54,9 +61,12 @@ namespace Obfuz.Encryption
             var insts = new IEncryptInstruction[opCodeCount];
             for (int i = 0; i < insts.Length; i++)
             {
+                IEncryptInstruction inst = CreateRandomInstruction(r, VirtualMachine.SecretKeyLength);
+                Assert.AreEqual(1234, inst.Decrypt(inst.Encrypt(1234, _debugSecretKey, i), _debugSecretKey, i));
                 insts[i] = CreateRandomInstruction(r, opCodeCount);
             }
             var function = new EncryptFunction(insts);
+            Assert.AreEqual(1234, function.Decrypt(function.Encrypt(1234, _debugSecretKey, code), _debugSecretKey, code));
             return new EncryptOpCode(code, function);
         }
 
@@ -191,6 +201,11 @@ namespace Obfuz.Encryption
             return encInts;
         }
 
+        public int[] Encrypt(byte[] bytes, int ops, int salt)
+        {
+            return Encrypt(bytes, 0, bytes.Length, ops, salt);
+        }
+
         public byte[] Decrypt(int[] value, int offset, int byteLength, int ops, int salt)
         {
             if (byteLength == 0)
@@ -207,6 +222,11 @@ namespace Obfuz.Encryption
             byte[] bytes = new byte[byteLength];
             Buffer.BlockCopy(decValue, 0, bytes, 0, byteLength);
             return bytes;
+        }
+
+        public byte[] Decrypt(int[] value, int byteLength, int ops, int salt)
+        {
+            return Decrypt(value, 0, byteLength, ops, salt);
         }
 
         public int[] Encrypt(string value, int ops, int salt)

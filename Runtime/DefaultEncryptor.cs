@@ -15,19 +15,19 @@ namespace Obfuz
             _key = key;
         }
 
-        public void EncryptBytes(byte[] data, int minorSecret)
+        public void EncryptBlock(byte[] data, long ops, int salt)
         {
             for (int i = 0; i < data.Length; i++)
             {
-                data[i] ^= (byte)(_key[i % _key.Length] ^ minorSecret);
+                data[i] ^= (byte)(_key[i % _key.Length] ^ salt);
             }
         }
 
-        public void DecryptBytes(byte[] data, int minorSecret)
+        public void DecryptBlock(byte[] data, long ops, int salt)
         {
             for (int i = 0; i < data.Length; i++)
             {
-                data[i] ^= (byte)(_key[i % _key.Length] ^ minorSecret);
+                data[i] ^= (byte)(_key[i % _key.Length] ^ salt);
             }
         }
     }
