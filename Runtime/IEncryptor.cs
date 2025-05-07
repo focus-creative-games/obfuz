@@ -10,5 +10,23 @@ namespace Obfuz
     {
         void EncryptBlock(byte[] data, long ops, int salt);
         void DecryptBlock(byte[] data, long ops, int salt);
+
+        int Encrypt(int value, int opts, int salt);
+        int Decrypt(int value, int opts, int salt);
+
+        long Encrypt(long value, int opts, int salt);
+        long Decrypt(long value, int opts, int salt);
+
+        float Encrypt(float value, int opts, int salt);
+        float Decrypt(float value, int opts, int salt);
+
+        double Encrypt(double value, int opts, int salt);
+        double Decrypt(double value, int opts, int salt);
+
+        int[] Encrypt(byte[] value, int offset, int length, int opts, int salt);
+        public byte[] Decrypt(int[] value, int offset, int byteLength, int ops, int salt);
+
+        public int[] Encrypt(string value, int ops, int salt);
+        public string DecryptString(int[] value, int offset, int stringBytesLength, int ops, int salt);
     }
 }

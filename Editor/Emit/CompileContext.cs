@@ -2,7 +2,7 @@
 using dnlib.DotNet.Emit;
 using NUnit.Framework;
 using Obfuz.Emit;
-using Obfuz.Encryption;
+using Obfuz.Data;
 using System.Collections.Generic;
 
 namespace Obfuz.Emit

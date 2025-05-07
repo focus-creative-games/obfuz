@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Obfuz
 {
@@ -38,6 +39,14 @@ namespace Obfuz
         {
             byte[] result = new byte[length];
             Array.Copy(data, offset, result, 0, length);
+            return result;
+        }
+
+        public static int[] GetInts(byte[] data, int offset, int byteLength)
+        {
+            Assert.IsTrue(byteLength % 4 == 0);
+            int[] result = new int[byteLength >> 2];
+            Buffer.BlockCopy(data, offset, result, 0, byteLength);
             return result;
         }
 

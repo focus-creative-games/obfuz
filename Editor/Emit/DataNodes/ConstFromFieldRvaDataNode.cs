@@ -2,14 +2,7 @@
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static UnityEngine.Networking.UnityWebRequest;
-using UnityEngine.UIElements;
-using Obfuz.Encryption;
+using Obfuz.Data;
 
 namespace Obfuz.Emit
 {

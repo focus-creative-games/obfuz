@@ -20,7 +20,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
         public override void Start(ObfuscationPassContext ctx)
         {
             _dataObfuscatorPolicy = new RuleBasedObfuscationPolicy();
-            _dataObfuscator = new DefaultDataObfuscator();
+            _dataObfuscator = new DefaultConstObfuscator();
         }
 
         public override void Stop(ObfuscationPassContext ctx)

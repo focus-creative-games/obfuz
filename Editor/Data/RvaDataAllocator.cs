@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
 
-namespace Obfuz.Encryption
+namespace Obfuz.Data
 {
     public struct RvaData
     {
