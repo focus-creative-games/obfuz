@@ -1,19 +1,23 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Obfuz.Emit
+namespace Obfuz.Data
 {
-    public class ModuleConstFieldAllocator
+    public class ModuleConstFieldAllocator : IModuleEmitManager
     {
-        private readonly ModuleDef _module;
+        private ModuleDef _module;
         private readonly IRandom _random;
+        private readonly IEncryptor _encryptor;
+        private readonly RvaDataAllocator _rvaDataAllocator;
 
         private TypeDef _holderTypeDef;
 
@@ -28,10 +32,16 @@ namespace Obfuz.Emit
         private readonly List<TypeDef> _holderTypeDefs = new List<TypeDef>();
 
 
-        public ModuleConstFieldAllocator(ModuleDef mod, IRandom random)
+        public ModuleConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator)
+        {
+            _encryptor = encryptor;
+            _random = random;
+            _rvaDataAllocator = rvaDataAllocator;
+        }
+
+        public void Init(ModuleDef mod)
         {
             _module = mod;
-            _random = random;
         }
 
         const int maxFieldCount = 1000;
@@ -116,6 +126,21 @@ namespace Obfuz.Emit
         //    throw new NotImplementedException();
         //}
 
+        private int GenerateEncryptionOperations()
+        {
+            return _random.NextInt();
+        }
+
+        public int GenerateSalt()
+        {
+            return _random.NextInt();
+        }
+
+        private DefaultModuleMetadataImporter GetModuleMetadataImporter()
+        {
+            return MetadataImporter.Instance.GetDefaultModuleMetadataImporter(_module);
+        }
+
         private void CreateCCtorOfRvaTypeDef(TypeDef type)
         {
             var cctor = new MethodDefUser(".cctor",
@@ -131,27 +156,74 @@ namespace Obfuz.Emit
             //IMethod method = _module.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
             //Assert.IsNotNull(method);
 
+
+            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter();
             // TODO. obfuscate init codes
             foreach (var field in type.Fields)
             {
                 ConstFieldInfo constInfo = _field2Fields[field];
+                int ops = GenerateEncryptionOperations();
+                int salt = GenerateSalt();
                 switch (constInfo.value)
                 {
                     case int i:
-                    ins.Add(Instruction.Create(OpCodes.Ldc_I4, i));
-                    break;
+                    {
+                        int encryptedValue = _encryptor.Encrypt(i, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaInt));
+                        break;
+                    }
                     case long l:
-                    ins.Add(Instruction.Create(OpCodes.Ldc_I8, l));
-                    break;
+                    {
+                        long encryptedValue = _encryptor.Encrypt(l, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaLong));
+                        break;
+                    }
                     case float f:
-                    ins.Add(Instruction.Create(OpCodes.Ldc_R4, f));
-                    break;
+                    {
+                        float encryptedValue = _encryptor.Encrypt(f, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaFloat));
+                        break;
+                    }
                     case double d:
-                    ins.Add(Instruction.Create(OpCodes.Ldc_R8, d));
-                    break;
+                    {
+                        double encryptedValue = _encryptor.Encrypt(d, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaDouble));
+                        break;
+                    }
                     case string s:
-                    ins.Add(Instruction.Create(OpCodes.Ldstr, s));
-                    break;
+                    {
+                        int stringByteLength = Encoding.UTF8.GetByteCount(s);
+                        byte[] encryptedValue = _encryptor.Encrypt(s, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        //// should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
+                        ins.Add(Instruction.CreateLdcI4(stringByteLength));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaString));
+                        break;
+                    }
                     //case byte[] b:
                     //    ins.Add(Instruction.Create(OpCodes.Ldlen, b.Length));
                     //    break;
@@ -173,23 +245,20 @@ namespace Obfuz.Emit
 
     public class ConstFieldAllocator
     {
+        private readonly IEncryptor _encryptor;
         private readonly IRandom _random;
+        private readonly RvaDataAllocator _rvaDataAllocator;
 
-        private readonly Dictionary<ModuleDef, ModuleConstFieldAllocator> _moduleAllocators = new Dictionary<ModuleDef, ModuleConstFieldAllocator>();
-
-        public ConstFieldAllocator(IRandom random)
+        public ConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator)
         {
+            _encryptor = encryptor;
             _random = random;
+            _rvaDataAllocator = rvaDataAllocator;
         }
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            if (!_moduleAllocators.TryGetValue(mod, out var moduleAllocator))
-            {
-                moduleAllocator = new ModuleConstFieldAllocator(mod, _random);
-                _moduleAllocators[mod] = moduleAllocator;
-            }
-            return moduleAllocator;
+            return EmitManager.Ins.GetEmitManager<ModuleConstFieldAllocator>(mod, m => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)
@@ -219,7 +288,7 @@ namespace Obfuz.Emit
 
         public void Done()
         {
-            foreach (var moduleAllocator in _moduleAllocators.Values)
+            foreach (var moduleAllocator in EmitManager.Ins.GetEmitManagers<ModuleConstFieldAllocator>())
             {
                 moduleAllocator.Done();
             }
