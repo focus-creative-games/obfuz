@@ -60,22 +60,22 @@ namespace Obfuz
             return _encryptor.Decrypt(value, opts, salt);
         }
 
-        public static int[] Encrypt(byte[] value, int offset, int length, int opts, int salt)
+        public static byte[] Encrypt(byte[] value, int offset, int length, int opts, int salt)
         {
             return _encryptor.Encrypt(value, offset, length, opts, salt);
         }
 
-        public static byte[] Decrypt(int[] value, int offset, int byteLength, int ops, int salt)
+        public static byte[] Decrypt(byte[] value, int offset, int byteLength, int ops, int salt)
         {
             return _encryptor.Decrypt(value, offset, byteLength, ops, salt);
         }
 
-        public static int[] Encrypt(string value, int ops, int salt)
+        public static byte[] Encrypt(string value, int ops, int salt)
         {
             return _encryptor.Encrypt(value, ops, salt);
         }
 
-        public static string DecryptString(int[] value, int offset, int stringBytesLength, int ops, int salt)
+        public static string DecryptString(byte[] value, int offset, int stringBytesLength, int ops, int salt)
         {
             return _encryptor.DecryptString(value, offset, stringBytesLength, ops, salt);
         }
@@ -105,10 +105,14 @@ namespace Obfuz
             return Decrypt(encryptedValue, ops, salt);
         }
 
-        public static string DecryptFromRvaString(byte[] data, int offset, int stringBytesLength, int ops, int salt)
+        public static string DecryptFromRvaString(byte[] data, int offset, int length, int ops, int salt)
         {
-            int[] encryptedValue = ConstUtility.GetBytes(data, offset, stringBytesLength);
-            return DecryptString(encryptedValue, 0, stringBytesLength, ops, salt);
+            return DecryptString(data, offset, length, ops, salt);
+        }
+
+        public static byte[] DecryptFromRvaBytes(byte[] data, int offset, int bytesLength, int ops, int salt)
+        {
+            return Decrypt(data, offset, bytesLength, ops, salt);
         }
     }
 }

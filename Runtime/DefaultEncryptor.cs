@@ -71,30 +71,31 @@ namespace Obfuz
             return value;
         }
 
-        public int[] Encrypt(byte[] value, int offset, int length, int opts, int salt)
+        public byte[] Encrypt(byte[] value, int offset, int length, int opts, int salt)
         {
-            var intArr = new int[(length + 3) / 4];
-            Buffer.BlockCopy(value, offset, intArr, 0, length);
-            return intArr;
+            int align4Length = (length + 3) & ~3;
+            var encryptedBytes = new byte[align4Length];
+            Buffer.BlockCopy(value, offset, encryptedBytes, 0, length);
+            return encryptedBytes;
         }
 
-        public byte[] Decrypt(int[] value, int offset, int byteLength, int ops, int salt)
+        public byte[] Decrypt(byte[] value, int offset, int length, int ops, int salt)
         {
-            byte[] byteArr = new byte[byteLength];
-            Buffer.BlockCopy(value, 0, byteArr, 0, byteLength);
+            byte[] byteArr = new byte[length];
+            Buffer.BlockCopy(value, 0, byteArr, 0, length);
             return byteArr;
         }
 
-        public int[] Encrypt(string value, int ops, int salt)
+        public byte[] Encrypt(string value, int ops, int salt)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
             return Encrypt(bytes, 0, bytes.Length, ops, salt);
         }
 
-        public string DecryptString(int[] value, int offset, int stringBytesLength, int ops, int salt)
+        public string DecryptString(byte[] value, int offset, int length, int ops, int salt)
         {
-            byte[] bytes = new byte[stringBytesLength];
-            Buffer.BlockCopy(value, 0, bytes, 0, stringBytesLength);
+            byte[] bytes = new byte[length];
+            Buffer.BlockCopy(value, 0, bytes, 0, length);
             return Encoding.UTF8.GetString(bytes);
         }
     }

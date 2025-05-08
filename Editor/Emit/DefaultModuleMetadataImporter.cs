@@ -24,34 +24,49 @@ namespace Obfuz.Emit
 
             _initializeArray = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
             Assert.IsNotNull(_initializeArray);
-            _encryptBlock = mod.Import(typeof(EncryptionService).GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+
+            Type encryptionService = typeof(EncryptionService);
+            _encryptBlock = mod.Import(encryptionService.GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
             Assert.IsNotNull(_encryptBlock);
-            _decryptBlock = mod.Import(typeof(EncryptionService).GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+            _decryptBlock = mod.Import(encryptionService.GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
             Assert.IsNotNull(_decryptBlock);
-            _encryptInt = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(int), typeof(int), typeof(int) }));
+            _encryptInt = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptInt);
-            _decryptInt = mod.Import(typeof(EncryptionService).GetMethod("Decrypt", new[] { typeof(int), typeof(int), typeof(int) }));
+            _decryptInt = mod.Import(encryptionService.GetMethod("Decrypt", new[] { typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptInt);
-            _encryptLong = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(long), typeof(int), typeof(int) }));
+            _encryptLong = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(long), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptLong);
-            _decryptLong = mod.Import(typeof(EncryptionService).GetMethod("Decrypt", new[] { typeof(long), typeof(int), typeof(int) }));
+            _decryptLong = mod.Import(encryptionService.GetMethod("Decrypt", new[] { typeof(long), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptLong);
-            _encryptFloat = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(float), typeof(int), typeof(int) }));
+            _encryptFloat = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(float), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptFloat);
-            _decryptFloat = mod.Import(typeof(EncryptionService).GetMethod("Decrypt", new[] { typeof(float), typeof(int), typeof(int) }));
+            _decryptFloat = mod.Import(encryptionService.GetMethod("Decrypt", new[] { typeof(float), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptFloat);
-            _encryptDouble = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(double), typeof(int), typeof(int) }));
+            _encryptDouble = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(double), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptDouble);
-            _decryptDouble = mod.Import(typeof(EncryptionService).GetMethod("Decrypt", new[] { typeof(double), typeof(int), typeof(int) }));
+            _decryptDouble = mod.Import(encryptionService.GetMethod("Decrypt", new[] { typeof(double), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptDouble);
-            _encryptString = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(string), typeof(int), typeof(int) }));
+            _encryptString = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(string), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptString);
-            _decryptString = mod.Import(typeof(EncryptionService).GetMethod("DecryptString", new[] { typeof(int[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
+            _decryptString = mod.Import(encryptionService.GetMethod("DecryptString", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptString);
-            _encryptBytes = mod.Import(typeof(EncryptionService).GetMethod("Encrypt", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
+            _encryptBytes = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptBytes);
-            _decryptBytes = mod.Import(typeof(EncryptionService).GetMethod("Decrypt", new[] { typeof(int[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
+            _decryptBytes = mod.Import(encryptionService.GetMethod("Decrypt", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptBytes);
+
+            _decryptFromRvaInt = mod.Import(encryptionService.GetMethod("DecryptFromRvaInt", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaInt);
+            _decryptFromRvaLong = mod.Import(encryptionService.GetMethod("DecryptFromRvaLong", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaLong);
+            _decryptFromRvaFloat = mod.Import(encryptionService.GetMethod("DecryptFromRvaFloat", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaFloat);
+            _decryptFromRvaDouble = mod.Import(encryptionService.GetMethod("DecryptFromRvaDouble", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaDouble);
+            _decryptFromRvaBytes = mod.Import(encryptionService.GetMethod("DecryptFromRvaBytes", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaBytes);
+            _decryptFromRvaString = mod.Import(encryptionService.GetMethod("DecryptFromRvaString", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptFromRvaString);
         }
 
         private ModuleDef _module;
@@ -76,6 +91,13 @@ namespace Obfuz.Emit
         private IMethod _encryptBytes;
         private IMethod _decryptBytes;
 
+        private IMethod _decryptFromRvaInt;
+        private IMethod _decryptFromRvaLong;
+        private IMethod _decryptFromRvaFloat;
+        private IMethod _decryptFromRvaDouble;
+        private IMethod _decryptFromRvaString;
+        private IMethod _decryptFromRvaBytes;
+
         public IMethod CastIntAsFloat => _castIntAsFloat;
         public IMethod CastLongAsDouble => _castLongAsDouble;
         public IMethod CastFloatAsInt => _castFloatAsInt;
@@ -98,5 +120,13 @@ namespace Obfuz.Emit
         public IMethod DecryptString => _decryptString;
         public IMethod EncryptBytes => _encryptBytes;
         public IMethod DecryptBytes => _decryptBytes;
+
+        public IMethod DecryptFromRvaInt => _decryptFromRvaInt;
+        public IMethod DecryptFromRvaLong => _decryptFromRvaLong;
+        public IMethod DecryptFromRvaFloat => _decryptFromRvaFloat;
+        public IMethod DecryptFromRvaDouble => _decryptFromRvaDouble;
+        public IMethod DecryptFromRvaBytes => _decryptFromRvaBytes;
+        public IMethod DecryptFromRvaString => _decryptFromRvaString;
+
     }
 }

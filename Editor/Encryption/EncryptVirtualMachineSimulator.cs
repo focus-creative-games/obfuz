@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 namespace Obfuz.Encryption
 {
@@ -185,76 +187,71 @@ namespace Obfuz.Encryption
             return UnsafeUtility.As<long, double>(ref decValue);
         }
 
-        public int[] Encrypt(byte[] bytes, int offset, int length, int ops, int salt)
+        public unsafe byte[] Encrypt(byte[] bytes, int offset, int length, int ops, int salt)
         {
             if (length == 0)
             {
-                return Array.Empty<int>();
+                return Array.Empty<byte>();
             }
-            int intLength = (length + 3) / 4;
-            int[] encInts = new int[intLength];
+            // align size to 4
+            int align4Length = (length + 3) & ~3;
+            byte[] encInts = new byte[align4Length];
             Buffer.BlockCopy(bytes, offset, encInts, 0, length);
-            for (int i = 0; i < intLength; i++)
+
+            int intLength = align4Length >> 2;
+            fixed (byte* intArr = &bytes[0])
             {
-                encInts[i] = Encrypt(encInts[i], ops, salt);
+                for (int i = 0; i < intLength; i++)
+                {
+                    int* ele = (int*)intArr + i;
+                    *ele = Encrypt(*ele, ops, salt);
+                }
             }
             return encInts;
         }
 
-        public int[] Encrypt(byte[] bytes, int ops, int salt)
+        public unsafe byte[] Decrypt(byte[] value, int offset, int length, int ops, int salt)
+        {
+            if (length == 0)
+            {
+                return Array.Empty<byte>();
+            }
+            int align4Length = (length + 3) & ~3;
+            int intLength = align4Length >> 2;
+            byte[] decInts = new byte[align4Length];
+            fixed (byte* intArr = &decInts[0])
+            {
+                for (int i = 0; i < intLength; i++)
+                {
+                    int* ele = (int*)intArr + i;
+                    *ele = Decrypt(*ele, ops, salt);
+                }
+            }
+            return decInts;
+        }
+
+        public byte[] Encrypt(byte[] bytes, int ops, int salt)
         {
             return Encrypt(bytes, 0, bytes.Length, ops, salt);
         }
 
-        public byte[] Decrypt(int[] value, int offset, int byteLength, int ops, int salt)
-        {
-            if (byteLength == 0)
-            {
-                return Array.Empty<byte>();
-            }
-            int intLength = (byteLength + 3) / 4;
-            int[] decValue = new int[intLength];
-            for (int i = 0; i < intLength; i++)
-            {
-                decValue[i] = Decrypt(value[i], ops, salt);
-            }
-
-            byte[] bytes = new byte[byteLength];
-            Buffer.BlockCopy(decValue, 0, bytes, 0, byteLength);
-            return bytes;
-        }
-
-        public byte[] Decrypt(int[] value, int byteLength, int ops, int salt)
-        {
-            return Decrypt(value, 0, byteLength, ops, salt);
-        }
-
-        public int[] Encrypt(string value, int ops, int salt)
+        public byte[] Encrypt(string value, int ops, int salt)
         {
             if (value.Length == 0)
             {
-                return Array.Empty<int>();
+                return Array.Empty<byte>();
             }
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(value);
             return Encrypt(bytes, 0, bytes.Length, ops, salt);
         }
 
-        public string DecryptString(int[] value, int offset, int stringBytesLength, int ops, int salt)
+        public string DecryptString(byte[] value, int offset, int length, int ops, int salt)
         {
-            if (stringBytesLength == 0)
+            if (length == 0)
             {
                 return string.Empty;
             }
-            int intLength = (stringBytesLength + 3) / 4;
-            int[] intValue = new int[intLength];
-            for (int i = 0; i < intLength; i++)
-            {
-                intValue[i] = Decrypt(value[i], ops, salt);
-            }
-
-            byte[] bytes = new byte[stringBytesLength];
-            Buffer.BlockCopy(intValue, 0, bytes, 0, stringBytesLength);
-            return System.Text.Encoding.UTF8.GetString(bytes);
+            return System.Text.Encoding.UTF8.GetString(Decrypt(value, offset, length, ops, salt));
         }
     }
 }
