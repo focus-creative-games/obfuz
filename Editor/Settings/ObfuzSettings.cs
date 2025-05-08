@@ -20,14 +20,17 @@ namespace Obfuz.Settings
         [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
         public string[] notObfuscatedAssemblyNamesReferencingObfuscated;
 
+        [Tooltip("extra assembly search dirs")]
+        public string[] extraAssemblySearchDirs;
+
         [Tooltip("enable obfuscation pass")]
         public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
 
         [Tooltip("symbol obfuscation settings")]
         public SymbolObfusSettings symbolObfusSettings;
 
-        [Tooltip("extra assembly search dirs")]
-        public string[] extraAssemblySearchDirs;
+        [Tooltip("const obfuscation settings")]
+        public ConstObfusSettings constObfusSettings;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 

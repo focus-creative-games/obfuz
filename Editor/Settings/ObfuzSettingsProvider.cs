@@ -36,6 +36,7 @@ namespace Obfuz.Settings
         private SerializedProperty _enabledObfuscationPasses;
 
         private SerializedProperty _symbolObfusSettings;
+        private SerializedProperty _constObfusSettings;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -64,6 +65,7 @@ namespace Obfuz.Settings
             _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
 
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
+            _constObfusSettings = _serializedObject.FindProperty("constObfusSettings");
         }
 
         public override void OnGUI(string searchContext)
@@ -80,7 +82,9 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
             EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
             EditorGUILayout.PropertyField(_enabledObfuscationPasses);
+
             EditorGUILayout.PropertyField(_symbolObfusSettings);
+            EditorGUILayout.PropertyField(_constObfusSettings);
 
 
             if (EditorGUI.EndChangeCheck())

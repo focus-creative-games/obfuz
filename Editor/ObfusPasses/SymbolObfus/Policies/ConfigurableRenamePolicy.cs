@@ -12,7 +12,7 @@ using UnityEngine;
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
 
-    public class RuleBasedRenamePolicy : ObfuscationPolicyBase
+    public class ConfigurableRenamePolicy : ObfuscationPolicyBase
     {
         enum ObfuscationType
         {
@@ -709,7 +709,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         private readonly HashSet<string> _obfuscationAssemblyNames;
 
-        public RuleBasedRenamePolicy(List<string> obfuscationAssemblyNames, List<string> xmlFiles)
+        public ConfigurableRenamePolicy(List<string> obfuscationAssemblyNames, List<string> xmlFiles)
         {
             this._obfuscationAssemblyNames = obfuscationAssemblyNames.ToHashSet();
             LoadXmls(xmlFiles);

@@ -85,7 +85,7 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncryption))
             {
-                builder.AddPass(new ConstObfusPass());
+                builder.AddPass(new ConstObfusPass(settings.constObfusSettings));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfuscation))
             {

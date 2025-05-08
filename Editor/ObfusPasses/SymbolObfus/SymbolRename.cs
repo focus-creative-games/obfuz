@@ -71,7 +71,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
             _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
             _obfuzAssemblies = BuildAssemblyReferenceInfos(ctx);
-            var obfuscateRuleConfig = new RuleBasedRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
+            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
         }
