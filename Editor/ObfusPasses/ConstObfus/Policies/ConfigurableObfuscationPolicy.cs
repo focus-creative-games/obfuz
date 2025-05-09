@@ -45,6 +45,8 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             public List<NumberRange<long>> notEncryptLongRanges = new List<NumberRange<long>>();
             public List<NumberRange<float>> notEncryptFloatRanges = new List<NumberRange<float>>();
             public List<NumberRange<double>> notEncryptDoubleRanges = new List<NumberRange<double>>();
+            public List<NumberRange<int>> notEncryptArrayLengthRanges = new List<NumberRange<int>>();
+            public List<NumberRange<int>> notEncryptStringLengthRanges = new List<NumberRange<int>>();
 
             public void InheritParent(ObfuscationRule parentRule)
             {
@@ -76,6 +78,8 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
                 notEncryptLongRanges.AddRange(parentRule.notEncryptLongRanges);
                 notEncryptFloatRanges.AddRange(parentRule.notEncryptFloatRanges);
                 notEncryptDoubleRanges.AddRange(parentRule.notEncryptDoubleRanges);
+                notEncryptArrayLengthRanges.AddRange(parentRule.notEncryptArrayLengthRanges);
+                notEncryptStringLengthRanges.AddRange(parentRule.notEncryptStringLengthRanges);
             }
         }
 
@@ -366,6 +370,26 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
                                 rule.notEncryptDoubleRanges.Add(new NumberRange<double>(ParseNullableDouble(parts[0]), ParseNullableDouble(parts[1])));
                                 break;
                             }
+                            case "string-length-range":
+                            {
+                                var parts = value.Split(",");
+                                if (parts.Length != 2)
+                                {
+                                    throw new Exception($"Invalid xml file, string-length-range {value} is invalid");
+                                }
+                                rule.notEncryptStringLengthRanges.Add(new NumberRange<int>(ParseNullableInt(parts[0]), ParseNullableInt(parts[1])));
+                                break;
+                            }
+                            case "array-length-range":
+                            {
+                                var parts = value.Split(",");
+                                if (parts.Length != 2)
+                                {
+                                    throw new Exception($"Invalid xml file, array-length-range {value} is invalid");
+                                }
+                                rule.notEncryptArrayLengthRanges.Add(new NumberRange<int>(ParseNullableInt(parts[0]), ParseNullableInt(parts[1])));
+                                break;
+                            }
                             default: throw new Exception($"Invalid xml file, unknown whitelist type {type} in {childEle.Name} node");
                         }
                         break;
@@ -592,13 +616,41 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             {
                 return false;
             }
+            foreach (var range in rule.notEncryptStringLengthRanges)
+            {
+                if (range.min != null && value.Length < range.min)
+                {
+                    continue;
+                }
+                if (range.max != null && value.Length > range.max)
+                {
+                    continue;
+                }
+                return false;
+            }
             return true;
         }
 
         public override bool NeedObfuscateArray(MethodDef method, byte[] array)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
-            return rule.encryptArray != false;
+            if (rule.encryptArray == false)
+            {
+                return false;
+            }
+            foreach (var range in rule.notEncryptArrayLengthRanges)
+            {
+                if (range.min != null && array.Length < range.min)
+                {
+                    continue;
+                }
+                if (range.max != null && array.Length > range.max)
+                {
+                    continue;
+                }
+                return false;
+            }
+            return true;
         }
     }
 }
