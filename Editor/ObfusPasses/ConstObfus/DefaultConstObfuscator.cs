@@ -42,6 +42,12 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)
         {
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
 
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
@@ -58,6 +64,13 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions)
         {
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
+
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
             long encryptedValue = _encryptor.Encrypt(value, ops, salt);
@@ -73,6 +86,13 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateFloat(MethodDef method, bool needCacheValue, float value, List<Instruction> obfuscatedInstructions)
         {
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
+
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
             float encryptedValue = _encryptor.Encrypt(value, ops, salt);
@@ -88,6 +108,13 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateDouble(MethodDef method, bool needCacheValue, double value, List<Instruction> obfuscatedInstructions)
         {
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
+
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
             double encryptedValue = _encryptor.Encrypt(value, ops, salt);
@@ -103,6 +130,13 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions)
         {
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
+
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
             byte[] encryptedValue = _encryptor.Encrypt(value, 0, value.Length, ops, salt);
@@ -121,25 +155,28 @@ namespace Obfuz.ObfusPasses.ConstObfus
 
         public void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions)
         {
-            //int ops = GenerateEncryptionOperations();
-            //int salt = GenerateSalt();
-            //int stringByteLength = Encoding.UTF8.GetByteCount(value);
-            //byte[] encryptedValue = _encryptor.Encrypt(value, ops, salt);
-            //Assert.IsTrue(encryptedValue.Length % 4 == 0);
-            //RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+            if (needCacheValue)
+            {
+                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+                return;
+            }
 
-            //DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
-            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
-            //// should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(stringByteLength));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(salt));
-            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaString));
+            int ops = GenerateEncryptionOperations();
+            int salt = GenerateSalt();
+            int stringByteLength = Encoding.UTF8.GetByteCount(value);
+            byte[] encryptedValue = _encryptor.Encrypt(value, ops, salt);
+            Assert.IsTrue(encryptedValue.Length % 4 == 0);
+            RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            // to avoid gc, use a cached string
-            FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
-            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
+            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
+            // should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(stringByteLength));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(salt));
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaString));
         }
 
         public void Done()

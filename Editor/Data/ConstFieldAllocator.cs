@@ -121,10 +121,10 @@ namespace Obfuz.Data
             return AllocateAny(value);
         }
 
-        //public FieldDef Allocate(byte[] value)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public FieldDef Allocate(byte[] value)
+        {
+            return AllocateAny(value);
+        }
 
         private int GenerateEncryptionOperations()
         {
@@ -224,9 +224,19 @@ namespace Obfuz.Data
                         ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaString));
                         break;
                     }
-                    //case byte[] b:
-                    //    ins.Add(Instruction.Create(OpCodes.Ldlen, b.Length));
-                    //    break;
+                    case byte[] bs:
+                    {
+                        byte[] encryptedValue = _encryptor.Encrypt(bs, 0, bs.Length, ops, salt);
+                        RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                        ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
+                        ins.Add(Instruction.CreateLdcI4(rvaData.offset));
+                        //// should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
+                        ins.Add(Instruction.CreateLdcI4(bs.Length));
+                        ins.Add(Instruction.CreateLdcI4(ops));
+                        ins.Add(Instruction.CreateLdcI4(salt));
+                        ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaBytes));
+                        break;
+                    }
                     default: throw new NotSupportedException($"Unsupported type: {constInfo.value.GetType()}");
                 }
                 ins.Add(Instruction.Create(OpCodes.Stsfld, field));
@@ -281,6 +291,11 @@ namespace Obfuz.Data
             return GetModuleAllocator(mod).Allocate(value);
         }
 
+        public FieldDef Allocate(ModuleDef mod, byte[] value)
+        {
+            return GetModuleAllocator(mod).Allocate(value);
+        }
+
         public FieldDef Allocate(ModuleDef mod, string value)
         {
             return GetModuleAllocator(mod).Allocate(value);
@@ -293,10 +308,5 @@ namespace Obfuz.Data
                 moduleAllocator.Done();
             }
         }
-
-        //public FieldDef Allocate(ModuleDef mod, byte[] value)
-        //{
-        //    return GetModuleAllocator(mod).Allocate(value);
-        //}
     }
 }
