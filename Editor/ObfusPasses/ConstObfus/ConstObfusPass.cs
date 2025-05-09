@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
 using Obfuz.ObfusPasses.ConstObfus.Policies;
 using Obfuz.Settings;
 using System;
@@ -13,7 +14,7 @@ using UnityEngine.Assertions;
 namespace Obfuz.ObfusPasses.ConstObfus
 {
 
-    public class ConstObfusPass : InstructionObfuscationPassBase
+    public class ConstObfusPass : BasicBlockObfuscationPassBase
     {
         private readonly string _configFile;
         private IObfuscationPolicy _dataObfuscatorPolicy;
@@ -40,10 +41,10 @@ namespace Obfuz.ObfusPasses.ConstObfus
             return _dataObfuscatorPolicy.NeedObfuscateMethod(method);
         }
 
-        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
+        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, BasicBlock block, int instructionIndex,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
-            bool currentInLoop = false;
+            bool currentInLoop = block.inLoop;
             ConstCachePolicy constCachePolicy = _dataObfuscatorPolicy.GetMethodConstCachePolicy(method);
             switch (inst.OpCode.OperandType)
             {
@@ -127,7 +128,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
                 {
                     if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
                     {
-                        Instruction prevInst = instructions[instructionIndex - 1];
+                        Instruction prevInst = block.instructions[instructionIndex - 1];
                         if (prevInst.OpCode.Code == Code.Ldtoken)
                         {
                             IField rvaField = (IField)prevInst.Operand;
