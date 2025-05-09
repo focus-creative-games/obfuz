@@ -1,6 +1,6 @@
 ﻿using dnlib.DotNet;
 
-namespace Obfuz.ObfusPasses.ConstEncrypt.Policies
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
     public abstract class EncryptPolicyBase : IEncryptPolicy
     {

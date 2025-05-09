@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using UnityEngine;
 
-namespace Obfuz.ObfusPasses.ConstEncrypt.Policies
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
     public class ConfigurableEncryptPolicy : EncryptPolicyBase
     {
