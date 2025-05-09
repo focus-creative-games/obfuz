@@ -28,9 +28,9 @@ namespace Obfuz.Data
     public class ModuleRvaDataAllocator : ModuleEmitManagerBase
     {
         // randomized
-        const int maxRvaDataSize = 0x100;
+        const int maxRvaDataSize = 0x1000;
 
-        private readonly ModuleDef _module;
+        private ModuleDef _module;
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
 
@@ -69,16 +69,15 @@ namespace Obfuz.Data
 
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
 
-        public ModuleRvaDataAllocator(ModuleDef mod, IRandom random, IEncryptor encryptor)
+        public ModuleRvaDataAllocator(IRandom random, IEncryptor encryptor)
         {
-            _module = mod;
             _random = random;
             _encryptor = encryptor;
         }
 
         public override void Init(ModuleDef mod)
         {
-
+            _module = mod;
         }
 
         private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
@@ -297,7 +296,7 @@ namespace Obfuz.Data
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            return EmitManager.Ins.GetEmitManager<ModuleRvaDataAllocator>(mod, mod => new ModuleRvaDataAllocator(mod, _random, _encryptor));
+            return EmitManager.Ins.GetEmitManager<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)

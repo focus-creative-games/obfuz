@@ -6,15 +6,17 @@ using Obfuz.Emit;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public class DefaultProxyCallObfuscator : ProxyCallObfuscatorBase
+    public class DefaultProxyCallObfuscator : CallObfuscatorBase
     {
         private readonly IRandom _random;
-        private readonly ProxyCallAllocator _proxyCallAllocator;
+        private readonly IEncryptor _encryptor;
+        private readonly CallProxyAllocator _proxyCallAllocator;
 
-        public DefaultProxyCallObfuscator(IRandom random)
+        public DefaultProxyCallObfuscator(IRandom random, IEncryptor encryptor)
         {
             _random = random;
-            _proxyCallAllocator = new ProxyCallAllocator(random);
+            _encryptor = encryptor;
+            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor);
         }
 
         public override void Done()
@@ -26,7 +28,11 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod));
             ProxyCallMethodData proxyCallMethodData = _proxyCallAllocator.Allocate(callingMethod.Module, calledMethod, callVir);
-            obfuscatedInstructions.Add(Instruction.CreateLdcI4(proxyCallMethodData.secret));
+            DefaultModuleMetadataImporter importer = MetadataImporter.Instance.GetDefaultModuleMetadataImporter(callingMethod.Module);
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(proxyCallMethodData.encryptedIndex));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(proxyCallMethodData.encryptOps));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(proxyCallMethodData.salt));
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptInt));
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, proxyCallMethodData.proxyMethod));
         }
     }

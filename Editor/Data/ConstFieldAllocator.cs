@@ -268,7 +268,7 @@ namespace Obfuz.Data
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return EmitManager.Ins.GetEmitManager<ModuleConstFieldAllocator>(mod, m => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
+            return EmitManager.Ins.GetEmitManager<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)

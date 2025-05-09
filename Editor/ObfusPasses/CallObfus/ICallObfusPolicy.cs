@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public interface IProxyCallPolicy
+    public interface ICallObfusPolicy
     {
         bool NeedDynamicProxyCallInMethod(MethodDef method);
 

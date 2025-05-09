@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public interface IProxyCallObfuscator
+    public interface ICallObfuscator
     {
         void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
 

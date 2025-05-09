@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,19 +15,24 @@ namespace Obfuz.ObfusPasses.CallObfus
     public struct ProxyCallMethodData
     {
         public readonly MethodDef proxyMethod;
-        public readonly int secret;
+        public readonly int encryptOps;
+        public readonly int salt;
+        public readonly int encryptedIndex;
 
-        public ProxyCallMethodData(MethodDef proxyMethod, int secret)
+        public ProxyCallMethodData(MethodDef proxyMethod, int encryptOps, int salt, int encryptedIndex)
         {
             this.proxyMethod = proxyMethod;
-            this.secret = secret;
+            this.encryptOps = encryptOps;
+            this.salt = salt;
+            this.encryptedIndex = encryptedIndex;
         }
     }
 
-    class ModuleDynamicProxyMethodAllocator
+    class ModuleCallProxyAllocator : IModuleEmitManager
     {
-        private readonly ModuleDef _module;
+        private ModuleDef _module;
         private readonly IRandom _random;
+        private readonly IEncryptor _encryptor;
 
         class MethodKey : IEquatable<MethodKey>
         {
@@ -55,7 +61,11 @@ namespace Obfuz.ObfusPasses.CallObfus
         class MethodProxyInfo
         {
             public MethodDef proxyMethod;
-            public int secret;
+
+            public int index;
+            public int encryptedOps;
+            public int salt;
+            public int encryptedIndex;
         }
 
         private readonly Dictionary<MethodKey, MethodProxyInfo> _methodProxys = new Dictionary<MethodKey, MethodProxyInfo>();
@@ -72,7 +82,6 @@ namespace Obfuz.ObfusPasses.CallObfus
         class DispatchMethodInfo
         {
             public MethodDef methodDef;
-            public int secret;
             public List<CallInfo> methods = new List<CallInfo>();
         }
 
@@ -81,10 +90,15 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleDynamicProxyMethodAllocator(ModuleDef module, IRandom random)
+        public ModuleCallProxyAllocator(IRandom random, IEncryptor encryptor)
         {
-            _module = module;
             _random = random;
+            _encryptor = encryptor;
+        }
+
+        public void Init(ModuleDef mod)
+        {
+            _module = mod;
         }
 
         private TypeDef CreateProxyTypeDef()
@@ -128,9 +142,19 @@ namespace Obfuz.ObfusPasses.CallObfus
                     break;
                 }
             }
-            // extra param for secret
+            // extra param for index
             methodSig.Params.Add(_module.CorLibTypes.Int32);
             return MethodSig.CreateStatic(methodSig.RetType, methodSig.Params.ToArray());
+        }
+
+        private int GenerateSalt()
+        {
+            return _random.NextInt();
+        }
+
+        private int GenerateEncryptOps()
+        {
+            return _random.NextInt();
         }
 
         private DispatchMethodInfo GetDispatchMethod(IMethod method)
@@ -146,7 +170,6 @@ namespace Obfuz.ObfusPasses.CallObfus
                 var newDispatchMethodInfo = new DispatchMethodInfo
                 {
                     methodDef = CreateDispatchMethodInfo(methodSig),
-                    secret = 0,
                 };
                 dispatchMethods.Add(newDispatchMethodInfo);
             }
@@ -159,15 +182,23 @@ namespace Obfuz.ObfusPasses.CallObfus
             if (!_methodProxys.TryGetValue(key, out var proxyInfo))
             {
                 var methodDispatcher = GetDispatchMethod(method);
+
+                int index = methodDispatcher.methods.Count;
+                int encryptOps = GenerateEncryptOps();
+                int salt = GenerateSalt();
+                int encryptedIndex = _encryptor.Encrypt(index, encryptOps, salt);
                 proxyInfo = new MethodProxyInfo()
                 {
                     proxyMethod = methodDispatcher.methodDef,
-                    secret = methodDispatcher.methods.Count,
+                    index = index,
+                    encryptedOps = encryptOps,
+                    salt = salt,
+                    encryptedIndex = encryptedIndex,
                 };
                 methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir});
                 _methodProxys.Add(key, proxyInfo);
             }
-            return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.secret);
+            return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex);
         }
 
         public void Done()
@@ -175,7 +206,6 @@ namespace Obfuz.ObfusPasses.CallObfus
             foreach (DispatchMethodInfo dispatchMethod in _dispatchMethods.Values.SelectMany(ms => ms))
             {
                 var methodDef = dispatchMethod.methodDef;
-                var secret = dispatchMethod.secret;
                 var methodSig = methodDef.MethodSig;
 
 
@@ -204,34 +234,34 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
     }
 
-    public class ProxyCallAllocator
+    public class CallProxyAllocator
     {
         private readonly IRandom _random;
+        private readonly IEncryptor _encryptor;
 
-        private readonly Dictionary<ModuleDef, ModuleDynamicProxyMethodAllocator> _moduleAllocators = new Dictionary<ModuleDef, ModuleDynamicProxyMethodAllocator>();
-
-        public ProxyCallAllocator(IRandom random)
+        public CallProxyAllocator(IRandom random, IEncryptor encryptor)
         {
             _random = random;
+            _encryptor = encryptor;
+        }
+
+        private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
+        {
+            return EmitManager.Ins.GetEmitManager<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
         {
-            if (!_moduleAllocators.TryGetValue(mod, out var allocator))
-            {
-                allocator = new ModuleDynamicProxyMethodAllocator(mod, _random);
-                _moduleAllocators.Add(mod, allocator);
-            }
+            ModuleCallProxyAllocator allocator = GetModuleAllocator(mod);
             return allocator.Allocate(method, callVir);
         }
 
         public void Done()
         {
-            foreach (var allocator in _moduleAllocators.Values)
+            foreach (var allocator in EmitManager.Ins.GetEmitManagers<ModuleCallProxyAllocator>())
             {
                 allocator.Done();
             }
-            _moduleAllocators.Clear();
         }
     }
 }

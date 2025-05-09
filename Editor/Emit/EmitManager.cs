@@ -29,7 +29,7 @@ namespace Obfuz.Emit
             Ins = new EmitManager();
         }
 
-        public T GetEmitManager<T>(ModuleDef mod, Func<ModuleDef, T> creator = null) where T : IModuleEmitManager
+        public T GetEmitManager<T>(ModuleDef mod, Func<T> creator = null) where T : IModuleEmitManager
         {
             var key = (mod, typeof(T));
             if (_moduleEmitManagers.TryGetValue(key, out var emitManager))
@@ -41,7 +41,7 @@ namespace Obfuz.Emit
                 T newEmitManager;
                 if (creator != null)
                 {
-                    newEmitManager = creator(mod);
+                    newEmitManager = creator();
                 }
                 else
                 {

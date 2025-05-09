@@ -81,7 +81,7 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
             {
-                builder.AddPass(new ProxyCallPass());
+                builder.AddPass(new CallObfusPass(settings.callObfusSettings));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncryption))
             {

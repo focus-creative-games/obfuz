@@ -9,20 +9,23 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
+using Obfuz.Settings;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public class ProxyCallPass : InstructionObfuscationPassBase
+    public class CallObfusPass : InstructionObfuscationPassBase
     {
         private readonly IRandom _random;
-        private readonly IProxyCallPolicy _dynamicProxyPolicy;
-        private readonly IProxyCallObfuscator _dynamicProxyObfuscator;
+        private readonly IEncryptor _encryptor;
+        private readonly ICallObfusPolicy _dynamicProxyPolicy;
+        private readonly ICallObfuscator _dynamicProxyObfuscator;
 
-        public ProxyCallPass()
+        public CallObfusPass(CallObfusSettings settings)
         {
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
-            _dynamicProxyPolicy = new ConfigProxyCallPolicy();
-            _dynamicProxyObfuscator = new DefaultProxyCallObfuscator(_random);
+            _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
+            _dynamicProxyPolicy = new ConfigurableCallObfusPolicy();
+            _dynamicProxyObfuscator = new DefaultProxyCallObfuscator(_random, _encryptor);
         }
 
         public override void Stop(ObfuscationPassContext ctx)

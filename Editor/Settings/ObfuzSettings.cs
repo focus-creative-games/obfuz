@@ -32,6 +32,9 @@ namespace Obfuz.Settings
         [Tooltip("const encryption settings")]
         public ConstEncryptSettings constEncryptSettings;
 
+        [Tooltip("call obfuscation settings")]
+        public CallObfusSettings callObfusSettings;
+
         public string ObfuzRootDir => $"Library/Obfuz";
 
         public string GetObfuscatedAssemblyOutputDir(BuildTarget target)

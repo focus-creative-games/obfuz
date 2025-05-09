@@ -2,7 +2,7 @@
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public abstract class ProxyCallPolicyBase : IProxyCallPolicy
+    public abstract class CallObfusPolicyBase : ICallObfusPolicy
     {
         public abstract bool NeedDynamicProxyCallInMethod(MethodDef method);
 
