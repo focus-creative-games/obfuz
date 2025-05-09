@@ -36,7 +36,7 @@ namespace Obfuz.Settings
         private SerializedProperty _enabledObfuscationPasses;
 
         private SerializedProperty _symbolObfusSettings;
-        private SerializedProperty _constObfusSettings;
+        private SerializedProperty _constEncryptSettings;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -65,7 +65,7 @@ namespace Obfuz.Settings
             _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
 
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
-            _constObfusSettings = _serializedObject.FindProperty("constObfusSettings");
+            _constEncryptSettings = _serializedObject.FindProperty("constEncryptSettings");
         }
 
         public override void OnGUI(string searchContext)
@@ -84,7 +84,7 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_enabledObfuscationPasses);
 
             EditorGUILayout.PropertyField(_symbolObfusSettings);
-            EditorGUILayout.PropertyField(_constObfusSettings);
+            EditorGUILayout.PropertyField(_constEncryptSettings);
 
 
             if (EditorGUI.EndChangeCheck())

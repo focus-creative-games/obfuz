@@ -1,7 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
-using Obfuz.ObfusPasses.ConstObfus.Policies;
+using Obfuz.ObfusPasses.ConstEncrypt.Policies;
 using Obfuz.Settings;
 using System;
 using System.Collections.Generic;
@@ -11,24 +11,24 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Assertions;
 
-namespace Obfuz.ObfusPasses.ConstObfus
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
 
-    public class ConstObfusPass : BasicBlockObfuscationPassBase
+    public class ConstEncryptPass : BasicBlockObfuscationPassBase
     {
         private readonly string _configFile;
-        private IObfuscationPolicy _dataObfuscatorPolicy;
-        private IDataObfuscator _dataObfuscator;
+        private IEncryptPolicy _dataObfuscatorPolicy;
+        private IConstEncryptor _dataObfuscator;
 
-        public ConstObfusPass(ConstObfusSettings settings)
+        public ConstEncryptPass(ConstEncryptSettings settings)
         {
             _configFile = settings.configFile;
         }
 
         public override void Start(ObfuscationPassContext ctx)
         {
-            _dataObfuscatorPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFile);
-            _dataObfuscator = new DefaultConstObfuscator();
+            _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFile);
+            _dataObfuscator = new DefaultConstEncryptor();
         }
 
         public override void Stop(ObfuscationPassContext ctx)

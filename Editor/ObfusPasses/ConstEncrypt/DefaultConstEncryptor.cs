@@ -8,16 +8,16 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using System.Text;
 
-namespace Obfuz.ObfusPasses.ConstObfus
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
-    public class DefaultConstObfuscator : IDataObfuscator
+    public class DefaultConstEncryptor : IConstEncryptor
     {
         private readonly IRandom _random;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly IEncryptor _encryptor;
 
-        public DefaultConstObfuscator()
+        public DefaultConstEncryptor()
         {
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
             _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });

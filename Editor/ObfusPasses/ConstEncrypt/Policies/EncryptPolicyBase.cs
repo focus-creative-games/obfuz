@@ -1,8 +1,8 @@
 ﻿using dnlib.DotNet;
 
-namespace Obfuz.ObfusPasses.ConstObfus.Policies
+namespace Obfuz.ObfusPasses.ConstEncrypt.Policies
 {
-    public abstract class ObfuscationPolicyBase : IObfuscationPolicy
+    public abstract class EncryptPolicyBase : IEncryptPolicy
     {
         public abstract bool NeedObfuscateMethod(MethodDef method);
         public abstract ConstCachePolicy GetMethodConstCachePolicy(MethodDef method);

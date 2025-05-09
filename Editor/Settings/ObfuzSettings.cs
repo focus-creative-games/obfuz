@@ -29,8 +29,8 @@ namespace Obfuz.Settings
         [Tooltip("symbol obfuscation settings")]
         public SymbolObfusSettings symbolObfusSettings;
 
-        [Tooltip("const obfuscation settings")]
-        public ConstObfusSettings constObfusSettings;
+        [Tooltip("const encryption settings")]
+        public ConstEncryptSettings constEncryptSettings;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 

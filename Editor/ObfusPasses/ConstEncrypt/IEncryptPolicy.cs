@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.ConstObfus
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
     public struct ConstCachePolicy
     {
@@ -15,7 +15,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
         public bool cacheStringNotInLoop;
     }
 
-    public interface IObfuscationPolicy
+    public interface IEncryptPolicy
     {
         bool NeedObfuscateMethod(MethodDef method);
 

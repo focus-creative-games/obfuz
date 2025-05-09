@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Obfuz.Settings
 {
     [Serializable]
-    public class ConstObfusSettings
+    public class ConstEncryptSettings
     {
         [Tooltip("config xml file")]
         public string configFile;

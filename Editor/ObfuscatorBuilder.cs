@@ -1,7 +1,7 @@
 ﻿using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CallObfus;
 using Obfuz.ObfusPasses.CleanUp;
-using Obfuz.ObfusPasses.ConstObfus;
+using Obfuz.ObfusPasses.ConstEncrypt;
 using Obfuz.ObfusPasses.ExprObfus;
 using Obfuz.ObfusPasses.MemEncrypt;
 using Obfuz.ObfusPasses.SymbolObfus;
@@ -85,7 +85,7 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncryption))
             {
-                builder.AddPass(new ConstObfusPass(settings.constObfusSettings));
+                builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfuscation))
             {

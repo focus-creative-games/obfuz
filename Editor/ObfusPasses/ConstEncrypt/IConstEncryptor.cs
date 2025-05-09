@@ -3,9 +3,9 @@ using dnlib.DotNet.Emit;
 using System;
 using System.Collections.Generic;
 
-namespace Obfuz.ObfusPasses.ConstObfus
+namespace Obfuz.ObfusPasses.ConstEncrypt
 {
-    public interface IDataObfuscator
+    public interface IConstEncryptor
     {
         void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions);
 

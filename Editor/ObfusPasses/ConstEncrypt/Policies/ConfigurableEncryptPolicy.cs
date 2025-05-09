@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using UnityEngine;
 
-namespace Obfuz.ObfusPasses.ConstObfus.Policies
+namespace Obfuz.ObfusPasses.ConstEncrypt.Policies
 {
-    public class ConfigurableObfuscationPolicy : ObfuscationPolicyBase
+    public class ConfigurableEncryptPolicy : EncryptPolicyBase
     {
         private readonly List<string> _toObfuscatedAssemblyNames;
 
@@ -140,7 +140,7 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
         private readonly Dictionary<string, AssemblySpec> _assemblySpecs = new Dictionary<string, AssemblySpec>();
         private readonly Dictionary<MethodDef, ObfuscationRule> _methodRuleCache = new Dictionary<MethodDef, ObfuscationRule>();
 
-        public ConfigurableObfuscationPolicy(List<string> toObfuscatedAssemblyNames, string xmlConfigFile)
+        public ConfigurableEncryptPolicy(List<string> toObfuscatedAssemblyNames, string xmlConfigFile)
         {
             _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
             LoadConfig(xmlConfigFile);
