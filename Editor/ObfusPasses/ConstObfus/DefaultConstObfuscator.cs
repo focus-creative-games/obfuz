@@ -40,8 +40,9 @@ namespace Obfuz.ObfusPasses.ConstObfus
             return MetadataImporter.Instance.GetDefaultModuleMetadataImporter(method.Module);
         }
 
-        public void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)
         {
+
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
             int encryptedValue = _encryptor.Encrypt(value, ops, salt);
@@ -55,7 +56,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaInt));
         }
 
-        public void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions)
         {
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
@@ -70,7 +71,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaLong));
         }
 
-        public void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateFloat(MethodDef method, bool needCacheValue, float value, List<Instruction> obfuscatedInstructions)
         {
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
@@ -85,7 +86,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaFloat));
         }
 
-        public void ObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateDouble(MethodDef method, bool needCacheValue, double value, List<Instruction> obfuscatedInstructions)
         {
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
@@ -100,7 +101,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaDouble));
         }
 
-        public void ObfuscateBytes(MethodDef method, byte[] value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions)
         {
             int ops = GenerateEncryptionOperations();
             int salt = GenerateSalt();
@@ -118,7 +119,7 @@ namespace Obfuz.ObfusPasses.ConstObfus
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaBytes));
         }
 
-        public void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions)
+        public void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions)
         {
             //int ops = GenerateEncryptionOperations();
             //int salt = GenerateSalt();

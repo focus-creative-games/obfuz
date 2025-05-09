@@ -7,20 +7,30 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.ConstObfus
 {
+    public struct ConstCachePolicy
+    {
+        public bool cacheConstInLoop;
+        public bool cacheConstNotInLoop;
+        public bool cacheStringInLoop;
+        public bool cacheStringNotInLoop;
+    }
+
     public interface IObfuscationPolicy
     {
         bool NeedObfuscateMethod(MethodDef method);
 
-        bool NeedObfuscateInt(MethodDef method, int value);
+        ConstCachePolicy GetMethodConstCachePolicy(MethodDef method);
 
-        bool NeedObfuscateLong(MethodDef method, long value);
+        bool NeedObfuscateInt(MethodDef method, bool currentInLoop, int value);
 
-        bool NeedObfuscateFloat(MethodDef method, float value);
+        bool NeedObfuscateLong(MethodDef method, bool currentInLoop, long value);
 
-        bool NeedObfuscateDouble(MethodDef method, double value);
+        bool NeedObfuscateFloat(MethodDef method, bool currentInLoop, float value);
 
-        bool NeedObfuscateString(MethodDef method, string value);
+        bool NeedObfuscateDouble(MethodDef method, bool currentInLoop, double value);
 
-        bool NeedObfuscateArray(MethodDef method, byte[] array);
+        bool NeedObfuscateString(MethodDef method, bool currentInLoop, string value);
+
+        bool NeedObfuscateArray(MethodDef method, bool currentInLoop, byte[] array);
     }
 }

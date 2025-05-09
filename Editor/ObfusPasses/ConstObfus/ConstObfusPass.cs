@@ -43,6 +43,8 @@ namespace Obfuz.ObfusPasses.ConstObfus
         protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
+            bool currentInLoop = false;
+            ConstCachePolicy constCachePolicy = _dataObfuscatorPolicy.GetMethodConstCachePolicy(method);
             switch (inst.OpCode.OperandType)
             {
                 case OperandType.InlineI:
@@ -51,58 +53,59 @@ namespace Obfuz.ObfusPasses.ConstObfus
                 case OperandType.ShortInlineR:
                 case OperandType.InlineR:
                 {
+                    bool needCache = currentInLoop ? constCachePolicy.cacheConstInLoop : constCachePolicy.cacheConstNotInLoop;
                     object operand = inst.Operand;
                     if (operand is int)
                     {
                         int value = (int)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateInt(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
                     else if (operand is sbyte)
                     {
                         int value = (sbyte)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateInt(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
                     else if (operand is byte)
                     {
                         int value = (byte)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateInt(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateInt(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateInt(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
                     else if (operand is long)
                     {
                         long value = (long)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateLong(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateLong(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateLong(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateLong(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
                     else if (operand is float)
                     {
                         float value = (float)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateFloat(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateFloat(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateFloat(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateFloat(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
                     else if (operand is double)
                     {
                         double value = (double)operand;
-                        if (_dataObfuscatorPolicy.NeedObfuscateDouble(method, value))
+                        if (_dataObfuscatorPolicy.NeedObfuscateDouble(method, currentInLoop, value))
                         {
-                            _dataObfuscator.ObfuscateDouble(method, value, outputInstructions);
+                            _dataObfuscator.ObfuscateDouble(method, needCache, value, outputInstructions);
                             return true;
                         }
                     }
@@ -112,9 +115,10 @@ namespace Obfuz.ObfusPasses.ConstObfus
                 {
                     //RuntimeHelpers.InitializeArray
                     string value = (string)inst.Operand;
-                    if (_dataObfuscatorPolicy.NeedObfuscateString(method, value))
+                    if (_dataObfuscatorPolicy.NeedObfuscateString(method, currentInLoop, value))
                     {
-                        _dataObfuscator.ObfuscateString(method, value, outputInstructions);
+                        bool needCache = currentInLoop ? constCachePolicy.cacheStringInLoop : constCachePolicy.cacheStringNotInLoop;
+                        _dataObfuscator.ObfuscateString(method, needCache, value, outputInstructions);
                         return true;
                     }
                     return false;
@@ -129,12 +133,13 @@ namespace Obfuz.ObfusPasses.ConstObfus
                             IField rvaField = (IField)prevInst.Operand;
                             FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
                             byte[] data = ravFieldDef.InitialValue;
-                            if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, data))
+                            if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, currentInLoop, data))
                             {
                                 // remove prev ldtoken instruction
                                 Assert.AreEqual(Code.Ldtoken, totalFinalInstructions[totalFinalInstructions.Count - 1].OpCode.Code);
                                 totalFinalInstructions.RemoveAt(totalFinalInstructions.Count - 1);
-                                _dataObfuscator.ObfuscateBytes(method, data, outputInstructions);
+                                bool needCache = currentInLoop ? constCachePolicy.cacheStringInLoop : constCachePolicy.cacheStringNotInLoop;
+                                _dataObfuscator.ObfuscateBytes(method, needCache, data, outputInstructions);
                                 return true;
                             }
                         }

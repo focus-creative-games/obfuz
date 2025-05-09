@@ -35,9 +35,15 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             public bool? encryptDouble;
             public bool? encryptArray;
             public bool? encryptString;
+
+            public bool? encryptConstInLoop;
+            public bool? encryptStringInLoop;
+
             public bool? cacheConstInLoop;
             public bool? cacheConstNotInLoop;
+            public bool? cacheStringInLoop;
             public bool? cacheStringNotInLoop;
+
             public HashSet<int> notEncryptInts = new HashSet<int>();
             public HashSet<long> notEncryptLongs = new HashSet<long>();
             public HashSet<string> notEncryptStrings = new HashSet<string>();
@@ -64,10 +70,18 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
                     encryptArray = parentRule.encryptArray;
                 if (encryptString == null)
                     encryptString = parentRule.encryptString;
+
+                if (encryptConstInLoop == null)
+                    encryptConstInLoop = parentRule.encryptConstInLoop;
+                if (encryptStringInLoop == null)
+                    encryptStringInLoop = parentRule.encryptStringInLoop;
+
                 if (cacheConstInLoop == null)
                     cacheConstInLoop = parentRule.cacheConstInLoop;
                 if (cacheConstNotInLoop == null)
                     cacheConstNotInLoop = parentRule.cacheConstNotInLoop;
+                if (cacheStringInLoop == null)
+                    cacheStringInLoop = parentRule.cacheStringInLoop;
                 if (cacheStringNotInLoop == null)
                     cacheStringNotInLoop = parentRule.cacheStringNotInLoop;
 
@@ -114,8 +128,11 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             encryptDouble = true,
             encryptArray = true,
             encryptString = true,
+            encryptConstInLoop = true,
+            encryptStringInLoop = true,
             cacheConstInLoop = true,
             cacheConstNotInLoop = false,
+            cacheStringInLoop = true,
             cacheStringNotInLoop = true,
         };
 
@@ -276,6 +293,15 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             {
                 rule.encryptString = ParseBool(ele.GetAttribute("encryptString"));
             }
+
+            if (ele.HasAttribute("encryptConstInLoop"))
+            {
+                rule.encryptConstInLoop = ParseBool(ele.GetAttribute("encryptConstInLoop"));
+            }
+            if (ele.HasAttribute("encryptStringInLoop"))
+            {
+                rule.encryptStringInLoop = ParseBool(ele.GetAttribute("encryptStringInLoop"));
+            }
             if (ele.HasAttribute("cacheConstInLoop"))
             {
                 rule.cacheConstInLoop = ParseBool(ele.GetAttribute("cacheConstInLoop"));
@@ -283,6 +309,10 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             if (ele.HasAttribute("cacheConstNotInLoop"))
             {
                 rule.cacheConstNotInLoop = ParseBool(ele.GetAttribute("cacheConstNotInLoop"));
+            }
+            if (ele.HasAttribute("cacheStringInLoop"))
+            {
+                rule.cacheStringInLoop = ParseBool(ele.GetAttribute("cacheStringInLoop"));
             }
             if (ele.HasAttribute("cacheStringNotInLoop"))
             {
@@ -509,10 +539,26 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return rule.disableEncrypt != true;
         }
 
-        public override bool NeedObfuscateInt(MethodDef method, int value)
+        public override ConstCachePolicy GetMethodConstCachePolicy(MethodDef method)
+        {
+            ObfuscationRule rule = GetMethodObfuscationRule(method);
+            return new ConstCachePolicy
+            {
+                cacheConstInLoop = rule.cacheConstInLoop.Value,
+                cacheConstNotInLoop = rule.cacheConstNotInLoop.Value,
+                cacheStringInLoop = rule.cacheStringInLoop.Value,
+                cacheStringNotInLoop = rule.cacheStringNotInLoop.Value,
+            };
+        }
+
+        public override bool NeedObfuscateInt(MethodDef method, bool currentInLoop, int value)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptInt == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }
@@ -535,10 +581,14 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return true;
         }
 
-        public override bool NeedObfuscateLong(MethodDef method, long value)
+        public override bool NeedObfuscateLong(MethodDef method, bool currentInLoop, long value)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptLong == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }
@@ -561,10 +611,14 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return true;
         }
 
-        public override bool NeedObfuscateFloat(MethodDef method, float value)
+        public override bool NeedObfuscateFloat(MethodDef method, bool currentInLoop, float value)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptFloat == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }
@@ -583,10 +637,14 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return true;
         }
 
-        public override bool NeedObfuscateDouble(MethodDef method, double value)
+        public override bool NeedObfuscateDouble(MethodDef method, bool currentInLoop, double value)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptDouble == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }
@@ -605,10 +663,14 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return true;
         }
 
-        public override bool NeedObfuscateString(MethodDef method, string value)
+        public override bool NeedObfuscateString(MethodDef method, bool currentInLoop, string value)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptString == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }
@@ -631,10 +693,14 @@ namespace Obfuz.ObfusPasses.ConstObfus.Policies
             return true;
         }
 
-        public override bool NeedObfuscateArray(MethodDef method, byte[] array)
+        public override bool NeedObfuscateArray(MethodDef method, bool currentInLoop, byte[] array)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptArray == false)
+            {
+                return false;
+            }
+            if (currentInLoop && rule.encryptConstInLoop == false)
             {
                 return false;
             }

@@ -7,17 +7,17 @@ namespace Obfuz.ObfusPasses.ConstObfus
 {
     public interface IDataObfuscator
     {
-        void ObfuscateInt(MethodDef method, int value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateLong(MethodDef method, long value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateFloat(MethodDef method, float value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateFloat(MethodDef method, bool needCacheValue, float value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateDouble(MethodDef method, double value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateDouble(MethodDef method, bool needCacheValue, double value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateString(MethodDef method, string value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateBytes(MethodDef method, byte[] value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions);
 
         void Done();
     }
