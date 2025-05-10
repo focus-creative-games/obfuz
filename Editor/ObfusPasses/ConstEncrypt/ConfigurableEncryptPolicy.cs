@@ -137,6 +137,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             switch (ele.Name)
             {
                 case "global": _global = ParseObfuscationRule(configFile, ele); break;
+                case "whitelist": ParseWhitelist(configFile, ele); break;
                 default: throw new Exception($"Invalid xml file {configFile}, unknown node {ele.Name}");
             }
         }
@@ -200,107 +201,92 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             return rule;
         }
         
-        private void ParseWhitelist(string configFile, XmlElement ruleEle)
+        private void ParseWhitelist(string configFile, XmlElement childEle)
         {
-            foreach (XmlNode xmlNode in ruleEle.ChildNodes)
+            string type = childEle.GetAttribute("type");
+            if (string.IsNullOrEmpty(type))
             {
-                if (!(xmlNode is XmlElement childEle))
+                throw new Exception($"Invalid xml file, whitelist type is empty");
+            }
+            string value = childEle.InnerText;
+            switch (type)
+            {
+                case "int":
                 {
-                    continue;
+                    notEncryptInts.AddRange(value.Split(",").Select(s => int.Parse(s.Trim())));
+                    break;
                 }
-                switch (childEle.Name)
+                case "long":
                 {
-                    case "whitelist":
+                    notEncryptLongs.AddRange(value.Split(",").Select(s => long.Parse(s.Trim())));
+                    break;
+                }
+                case "string":
+                {
+                    notEncryptStrings.AddRange(value.Split(",").Select(s => s.Trim()));
+                    break;
+                }
+                case "int-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
                     {
-                        string type = childEle.GetAttribute("type");
-                        if (string.IsNullOrEmpty(type))
-                        {
-                            throw new Exception($"Invalid xml file, whitelist type is empty");
-                        }
-                        string value = childEle.InnerText;
-                        switch (type)
-                        {
-                            case "int":
-                            {
-                                notEncryptInts.AddRange(value.Split(",").Select(s => int.Parse(s.Trim())));
-                                break;
-                            }
-                            case "long":
-                            {
-                                notEncryptLongs.AddRange(value.Split(",").Select(s => long.Parse(s.Trim())));
-                                break;
-                            }
-                            case "string":
-                            {
-                                notEncryptStrings.AddRange(value.Split(",").Select(s => s.Trim()));
-                                break;
-                            }
-                            case "int-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, int-range {value} is invalid");
-                                }
-                                notEncryptIntRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
-                                break;
-                            }
-                            case "long-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, long-range {value} is invalid");
-                                }
-                                notEncryptLongRanges.Add(new NumberRange<long>(ConfigUtil.ParseNullableLong(parts[0]), ConfigUtil.ParseNullableLong(parts[1])));
-                                break;
-                            }
-                            case "float-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, float-range {value} is invalid");
-                                }
-                                notEncryptFloatRanges.Add(new NumberRange<float>(ConfigUtil.ParseNullableFloat(parts[0]), ConfigUtil.ParseNullableFloat(parts[1])));
-                                break;
-                            }
-                            case "double-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, double-range {value} is invalid");
-                                }
-                                notEncryptDoubleRanges.Add(new NumberRange<double>(ConfigUtil.ParseNullableDouble(parts[0]), ConfigUtil.ParseNullableDouble(parts[1])));
-                                break;
-                            }
-                            case "string-length-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, string-length-range {value} is invalid");
-                                }
-                                notEncryptStringLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
-                                break;
-                            }
-                            case "array-length-range":
-                            {
-                                var parts = value.Split(",");
-                                if (parts.Length != 2)
-                                {
-                                    throw new Exception($"Invalid xml file, array-length-range {value} is invalid");
-                                }
-                                notEncryptArrayLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
-                                break;
-                            }
-                            default: throw new Exception($"Invalid xml file, unknown whitelist type {type} in {childEle.Name} node");
-                        }
-                        break;
+                        throw new Exception($"Invalid xml file, int-range {value} is invalid");
                     }
-                    default: throw new Exception($"Invalid xml file, unknown node {childEle.Name}");
+                    notEncryptIntRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                    break;
                 }
+                case "long-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
+                    {
+                        throw new Exception($"Invalid xml file, long-range {value} is invalid");
+                    }
+                    notEncryptLongRanges.Add(new NumberRange<long>(ConfigUtil.ParseNullableLong(parts[0]), ConfigUtil.ParseNullableLong(parts[1])));
+                    break;
+                }
+                case "float-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
+                    {
+                        throw new Exception($"Invalid xml file, float-range {value} is invalid");
+                    }
+                    notEncryptFloatRanges.Add(new NumberRange<float>(ConfigUtil.ParseNullableFloat(parts[0]), ConfigUtil.ParseNullableFloat(parts[1])));
+                    break;
+                }
+                case "double-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
+                    {
+                        throw new Exception($"Invalid xml file, double-range {value} is invalid");
+                    }
+                    notEncryptDoubleRanges.Add(new NumberRange<double>(ConfigUtil.ParseNullableDouble(parts[0]), ConfigUtil.ParseNullableDouble(parts[1])));
+                    break;
+                }
+                case "string-length-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
+                    {
+                        throw new Exception($"Invalid xml file, string-length-range {value} is invalid");
+                    }
+                    notEncryptStringLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                    break;
+                }
+                case "array-length-range":
+                {
+                    var parts = value.Split(",");
+                    if (parts.Length != 2)
+                    {
+                        throw new Exception($"Invalid xml file, array-length-range {value} is invalid");
+                    }
+                    notEncryptArrayLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                    break;
+                }
+                default: throw new Exception($"Invalid xml file, unknown whitelist type {type} in {childEle.Name} node");
             }
         }
 
