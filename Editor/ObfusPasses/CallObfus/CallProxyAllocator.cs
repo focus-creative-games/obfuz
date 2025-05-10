@@ -18,13 +18,15 @@ namespace Obfuz.ObfusPasses.CallObfus
         public readonly int encryptOps;
         public readonly int salt;
         public readonly int encryptedIndex;
+        public readonly int index;
 
-        public ProxyCallMethodData(MethodDef proxyMethod, int encryptOps, int salt, int encryptedIndex)
+        public ProxyCallMethodData(MethodDef proxyMethod, int encryptOps, int salt, int encryptedIndex, int index)
         {
             this.proxyMethod = proxyMethod;
             this.encryptOps = encryptOps;
             this.salt = salt;
             this.encryptedIndex = encryptedIndex;
+            this.index = index;
         }
     }
 
@@ -198,7 +200,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir});
                 _methodProxys.Add(key, proxyInfo);
             }
-            return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex);
+            return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex, proxyInfo.index);
         }
 
         public void Done()

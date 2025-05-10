@@ -17,12 +17,12 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly IEncryptor _encryptor;
 
-        public DefaultConstEncryptor()
+        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator)
         {
-            _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
-            _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
-            _rvaDataAllocator = new RvaDataAllocator(_random, _encryptor);
-            _constFieldAllocator = new ConstFieldAllocator(_encryptor, _random, _rvaDataAllocator);
+            _random = random;
+            _encryptor = encryptor;
+            _rvaDataAllocator = rvaDataAllocator;
+            _constFieldAllocator = constFieldAllocator;
         }
 
         private int GenerateEncryptionOperations()

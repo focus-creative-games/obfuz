@@ -70,7 +70,7 @@ namespace Obfuz.Data
             {
                 _module.EnableTypeDefFindCache = false;
                 ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
-                _holderTypeDef = new TypeDefUser("$Obfuz$ConstFieldHolder$", objectTypeRef);
+                _holderTypeDef = new TypeDefUser($"$Obfuz$ConstFieldHolder${_holderTypeDefs.Count}", objectTypeRef);
                 _module.Types.Add(_holderTypeDef);
                 _holderTypeDefs.Add(_holderTypeDef);
                 _module.EnableTypeDefFindCache = true;

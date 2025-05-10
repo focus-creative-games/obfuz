@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Data;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Utils;
 using System;
@@ -21,5 +22,10 @@ namespace Obfuz
         public List<string> notObfuscatedAssemblyNamesReferencingObfuscated;
 
         public string obfuscatedAssemblyOutputDir;
+
+        public IRandom random;
+        public IEncryptor encryptor;
+        public ConstFieldAllocator constFieldAllocator;
+        public RvaDataAllocator rvaDataAllocator;
     }
 }

@@ -10,7 +10,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public interface IObfuscator
     {
-        void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
+        void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, bool needCacheCall, List<Instruction> obfuscatedInstructions);
 
         void Done();
     }

@@ -1,4 +1,6 @@
 ﻿using dnlib.DotNet;
+using dnlib.Protection;
+using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.ObfusPasses;
 using Obfuz.Utils;
@@ -57,6 +59,11 @@ namespace Obfuz
         {
             LoadAssemblies();
 
+
+            var random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
+            var encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
+            var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
+            var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
             _ctx = new ObfuscationPassContext
             {
                 assemblyCache = _assemblyCache,
@@ -65,6 +72,11 @@ namespace Obfuz
                 toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
                 notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
                 obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
+
+                random = random,
+                encryptor = encryptor,
+                rvaDataAllocator = rvaDataAllocator,
+                constFieldAllocator = constFieldAllocator,
             };
             _pipeline.Start(_ctx);
         }
