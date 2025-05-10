@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Conf;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -10,23 +11,10 @@ using UnityEngine;
 
 namespace Obfuz.ObfusPasses.ConstEncrypt
 {
+
     public class ConfigurableEncryptPolicy : EncryptPolicyBase
     {
-        private readonly List<string> _toObfuscatedAssemblyNames;
-
-        class NumberRange<T> where T : struct
-        {
-            public readonly T? min;
-            public readonly T? max;
-
-            public NumberRange(T? min, T? max)
-            {
-                this.min = min;
-                this.max = max;
-            }
-        }
-
-        class ObfuscationRule
+        class ObfuscationRule : IRule<ObfuscationRule>
         {
             public bool? disableEncrypt;
             public bool? encryptInt;
@@ -43,16 +31,6 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             public bool? cacheConstNotInLoop;
             public bool? cacheStringInLoop;
             public bool? cacheStringNotInLoop;
-
-            public HashSet<int> notEncryptInts = new HashSet<int>();
-            public HashSet<long> notEncryptLongs = new HashSet<long>();
-            public HashSet<string> notEncryptStrings = new HashSet<string>();
-            public List<NumberRange<int>> notEncryptIntRanges = new List<NumberRange<int>>();
-            public List<NumberRange<long>> notEncryptLongRanges = new List<NumberRange<long>>();
-            public List<NumberRange<float>> notEncryptFloatRanges = new List<NumberRange<float>>();
-            public List<NumberRange<double>> notEncryptDoubleRanges = new List<NumberRange<double>>();
-            public List<NumberRange<int>> notEncryptArrayLengthRanges = new List<NumberRange<int>>();
-            public List<NumberRange<int>> notEncryptStringLengthRanges = new List<NumberRange<int>>();
 
             public void InheritParent(ObfuscationRule parentRule)
             {
@@ -84,39 +62,19 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     cacheStringInLoop = parentRule.cacheStringInLoop;
                 if (cacheStringNotInLoop == null)
                     cacheStringNotInLoop = parentRule.cacheStringNotInLoop;
-
-                notEncryptInts.AddRange(parentRule.notEncryptInts);
-                notEncryptLongs.AddRange(parentRule.notEncryptLongs);
-                notEncryptStrings.AddRange(parentRule.notEncryptStrings);
-                notEncryptIntRanges.AddRange(parentRule.notEncryptIntRanges);
-                notEncryptLongRanges.AddRange(parentRule.notEncryptLongRanges);
-                notEncryptFloatRanges.AddRange(parentRule.notEncryptFloatRanges);
-                notEncryptDoubleRanges.AddRange(parentRule.notEncryptDoubleRanges);
-                notEncryptArrayLengthRanges.AddRange(parentRule.notEncryptArrayLengthRanges);
-                notEncryptStringLengthRanges.AddRange(parentRule.notEncryptStringLengthRanges);
             }
         }
 
-        class MethodSpec
+        class MethodSpec : MethodRuleBase<ObfuscationRule>
         {
-            public string name;
-            public NameMatcher nameMatcher;
-            public ObfuscationRule rule;
         }
 
-        class TypeSpec
+        class TypeSpec : TypeRuleBase<MethodSpec, ObfuscationRule>
         {
-            public string name;
-            public NameMatcher nameMatcher;
-            public ObfuscationRule rule;
-            public List<MethodSpec> methods = new List<MethodSpec>();
         }
 
-        class AssemblySpec
+        class AssemblySpec : AssemblyRuleBase<TypeSpec, MethodSpec, ObfuscationRule>
         {
-            public string name;
-            public ObfuscationRule rule;
-            public List<TypeSpec> types = new List<TypeSpec>();
         }
 
         private static readonly ObfuscationRule s_default = new ObfuscationRule()
@@ -137,79 +95,32 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         };
 
         private ObfuscationRule _global;
+
+        public HashSet<int> notEncryptInts = new HashSet<int>();
+        public HashSet<long> notEncryptLongs = new HashSet<long>();
+        public HashSet<string> notEncryptStrings = new HashSet<string>();
+        public List<NumberRange<int>> notEncryptIntRanges = new List<NumberRange<int>>();
+        public List<NumberRange<long>> notEncryptLongRanges = new List<NumberRange<long>>();
+        public List<NumberRange<float>> notEncryptFloatRanges = new List<NumberRange<float>>();
+        public List<NumberRange<double>> notEncryptDoubleRanges = new List<NumberRange<double>>();
+        public List<NumberRange<int>> notEncryptArrayLengthRanges = new List<NumberRange<int>>();
+        public List<NumberRange<int>> notEncryptStringLengthRanges = new List<NumberRange<int>>();
+
+        private readonly XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule> _xmlParser;
+
         private readonly Dictionary<string, AssemblySpec> _assemblySpecs = new Dictionary<string, AssemblySpec>();
         private readonly Dictionary<MethodDef, ObfuscationRule> _methodRuleCache = new Dictionary<MethodDef, ObfuscationRule>();
 
         public ConfigurableEncryptPolicy(List<string> toObfuscatedAssemblyNames, List<string> xmlConfigFiles)
         {
-            _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
+            _xmlParser = new XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule>(
+                toObfuscatedAssemblyNames, ParseObfuscationRule, ParseGlobalElement);
             LoadConfigs(xmlConfigFiles);
-            InheritParentRules();
         }
 
         private void LoadConfigs(List<string> configFiles)
         {
-            if (configFiles == null || configFiles.Count == 0)
-            {
-                Debug.LogWarning($"ConfigurableObfuscationPolicy::LoadConfigs configFiles is empty, using default policy");
-                return;
-            }
-            foreach (var configFile in configFiles)
-            {
-                if (string.IsNullOrEmpty(configFile))
-                {
-                    throw new Exception($"ObfuzSettings.constEncryptSettings.configFiles contains empty file name");
-                }
-                LoadConfig(configFile);
-            }
-        }
-
-        private void LoadConfig(string configFile)
-        {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                Debug.LogWarning($"ConfigurableObfuscationPolicy::LoadConfig configFile is empty, using default policy");
-                return;
-            }
-            Debug.Log($"ConfigurableObfuscationPolicy::LoadConfig {configFile}");
-            var doc = new XmlDocument();
-            doc.Load(configFile);
-            var root = doc.DocumentElement;
-            if (root.Name != "obfuz")
-            {
-                throw new Exception($"Invalid xml file {configFile}, root name should be 'obfuz'");
-            }
-            foreach (XmlNode node in root.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "global": _global = ParseObfuscationRule(ele, true); break;
-                    case "assembly":
-                    {
-                        AssemblySpec assSpec = ParseAssembly(ele);
-                        string name = assSpec.name;
-                        if (!_toObfuscatedAssemblyNames.Contains(name))
-                        {
-                            throw new Exception($"Invalid xml file {configFile}, assembly name {name} isn't in toObfuscatedAssemblyNames");
-                        }
-                        if (_assemblySpecs.ContainsKey(name))
-                        {
-                            throw new Exception($"Invalid xml file {configFile}, assembly name {name} is duplicated");
-                        }
-                        _assemblySpecs.Add(name, assSpec);
-                        break;
-                    }
-                    default: throw new Exception($"Invalid xml file {configFile}, unknown node {ele.Name}");
-                }
-            }
-        }
-
-        private void InheritParentRules()
-        {
+            _xmlParser.LoadConfigs(configFiles);
             if (_global == null)
             {
                 _global = s_default;
@@ -218,21 +129,19 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 _global.InheritParent(s_default);
             }
-            foreach (AssemblySpec assSpec in _assemblySpecs.Values)
+            _xmlParser.InheritParentRules(_global);
+        }
+
+        private void ParseGlobalElement(string configFile, XmlElement ele)
+        {
+            switch (ele.Name)
             {
-                assSpec.rule.InheritParent(_global);
-                foreach (TypeSpec typeSpec in assSpec.types)
-                {
-                    typeSpec.rule.InheritParent(assSpec.rule);
-                    foreach (MethodSpec methodSpec in typeSpec.methods)
-                    {
-                        methodSpec.rule.InheritParent(typeSpec.rule);
-                    }
-                }
+                case "global": _global = ParseObfuscationRule(configFile, ele); break;
+                default: throw new Exception($"Invalid xml file {configFile}, unknown node {ele.Name}");
             }
         }
 
-        private ObfuscationRule ParseObfuscationRule(XmlElement ele, bool parseWhitelist)
+        private ObfuscationRule ParseObfuscationRule(string configFile, XmlElement ele)
         {
             var rule = new ObfuscationRule();
             if (ele.HasAttribute("disableEncrypt"))
@@ -288,14 +197,10 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 rule.cacheStringNotInLoop = ConfigUtil.ParseBool(ele.GetAttribute("cacheStringNotInLoop"));
             }
-            if (parseWhitelist)
-            {
-                ParseWhitelist(ele, rule);
-            }
             return rule;
         }
         
-        private void ParseWhitelist(XmlElement ruleEle, ObfuscationRule rule)
+        private void ParseWhitelist(string configFile, XmlElement ruleEle)
         {
             foreach (XmlNode xmlNode in ruleEle.ChildNodes)
             {
@@ -317,17 +222,17 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                         {
                             case "int":
                             {
-                                rule.notEncryptInts.AddRange(value.Split(",").Select(s => int.Parse(s.Trim())));
+                                notEncryptInts.AddRange(value.Split(",").Select(s => int.Parse(s.Trim())));
                                 break;
                             }
                             case "long":
                             {
-                                rule.notEncryptLongs.AddRange(value.Split(",").Select(s => long.Parse(s.Trim())));
+                                notEncryptLongs.AddRange(value.Split(",").Select(s => long.Parse(s.Trim())));
                                 break;
                             }
                             case "string":
                             {
-                                rule.notEncryptStrings.AddRange(value.Split(",").Select(s => s.Trim()));
+                                notEncryptStrings.AddRange(value.Split(",").Select(s => s.Trim()));
                                 break;
                             }
                             case "int-range":
@@ -337,7 +242,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, int-range {value} is invalid");
                                 }
-                                rule.notEncryptIntRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                                notEncryptIntRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
                                 break;
                             }
                             case "long-range":
@@ -347,7 +252,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, long-range {value} is invalid");
                                 }
-                                rule.notEncryptLongRanges.Add(new NumberRange<long>(ConfigUtil.ParseNullableLong(parts[0]), ConfigUtil.ParseNullableLong(parts[1])));
+                                notEncryptLongRanges.Add(new NumberRange<long>(ConfigUtil.ParseNullableLong(parts[0]), ConfigUtil.ParseNullableLong(parts[1])));
                                 break;
                             }
                             case "float-range":
@@ -357,7 +262,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, float-range {value} is invalid");
                                 }
-                                rule.notEncryptFloatRanges.Add(new NumberRange<float>(ConfigUtil.ParseNullableFloat(parts[0]), ConfigUtil.ParseNullableFloat(parts[1])));
+                                notEncryptFloatRanges.Add(new NumberRange<float>(ConfigUtil.ParseNullableFloat(parts[0]), ConfigUtil.ParseNullableFloat(parts[1])));
                                 break;
                             }
                             case "double-range":
@@ -367,7 +272,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, double-range {value} is invalid");
                                 }
-                                rule.notEncryptDoubleRanges.Add(new NumberRange<double>(ConfigUtil.ParseNullableDouble(parts[0]), ConfigUtil.ParseNullableDouble(parts[1])));
+                                notEncryptDoubleRanges.Add(new NumberRange<double>(ConfigUtil.ParseNullableDouble(parts[0]), ConfigUtil.ParseNullableDouble(parts[1])));
                                 break;
                             }
                             case "string-length-range":
@@ -377,7 +282,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, string-length-range {value} is invalid");
                                 }
-                                rule.notEncryptStringLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                                notEncryptStringLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
                                 break;
                             }
                             case "array-length-range":
@@ -387,7 +292,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                                 {
                                     throw new Exception($"Invalid xml file, array-length-range {value} is invalid");
                                 }
-                                rule.notEncryptArrayLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
+                                notEncryptArrayLengthRanges.Add(new NumberRange<int>(ConfigUtil.ParseNullableInt(parts[0]), ConfigUtil.ParseNullableInt(parts[1])));
                                 break;
                             }
                             default: throw new Exception($"Invalid xml file, unknown whitelist type {type} in {childEle.Name} node");
@@ -399,105 +304,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             }
         }
 
-        private AssemblySpec ParseAssembly(XmlElement element)
-        {
-            var assemblySpec = new AssemblySpec();
-            assemblySpec.name = element.GetAttribute("name");
-            if (string.IsNullOrEmpty(assemblySpec.name))
-            {
-                throw new Exception($"Invalid xml file, assembly name is empty");
-            }
-            assemblySpec.rule = ParseObfuscationRule(element, false);
-            foreach (XmlNode node in element.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "type":
-                    assemblySpec.types.Add(ParseType(ele));
-                    break;
-                    default:
-                    throw new Exception($"Invalid xml file, unknown node {ele.Name}");
-                }
-            }
-            return assemblySpec;
-        }
-
-        private TypeSpec ParseType(XmlElement element)
-        {
-            var typeSpec = new TypeSpec();
-            typeSpec.name = element.GetAttribute("name");
-            typeSpec.nameMatcher = new NameMatcher(typeSpec.name);
-            if (string.IsNullOrEmpty(typeSpec.name))
-            {
-                throw new Exception($"Invalid xml file, type name is empty");
-            }
-            typeSpec.rule = ParseObfuscationRule(element, false);
-            foreach (XmlNode node in element.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "method":
-                    typeSpec.methods.Add(ParseMethod(ele));
-                    break;
-                    default:
-                    throw new Exception($"Invalid xml file, unknown node {ele.Name}");
-                }
-            }
-            return typeSpec;
-        }
-
-        private MethodSpec ParseMethod(XmlElement element)
-        {
-            var methodSpec = new MethodSpec();
-            methodSpec.name = element.GetAttribute("name");
-            methodSpec.nameMatcher = new NameMatcher(methodSpec.name);
-            if (string.IsNullOrEmpty(methodSpec.name))
-            {
-                throw new Exception($"Invalid xml file, method name is empty");
-            }
-            methodSpec.rule = ParseObfuscationRule(element, false);
-            return methodSpec;
-        }
-
-
-        private ObfuscationRule ComputeMethodObfuscationRule(MethodDef method)
-        {
-            var assemblyName = method.DeclaringType.Module.Assembly.Name;
-            if (!_assemblySpecs.TryGetValue(assemblyName, out var assSpec))
-            {
-                return _global;
-            }
-            string declaringTypeName = method.DeclaringType.FullName;
-            foreach (var typeSpec in assSpec.types)
-            {
-                if (typeSpec.nameMatcher.IsMatch(declaringTypeName))
-                {
-                    foreach (var methodSpec in typeSpec.methods)
-                    {
-                        if (methodSpec.nameMatcher.IsMatch(method.Name))
-                        {
-                            return methodSpec.rule;
-                        }
-                    }
-                    return typeSpec.rule;
-                }
-            }
-            return assSpec.rule;
-        }
-
         private ObfuscationRule GetMethodObfuscationRule(MethodDef method)
         {
             if (!_methodRuleCache.TryGetValue(method, out var rule))
             {
-                rule = ComputeMethodObfuscationRule(method);
+                rule = _xmlParser.GetMethodRule(method, _global);
                 _methodRuleCache[method] = rule;
             }
             return rule;
@@ -532,11 +343,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            if (rule.notEncryptInts.Contains(value))
+            if (notEncryptInts.Contains(value))
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptIntRanges)
+            foreach (var range in notEncryptIntRanges)
             {
                 if (range.min != null && value < range.min)
                 {
@@ -562,11 +373,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            if (rule.notEncryptLongs.Contains(value))
+            if (notEncryptLongs.Contains(value))
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptLongRanges)
+            foreach (var range in notEncryptLongRanges)
             {
                 if (range.min != null && value < range.min)
                 {
@@ -592,7 +403,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptFloatRanges)
+            foreach (var range in notEncryptFloatRanges)
             {
                 if (range.min != null && value < range.min)
                 {
@@ -618,7 +429,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptDoubleRanges)
+            foreach (var range in notEncryptDoubleRanges)
             {
                 if (range.min != null && value < range.min)
                 {
@@ -644,11 +455,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            if (rule.notEncryptStrings.Contains(value))
+            if (notEncryptStrings.Contains(value))
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptStringLengthRanges)
+            foreach (var range in notEncryptStringLengthRanges)
             {
                 if (range.min != null && value.Length < range.min)
                 {
@@ -674,7 +485,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 return false;
             }
-            foreach (var range in rule.notEncryptArrayLengthRanges)
+            foreach (var range in notEncryptArrayLengthRanges)
             {
                 if (range.min != null && array.Length < range.min)
                 {

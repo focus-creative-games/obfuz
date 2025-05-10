@@ -13,9 +13,6 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public class ConfigurableObfuscationPolicy : ObfuscationPolicyBase
     {
-        private readonly List<string> _toObfuscatedAssemblyNames;
-
-
         class WhiteListAssembly
         {
             public string name;
@@ -91,15 +88,13 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private ObfuscationRule _global;
         private readonly List<WhiteListAssembly> _whiteListAssemblies = new List<WhiteListAssembly>();
-        private readonly Dictionary<string, AssemblySpec> _assemblySpecs = new Dictionary<string, AssemblySpec>();
 
         private readonly Dictionary<IMethod, bool> _whiteListMethodCache = new Dictionary<IMethod, bool>(MethodEqualityComparer.CompareDeclaringTypes);
         private readonly Dictionary<MethodDef, ObfuscationRule> _methodRuleCache = new Dictionary<MethodDef, ObfuscationRule>();
 
         public ConfigurableObfuscationPolicy(List<string> toObfuscatedAssemblyNames, List<string> xmlConfigFiles)
         {
-            _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
-            _configParser = new XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule>(_toObfuscatedAssemblyNames,
+            _configParser = new XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule>(toObfuscatedAssemblyNames,
                 ParseObfuscationRule, ParseGlobalElement);
             LoadConfigs(xmlConfigFiles);
         }
@@ -237,16 +232,11 @@ namespace Obfuz.ObfusPasses.CallObfus
             return method;
         }
 
-        private ObfuscationRule ComputeMethodObfuscationRule(MethodDef method)
-        {
-            return _configParser.GetMethodRule(method, s_default);
-        }
-
         private ObfuscationRule GetMethodObfuscationRule(MethodDef method)
         {
             if (!_methodRuleCache.TryGetValue(method, out var rule))
             {
-                rule = ComputeMethodObfuscationRule(method);
+                rule = _configParser.GetMethodRule(method, s_default);
                 _methodRuleCache[method] = rule;
             }
             return rule;
