@@ -37,7 +37,7 @@ namespace Obfuz.ObfusPasses
 
 
         protected abstract bool TryObfuscateInstruction(MethodDef callingMethod, Instruction inst, BasicBlock block, int instructionIndex,
-            List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions);
+            IList<Instruction> globalInstructions, List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions);
 
         private void ObfuscateData(MethodDef method)
         {
@@ -52,7 +52,7 @@ namespace Obfuz.ObfusPasses
                 Instruction inst = instructions[i];
                 BasicBlock block = bbc.GetBasicBlockByInstruction(inst);
                 outputInstructions.Clear();
-                if (TryObfuscateInstruction(method, inst, block, i, outputInstructions, totalFinalInstructions))
+                if (TryObfuscateInstruction(method, inst, block, i, instructions, outputInstructions, totalFinalInstructions))
                 {
                     // current instruction may be the target of control flow instruction, so we can't remove it directly.
                     // we replace it with nop now, then remove it in CleanUpInstructionPass

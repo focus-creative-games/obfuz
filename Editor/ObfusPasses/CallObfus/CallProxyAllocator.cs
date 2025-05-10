@@ -138,7 +138,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 }
                 case ThisArgType.ValueType:
                 {
-                    methodSig.Params.Insert(0, _module.CorLibTypes.UIntPtr);
+                    methodSig.Params.Insert(0, _module.CorLibTypes.IntPtr);
                     break;
                 }
             }

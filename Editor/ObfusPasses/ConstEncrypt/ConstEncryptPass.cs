@@ -15,18 +15,18 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
     public class ConstEncryptPass : BasicBlockObfuscationPassBase
     {
-        private readonly string _configFile;
+        private readonly List<string> _configFiles;
         private IEncryptPolicy _dataObfuscatorPolicy;
         private IConstEncryptor _dataObfuscator;
 
         public ConstEncryptPass(ConstEncryptSettings settings)
         {
-            _configFile = settings.configFile;
+            _configFiles = settings.configFiles.ToList();
         }
 
         public override void Start(ObfuscationPassContext ctx)
         {
-            _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFile);
+            _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
             _dataObfuscator = new DefaultConstEncryptor();
         }
 
@@ -40,7 +40,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             return _dataObfuscatorPolicy.NeedObfuscateMethod(method);
         }
 
-        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, BasicBlock block, int instructionIndex,
+        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, BasicBlock block, int instructionIndex, IList<Instruction> globalInstructions,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
             bool currentInLoop = block.inLoop;
@@ -127,7 +127,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 {
                     if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
                     {
-                        Instruction prevInst = block.instructions[instructionIndex - 1];
+                        Instruction prevInst = globalInstructions[instructionIndex - 1];
                         if (prevInst.OpCode.Code == Code.Ldtoken)
                         {
                             IField rvaField = (IField)prevInst.Operand;

@@ -13,19 +13,20 @@ using Obfuz.Settings;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public class CallObfusPass : InstructionObfuscationPassBase
+    public class CallObfusPass : BasicBlockObfuscationPassBase
     {
+        private readonly List<string> _configFiles;
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
-        private readonly ICallObfusPolicy _dynamicProxyPolicy;
-        private readonly ICallObfuscator _dynamicProxyObfuscator;
+        private readonly IObfuscator _dynamicProxyObfuscator;
+        private IObfuscationPolicy _dynamicProxyPolicy;
 
         public CallObfusPass(CallObfusSettings settings)
         {
+            _configFiles = settings.configFiles.ToList();
             _random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
             _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
-            _dynamicProxyPolicy = new ConfigurableCallObfusPolicy();
-            _dynamicProxyObfuscator = new DefaultProxyCallObfuscator(_random, _encryptor);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor);
         }
 
         public override void Stop(ObfuscationPassContext ctx)
@@ -35,7 +36,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public override void Start(ObfuscationPassContext ctx)
         {
-
+            _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)
@@ -43,8 +44,8 @@ namespace Obfuz.ObfusPasses.CallObfus
             return _dynamicProxyPolicy.NeedDynamicProxyCallInMethod(method);
         }
 
-        protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, IList<Instruction> instructions, int instructionIndex,
-            List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
+        protected override bool TryObfuscateInstruction(MethodDef callerMethod, Instruction inst, BasicBlock block,
+            int instructionIndex, IList<Instruction> globalInstructions, List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
             IMethod calledMethod = inst.Operand as IMethod;
             if (calledMethod == null || !calledMethod.IsMethod)
@@ -56,32 +57,35 @@ namespace Obfuz.ObfusPasses.CallObfus
                 return false;
             }
 
+            bool callVir;
             switch (inst.OpCode.Code)
             {
                 case Code.Call:
                 {
-                    if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(calledMethod, false))
-                    {
-                        return false;
-                    }
-                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, false, outputInstructions);
-                    return true;
+                    callVir = false;
+                    break;
                 }
                 case Code.Callvirt:
                 {
-                    if (instructionIndex > 0 && instructions[instructionIndex - 1].OpCode.Code == Code.Constrained)
+                    if (instructionIndex > 0 && globalInstructions[instructionIndex - 1].OpCode.Code == Code.Constrained)
                     {
                         return false;
                     }
-                    if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(calledMethod, true))
-                    {
-                        return false;
-                    }
-                    _dynamicProxyObfuscator.Obfuscate(method, calledMethod, true, outputInstructions);
-                    return true;
+                    callVir = true;
+                    break;
                 }
                 default: return false;
             }
+
+            ObfuscationCachePolicy cachePolicy = _dynamicProxyPolicy.GetMethodObfuscationCachePolicy(callerMethod);
+            bool cachedCallIndex = block.inLoop ? cachePolicy.cacheInLoop : cachePolicy.cacheNotInLoop;
+
+            if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(callerMethod, calledMethod, callVir, cachedCallIndex))
+            {
+                return false;
+            }
+            _dynamicProxyObfuscator.Obfuscate(callerMethod, calledMethod, callVir, outputInstructions);
+            return true;
         }
     }
 }

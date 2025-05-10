@@ -6,13 +6,13 @@ using Obfuz.Emit;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
-    public class DefaultProxyCallObfuscator : CallObfuscatorBase
+    public class DefaultCallProxyObfuscator : ObfuscatorBase
     {
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
         private readonly CallProxyAllocator _proxyCallAllocator;
 
-        public DefaultProxyCallObfuscator(IRandom random, IEncryptor encryptor)
+        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor)
         {
             _random = random;
             _encryptor = encryptor;

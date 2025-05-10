@@ -10,7 +10,7 @@ namespace Obfuz.Settings
     [Serializable]
     public class ConstEncryptSettings
     {
-        [Tooltip("config xml file")]
-        public string configFile;
+        [Tooltip("config xml files")]
+        public string[] configFiles;
     }
 }
