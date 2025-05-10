@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Conf;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             public NameMatcher nameMatcher;
         }
 
-        class ObfuscationRule
+        class ObfuscationRule : IRule<ObfuscationRule>
         {
             public bool? disableObfuscation;
             public bool? obfuscateCallInLoop;
@@ -64,26 +65,18 @@ namespace Obfuz.ObfusPasses.CallObfus
                 }
             }
         }
-        class AssemblySpec
+
+        class AssemblySpec : AssemblyRuleBase<TypeSpec, MethodSpec, ObfuscationRule>
         {
-            public string name;
-            public ObfuscationRule rule;
-            public List<TypeSpec> types = new List<TypeSpec>();
         }
 
-        class TypeSpec
+        class TypeSpec : TypeRuleBase<MethodSpec, ObfuscationRule>
         {
-            public string name;
-            public NameMatcher nameMatcher;
-            public ObfuscationRule rule;
-            public List<MethodSpec> methods = new List<MethodSpec>();
         }
 
-        class MethodSpec
+        class MethodSpec : MethodRuleBase<ObfuscationRule>
         {
-            public string name;
-            public NameMatcher nameMatcher;
-            public ObfuscationRule rule;
+
         }
 
         private static readonly ObfuscationRule s_default = new ObfuscationRule()
@@ -93,6 +86,8 @@ namespace Obfuz.ObfusPasses.CallObfus
             cacheCallIndexInLoop = true,
             cacheCallIndexNotLoop = false,
         };
+
+        private readonly XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule> _configParser;
 
         private ObfuscationRule _global;
         private readonly List<WhiteListAssembly> _whiteListAssemblies = new List<WhiteListAssembly>();
@@ -104,74 +99,15 @@ namespace Obfuz.ObfusPasses.CallObfus
         public ConfigurableObfuscationPolicy(List<string> toObfuscatedAssemblyNames, List<string> xmlConfigFiles)
         {
             _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
+            _configParser = new XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule>(_toObfuscatedAssemblyNames,
+                ParseObfuscationRule, ParseGlobalElement);
             LoadConfigs(xmlConfigFiles);
-            InheritParentRules();
         }
 
         private void LoadConfigs(List<string> configFiles)
         {
-            if (configFiles == null || configFiles.Count == 0)
-            {
-                Debug.LogWarning($"ConfigurableObfuscationPolicy::LoadConfigs configFiles is empty, using default policy");
-                return;
-            }
-            foreach (var configFile in configFiles)
-            {
-                if (string.IsNullOrEmpty(configFile))
-                {
-                    throw new Exception($"ObfusSettings.callObfusSettings.configFiles contains empty file name");
-                }
-                LoadConfig(configFile);
-            }
-        }
+            _configParser.LoadConfigs(configFiles);
 
-        private void LoadConfig(string configFile)
-        {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                Debug.LogWarning($"ConfigurableObfuscationPolicy::LoadConfig configFile is empty, using default policy");
-                return;
-            }
-            Debug.Log($"ConfigurableObfuscationPolicy::LoadConfig {configFile}");
-            var doc = new XmlDocument();
-            doc.Load(configFile);
-            var root = doc.DocumentElement;
-            if (root.Name != "obfuz")
-            {
-                throw new Exception($"Invalid xml file {configFile}, root name should be 'obfuz'");
-            }
-            foreach (XmlNode node in root.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "global": _global = ParseObfuscationRule(ele, true); break;
-                    case "whitelist": ParseWhitelist(ele); break;
-                    case "assembly":
-                    {
-                        AssemblySpec assSpec = ParseAssembly(ele);
-                        string name = assSpec.name;
-                        if (!_toObfuscatedAssemblyNames.Contains(name))
-                        {
-                            throw new Exception($"Invalid xml file {configFile}, assembly name {name} isn't in toObfuscatedAssemblyNames");
-                        }
-                        if (_assemblySpecs.ContainsKey(name))
-                        {
-                            throw new Exception($"Invalid xml file {configFile}, assembly name {name} is duplicated");
-                        }
-                        _assemblySpecs.Add(name, assSpec);
-                        break;
-                    }
-                    default: throw new Exception($"Invalid xml file {configFile}, unknown node {ele.Name}");
-                }
-            }
-        }
-
-        private void InheritParentRules()
-        {
             if (_global == null)
             {
                 _global = s_default;
@@ -180,21 +116,20 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 _global.InheritParent(s_default);
             }
-            foreach (AssemblySpec assSpec in _assemblySpecs.Values)
+            _configParser.InheritParentRules(_global);
+        }
+
+        private void ParseGlobalElement(string configFile, XmlElement ele)
+        {
+            switch (ele.Name)
             {
-                assSpec.rule.InheritParent(_global);
-                foreach (TypeSpec typeSpec in assSpec.types)
-                {
-                    typeSpec.rule.InheritParent(assSpec.rule);
-                    foreach (MethodSpec methodSpec in typeSpec.methods)
-                    {
-                        methodSpec.rule.InheritParent(typeSpec.rule);
-                    }
-                }
+                case "global": _global = ParseObfuscationRule(configFile, ele); break;
+                case "whitelist": ParseWhitelist(ele); break;
+                default: throw new Exception($"Invalid xml file {configFile}, unknown node {ele.Name}");
             }
         }
 
-        private ObfuscationRule ParseObfuscationRule(XmlElement ele, bool parseWhitelist)
+        private ObfuscationRule ParseObfuscationRule(string configFile, XmlElement ele)
         {
             var rule = new ObfuscationRule();
             if (ele.HasAttribute("disableObfuscation"))
@@ -228,7 +163,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 {
                     case "assembly":
                     {
-                        var ass = ParseWhiteListtAssembly(childEle);
+                        var ass = ParseWhiteListAssembly(childEle);
                         _whiteListAssemblies.Add(ass);
                         break;
                     }
@@ -237,7 +172,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
         }
 
-        private WhiteListAssembly ParseWhiteListtAssembly(XmlElement element)
+        private WhiteListAssembly ParseWhiteListAssembly(XmlElement element)
         {
             var ass = new WhiteListAssembly();
             ass.name = element.GetAttribute("name");
@@ -302,97 +237,9 @@ namespace Obfuz.ObfusPasses.CallObfus
             return method;
         }
 
-        private AssemblySpec ParseAssembly(XmlElement element)
-        {
-            var assemblySpec = new AssemblySpec();
-            assemblySpec.name = element.GetAttribute("name");
-            if (string.IsNullOrEmpty(assemblySpec.name))
-            {
-                throw new Exception($"Invalid xml file, assembly name is empty");
-            }
-            assemblySpec.rule = ParseObfuscationRule(element, false);
-            foreach (XmlNode node in element.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "type":
-                    assemblySpec.types.Add(ParseType(ele));
-                    break;
-                    default:
-                    throw new Exception($"Invalid xml file, unknown node {ele.Name}");
-                }
-            }
-            return assemblySpec;
-        }
-
-        private TypeSpec ParseType(XmlElement element)
-        {
-            var typeSpec = new TypeSpec();
-            typeSpec.name = element.GetAttribute("name");
-            typeSpec.nameMatcher = new NameMatcher(typeSpec.name);
-            if (string.IsNullOrEmpty(typeSpec.name))
-            {
-                throw new Exception($"Invalid xml file, type name is empty");
-            }
-            typeSpec.rule = ParseObfuscationRule(element, false);
-            foreach (XmlNode node in element.ChildNodes)
-            {
-                if (!(node is XmlElement ele))
-                {
-                    continue;
-                }
-                switch (ele.Name)
-                {
-                    case "method":
-                    typeSpec.methods.Add(ParseMethod(ele));
-                    break;
-                    default:
-                    throw new Exception($"Invalid xml file, unknown node {ele.Name}");
-                }
-            }
-            return typeSpec;
-        }
-
-        private MethodSpec ParseMethod(XmlElement element)
-        {
-            var methodSpec = new MethodSpec();
-            methodSpec.name = element.GetAttribute("name");
-            methodSpec.nameMatcher = new NameMatcher(methodSpec.name);
-            if (string.IsNullOrEmpty(methodSpec.name))
-            {
-                throw new Exception($"Invalid xml file, method name is empty");
-            }
-            methodSpec.rule = ParseObfuscationRule(element, false);
-            return methodSpec;
-        }
-
         private ObfuscationRule ComputeMethodObfuscationRule(MethodDef method)
         {
-            var assemblyName = method.DeclaringType.Module.Assembly.Name;
-            if (!_assemblySpecs.TryGetValue(assemblyName, out var assSpec))
-            {
-                return _global;
-            }
-            string declaringTypeName = method.DeclaringType.FullName;
-            foreach (var typeSpec in assSpec.types)
-            {
-                if (typeSpec.nameMatcher.IsMatch(declaringTypeName))
-                {
-                    foreach (var methodSpec in typeSpec.methods)
-                    {
-                        if (methodSpec.nameMatcher.IsMatch(method.Name))
-                        {
-                            return methodSpec.rule;
-                        }
-                    }
-                    return typeSpec.rule;
-                }
-            }
-            return assSpec.rule;
+            return _configParser.GetMethodRule(method, s_default);
         }
 
         private ObfuscationRule GetMethodObfuscationRule(MethodDef method)
