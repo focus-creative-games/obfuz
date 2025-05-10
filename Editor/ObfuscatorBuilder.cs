@@ -76,7 +76,7 @@ namespace Obfuz
             ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.MemoryEncryption))
             {
-                builder.AddPass(new FieldEncryptPass());
+                builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
             {

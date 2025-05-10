@@ -1,8 +1,10 @@
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz;
+using Obfuz.Settings;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Obfuz.ObfusPasses.FieldEncrypt
@@ -10,13 +12,21 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
     public class FieldEncryptPass : InstructionObfuscationPassBase
     {
-        private readonly IEncryptPolicy _encryptionPolicy = new ConfigurableEncryptPolicy();
+        private readonly List<string> _configFiles;
+        private IEncryptPolicy _encryptionPolicy;
         private IFieldEncryptor _memoryEncryptor;
+
+        public FieldEncryptPass(FieldEncryptSettings settings)
+        {
+            _configFiles = settings.configFiles.ToList();
+        }
+
+        protected override bool NeedProcessNotObfuscatedAssembly => true;
 
         public override void Start(ObfuscationPassContext ctx)
         {
             _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor);
-
+            _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 
         public override void Stop(ObfuscationPassContext ctx)
@@ -57,11 +67,6 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 return false;
             }
-            var ctx = new MemoryEncryptionContext
-            {
-                module = callingMethod.Module,
-                currentInstruction = inst,
-            };
             switch (code)
             {
                 case Code.Ldfld:

@@ -7,11 +7,14 @@ namespace Obfuz.ObfusPasses
 {
     public abstract class InstructionObfuscationPassBase : ObfuscationPassBase
     {
+        protected virtual bool NeedProcessNotObfuscatedAssembly => false;
+
         protected abstract bool NeedObfuscateMethod(MethodDef method);
 
         public override void Process(ObfuscationPassContext ctx)
         {
-            foreach (ModuleDef mod in ctx.toObfuscatedModules)
+            var modules = NeedProcessNotObfuscatedAssembly ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
+            foreach (ModuleDef mod in modules)
             {
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())

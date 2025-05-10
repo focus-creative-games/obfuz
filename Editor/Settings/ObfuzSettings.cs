@@ -32,6 +32,9 @@ namespace Obfuz.Settings
         [Tooltip("const encryption settings")]
         public ConstEncryptSettings constEncryptSettings;
 
+        [Tooltip("field encryption settings")]
+        public FieldEncryptSettings fieldEncryptSettings;
+
         [Tooltip("call obfuscation settings")]
         public CallObfusSettings callObfusSettings;
 

@@ -37,6 +37,7 @@ namespace Obfuz.Settings
 
         private SerializedProperty _symbolObfusSettings;
         private SerializedProperty _constEncryptSettings;
+        private SerializedProperty _fieldEncryptSettings;
         private SerializedProperty _callObfusSettings;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
@@ -67,6 +68,7 @@ namespace Obfuz.Settings
 
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
             _constEncryptSettings = _serializedObject.FindProperty("constEncryptSettings");
+            _fieldEncryptSettings = _serializedObject.FindProperty("fieldEncryptSettings");
             _callObfusSettings = _serializedObject.FindProperty("callObfusSettings");
         }
 
@@ -87,6 +89,7 @@ namespace Obfuz.Settings
 
             EditorGUILayout.PropertyField(_symbolObfusSettings);
             EditorGUILayout.PropertyField(_constEncryptSettings);
+            EditorGUILayout.PropertyField(_fieldEncryptSettings);
             EditorGUILayout.PropertyField(_callObfusSettings);
 
 
