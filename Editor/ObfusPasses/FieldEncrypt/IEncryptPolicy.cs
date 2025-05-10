@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses.MemEncrypt
+namespace Obfuz.ObfusPasses.FieldEncrypt
 {
     public interface IEncryptPolicy
     {

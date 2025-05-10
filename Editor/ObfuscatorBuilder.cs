@@ -1,9 +1,8 @@
 ﻿using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CallObfus;
-using Obfuz.ObfusPasses.CleanUp;
 using Obfuz.ObfusPasses.ConstEncrypt;
 using Obfuz.ObfusPasses.ExprObfus;
-using Obfuz.ObfusPasses.MemEncrypt;
+using Obfuz.ObfusPasses.FieldEncrypt;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Settings;
 using System.Collections.Generic;
@@ -77,7 +76,7 @@ namespace Obfuz
             ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.MemoryEncryption))
             {
-                builder.AddPass(new MemEncryptPass());
+                builder.AddPass(new FieldEncryptPass());
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
             {

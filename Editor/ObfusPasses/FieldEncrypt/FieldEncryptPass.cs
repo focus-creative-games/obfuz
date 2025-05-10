@@ -1,21 +1,21 @@
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz;
-using Obfuz.ObfusPasses.MemEncrypt;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Obfuz.ObfusPasses.MemEncrypt
+namespace Obfuz.ObfusPasses.FieldEncrypt
 {
 
-    public class MemEncryptPass : InstructionObfuscationPassBase
+    public class FieldEncryptPass : InstructionObfuscationPassBase
     {
-        private readonly IEncryptPolicy _encryptionPolicy = new ConfigEncryptionPolicy();
-        private readonly IMemEncryptor _memoryEncryptor = new DefaultMemoryEncryptor();
+        private readonly IEncryptPolicy _encryptionPolicy = new ConfigurableEncryptPolicy();
+        private IFieldEncryptor _memoryEncryptor;
 
         public override void Start(ObfuscationPassContext ctx)
         {
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor);
 
         }
 
@@ -29,32 +29,31 @@ namespace Obfuz.ObfusPasses.MemEncrypt
             return true;
         }
 
-        private FieldDef TryResolveFieldDef(IField field)
+        private bool IsSupportedFieldType(TypeSig type)
         {
-            if (field is FieldDef fieldDef)
+            type = type.RemovePinnedAndModifiers();
+            switch (type.ElementType)
             {
-                return fieldDef;
+                case ElementType.I4:
+                case ElementType.I8:
+                case ElementType.U4:
+                case ElementType.U8:
+                case ElementType.R4:
+                case ElementType.R8:
+                return true;
+                default: return false;
             }
-            if (field is MemberRef memberRef)
-            {
-                return memberRef.ResolveFieldDef();
-            }
-            throw new System.Exception($"Cannot resolve field: {field}");
         }
 
         protected override bool TryObfuscateInstruction(MethodDef callingMethod, Instruction inst, IList<Instruction> instructions, int instructionIndex, List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
             Code code = inst.OpCode.Code;
-            if (!(inst.Operand is IField field))
+            if (!(inst.Operand is IField field) || !field.IsField)
             {
                 return false;
             }
-            FieldDef fieldDef = TryResolveFieldDef(field);
-            if (fieldDef == null)
-            {
-                return false;
-            }
-            if (!_encryptionPolicy.NeedEncrypt(fieldDef))
+            FieldDef fieldDef = field.ResolveFieldDefThrow();
+            if (!IsSupportedFieldType(fieldDef.FieldSig.Type) || !_encryptionPolicy.NeedEncrypt(fieldDef))
             {
                 return false;
             }
@@ -67,22 +66,22 @@ namespace Obfuz.ObfusPasses.MemEncrypt
             {
                 case Code.Ldfld:
                 {
-                    _memoryEncryptor.Decrypt(fieldDef, outputInstructions, ctx);
+                    _memoryEncryptor.Decrypt(callingMethod, fieldDef, outputInstructions, inst);
                     break;
                 }
                 case Code.Stfld:
                 {
-                    _memoryEncryptor.Encrypt(fieldDef, outputInstructions, ctx);
+                    _memoryEncryptor.Encrypt(callingMethod, fieldDef, outputInstructions, inst);
                     break;
                 }
                 case Code.Ldsfld:
                 {
-                    _memoryEncryptor.Decrypt(fieldDef, outputInstructions, ctx);
+                    _memoryEncryptor.Decrypt(callingMethod, fieldDef, outputInstructions, inst);
                     break;
                 }
                 case Code.Stsfld:
                 {
-                    _memoryEncryptor.Encrypt(fieldDef, outputInstructions, ctx);
+                    _memoryEncryptor.Encrypt(callingMethod, fieldDef, outputInstructions, inst);
                     break;
                 }
                 case Code.Ldflda:
