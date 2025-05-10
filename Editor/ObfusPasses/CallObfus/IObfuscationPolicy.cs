@@ -16,10 +16,10 @@ namespace Obfuz.ObfusPasses.CallObfus
 
     public interface IObfuscationPolicy
     {
-        bool NeedDynamicProxyCallInMethod(MethodDef method);
+        bool NeedObfuscateCallInMethod(MethodDef method);
 
         ObfuscationCachePolicy GetMethodObfuscationCachePolicy(MethodDef method);
 
-        bool NeedDynamicProxyCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop);
+        bool NeedObfuscateCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop);
     }
 }

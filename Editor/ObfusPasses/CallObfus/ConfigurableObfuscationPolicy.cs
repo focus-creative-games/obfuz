@@ -405,7 +405,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             return rule;
         }
 
-        public override bool NeedDynamicProxyCallInMethod(MethodDef method)
+        public override bool NeedObfuscateCallInMethod(MethodDef method)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             return rule.disableObfuscation != true;
@@ -507,7 +507,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             return isWhiteList;
         }
 
-        public override bool NeedDynamicProxyCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop)
+        public override bool NeedObfuscateCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop)
         {
             if (IsInWhiteList(calledMethod))
             {

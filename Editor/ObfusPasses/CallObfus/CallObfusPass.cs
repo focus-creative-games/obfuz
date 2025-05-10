@@ -41,7 +41,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         protected override bool NeedObfuscateMethod(MethodDef method)
         {
-            return _dynamicProxyPolicy.NeedDynamicProxyCallInMethod(method);
+            return _dynamicProxyPolicy.NeedObfuscateCallInMethod(method);
         }
 
         protected override bool TryObfuscateInstruction(MethodDef callerMethod, Instruction inst, BasicBlock block,
@@ -80,7 +80,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             ObfuscationCachePolicy cachePolicy = _dynamicProxyPolicy.GetMethodObfuscationCachePolicy(callerMethod);
             bool cachedCallIndex = block.inLoop ? cachePolicy.cacheInLoop : cachePolicy.cacheNotInLoop;
 
-            if (!_dynamicProxyPolicy.NeedDynamicProxyCalledMethod(callerMethod, calledMethod, callVir, cachedCallIndex))
+            if (!_dynamicProxyPolicy.NeedObfuscateCalledMethod(callerMethod, calledMethod, callVir, cachedCallIndex))
             {
                 return false;
             }
