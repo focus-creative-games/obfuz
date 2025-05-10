@@ -122,6 +122,10 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 // value has been put on stack
                 // xor
+                if (fei.fieldType == ElementType.R4)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastFloatAsInt));
+                }
                 outputInstructions.Add(Instruction.CreateLdcI4((int)fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
 
@@ -134,6 +138,10 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 // value has been put on stack
                 // xor
+                if (fei.fieldType == ElementType.R8)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastDoubleAsLong));
+                }
                 outputInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
 
