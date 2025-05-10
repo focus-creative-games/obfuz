@@ -77,7 +77,7 @@ namespace Obfuz
             ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.MemoryEncryption))
             {
-                builder.AddPass(new MemoryEncryptionPass());
+                builder.AddPass(new MemEncryptPass());
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
             {
@@ -89,13 +89,12 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfuscation))
             {
-                builder.AddPass(new ExprObfuscationPass());
+                builder.AddPass(new ExprObfusPass());
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfuscation))
             {
                 builder.AddPass(new SymbolObfusPass(settings.symbolObfusSettings));
             }
-            builder.AddPass(new CleanUpInstructionPass());
             return builder;
         }
     }

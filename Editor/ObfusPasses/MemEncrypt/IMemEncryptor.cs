@@ -14,10 +14,16 @@ namespace Obfuz.ObfusPasses.MemEncrypt
         public Instruction currentInstruction;
     }
 
-    public interface IMemoryEncryptor
+    public interface IMemEncryptor
     {
         void Encrypt(FieldDef field, List<Instruction> outputInstructions, MemoryEncryptionContext ctx);
 
         void Decrypt(FieldDef field, List<Instruction> outputInstructions, MemoryEncryptionContext ctx);
+    }
+
+    public abstract class MemEncryptorBase : IMemEncryptor
+    {
+        public abstract void Encrypt(FieldDef field, List<Instruction> outputInstructions, MemoryEncryptionContext ctx);
+        public abstract void Decrypt(FieldDef field, List<Instruction> outputInstructions, MemoryEncryptionContext ctx);
     }
 }

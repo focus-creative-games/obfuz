@@ -258,6 +258,28 @@ namespace Obfuz.ObfusPasses.CallObfus
             };
         }
 
+
+        private bool IsSpecialNotObfuscatedMethod(TypeDef typeDef, IMethod method)
+        {
+            if (typeDef.IsDelegate || typeDef.IsEnum)
+                return true;
+
+            string methodName = method.Name;
+
+            // doesn't proxy call if the method is a constructor
+            if (methodName == ".ctor")
+            {
+                return true;
+            }
+            // special handle
+            // don't proxy call for List<T>.Enumerator GetEnumerator()
+            if (methodName == "GetEnumerator")
+            {
+                return true;
+            }
+            return false;
+        }
+
         private bool ComputeIsInWhiteList(IMethod calledMethod)
         {
             ITypeDefOrRef declaringType = calledMethod.DeclaringType;
@@ -283,25 +305,14 @@ namespace Obfuz.ObfusPasses.CallObfus
 
             TypeDef typeDef = declaringType.ResolveTypeDef();
 
-            if (typeDef.IsDelegate || typeDef.IsEnum)
+            if (IsSpecialNotObfuscatedMethod(typeDef, calledMethod))
+            {
                 return true;
+            }
 
             string assName = typeDef.Module.Assembly.Name;
             string typeFullName = typeDef.FullName;
             string methodName = calledMethod.Name;
-
-            // doesn't proxy call if the method is a constructor
-            if (methodName == ".ctor")
-            {
-                return true;
-            }
-            // special handle
-            // don't proxy call for List<T>.Enumerator GetEnumerator()
-            if (methodName == "GetEnumerator")
-            {
-                return true;
-            }
-
             foreach (var ass in _whiteListAssemblies)
             {
                 if (!ass.nameMatcher.IsMatch(assName))

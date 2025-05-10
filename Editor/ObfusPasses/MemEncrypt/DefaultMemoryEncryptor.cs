@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.MemEncrypt
 {
-    public class DefaultMemoryEncryptor : MemoryEncryptorBase
+    public class DefaultMemoryEncryptor : MemEncryptorBase
     {
 
         private class ModuleDefaultMemoryEncryptor

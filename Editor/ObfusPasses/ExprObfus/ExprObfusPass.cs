@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.ExprObfus
 {
-    public class ExprObfuscationPass : InstructionObfuscationPassBase
+    public class ExprObfusPass : InstructionObfuscationPassBase
     {
 
 

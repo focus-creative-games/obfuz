@@ -9,10 +9,10 @@ using UnityEngine;
 namespace Obfuz.ObfusPasses.MemEncrypt
 {
 
-    public class MemoryEncryptionPass : InstructionObfuscationPassBase
+    public class MemEncryptPass : InstructionObfuscationPassBase
     {
-        private readonly IEncryptionPolicy _encryptionPolicy = new ConfigEncryptionPolicy();
-        private readonly IMemoryEncryptor _memoryEncryptor = new DefaultMemoryEncryptor();
+        private readonly IEncryptPolicy _encryptionPolicy = new ConfigEncryptionPolicy();
+        private readonly IMemEncryptor _memoryEncryptor = new DefaultMemoryEncryptor();
 
         public override void Start(ObfuscationPassContext ctx)
         {

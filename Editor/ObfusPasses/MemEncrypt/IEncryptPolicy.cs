@@ -7,8 +7,13 @@ using System.Threading.Tasks;
 
 namespace Obfuz.ObfusPasses.MemEncrypt
 {
-    public interface IEncryptionPolicy
+    public interface IEncryptPolicy
     {
         bool NeedEncrypt(FieldDef field);
+    }
+
+    public abstract class EncryptPolicyBase : IEncryptPolicy
+    {
+        public abstract bool NeedEncrypt(FieldDef field);
     }
 }

@@ -21,4 +21,15 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         void Done();
     }
+
+    public abstract class ConstEncryptorBase : IConstEncryptor
+    {
+        public abstract void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateDouble(MethodDef method, bool needCacheValue, double value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateFloat(MethodDef method, bool needCacheValue, float value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions);
+        public abstract void Done();
+    }
 }

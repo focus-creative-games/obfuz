@@ -2,7 +2,7 @@
 
 namespace Obfuz.ObfusPasses.MemEncrypt
 {
-    public class ConfigEncryptionPolicy : EncryptionPolicyBase
+    public class ConfigEncryptionPolicy : EncryptPolicyBase
     {
 
         private bool IsSupportedFieldType(TypeSig type)
