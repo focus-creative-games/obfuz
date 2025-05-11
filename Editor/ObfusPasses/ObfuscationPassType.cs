@@ -7,17 +7,14 @@ namespace Obfuz.ObfusPasses
     {
         None = 0,
 
-        ConstEncryption = 0x1,
-        MemoryEncryption = 0x2,
+        ConstEncrypt = 0x1,
+        FieldEncrypt = 0x2,
 
-        SymbolObfuscation = 0x100,
-        CallProxy = 0x200,
-        ExprObfuscation = 0x400,
-        ControlFlowObfuscation = 0x800,
+        SymbolObfus = 0x100,
+        CallObfus = 0x200,
+        ExprObfus = 0x400,
+        ControlFlowObfus = 0x800,
 
-
-        AllDataEncryption = ConstEncryption | MemoryEncryption,
-        AllCodeObfuscation = SymbolObfuscation | CallProxy | ExprObfuscation | ControlFlowObfuscation,
-        All = AllDataEncryption | AllCodeObfuscation,
+        All = ~0,
     }
 }

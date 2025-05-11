@@ -74,23 +74,23 @@ namespace Obfuz
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
             };
             ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.MemoryEncryption))
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.FieldEncrypt))
             {
                 builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings));
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.CallProxy))
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.CallObfus))
             {
                 builder.AddPass(new CallObfusPass(settings.callObfusSettings));
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncryption))
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))
             {
                 builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings));
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfuscation))
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
             {
                 builder.AddPass(new ExprObfusPass());
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfuscation))
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {
                 builder.AddPass(new SymbolObfusPass(settings.symbolObfusSettings));
             }
