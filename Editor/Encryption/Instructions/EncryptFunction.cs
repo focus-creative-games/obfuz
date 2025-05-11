@@ -3,14 +3,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.Encryption
+namespace Obfuz.Encryption.Instructions
 {
 
-    public class EncryptFunction : EncryptInstructionBase
+    public class EncryptFunction : EncryptionInstructionBase
     {
-        private readonly IEncryptInstruction[] _instructions;
+        private readonly IEncryptionInstruction[] _instructions;
 
-        public EncryptFunction(IEncryptInstruction[] instructions)
+        public EncryptFunction(IEncryptionInstruction[] instructions)
         {
             _instructions = instructions;
         }

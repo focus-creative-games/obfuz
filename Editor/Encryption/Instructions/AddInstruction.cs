@@ -1,6 +1,6 @@
-﻿namespace Obfuz.Encryption
+﻿namespace Obfuz.Encryption.Instructions
 {
-    public class AddInstruction : EncryptInstructionBase
+    public class AddInstruction : EncryptionInstructionBase
     {
         private readonly int _addValue;
         private readonly int _opKeyIndex;

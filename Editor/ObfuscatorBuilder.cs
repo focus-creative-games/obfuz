@@ -15,6 +15,7 @@ namespace Obfuz
     {
         private string _secretKey;
         private int _globalRandomSeed;
+        private string _encryptionVmGenerationSecretKey;
         private List<string> _toObfuscatedAssemblyNames = new List<string>();
         private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();
         private List<string> _assemblySearchDirs = new List<string>();
@@ -32,6 +33,12 @@ namespace Obfuz
         {
             get => _globalRandomSeed;
             set => _globalRandomSeed = value;
+        }
+
+        public string EncryptionVmGenerationSecretKey
+        {
+            get => _encryptionVmGenerationSecretKey;
+            set => _encryptionVmGenerationSecretKey = value;
         }
 
         public List<string> ToObfuscatedAssemblyNames
@@ -75,7 +82,7 @@ namespace Obfuz
                 _notObfuscatedAssemblyNamesReferencingObfuscated,
                 _assemblySearchDirs,
                 _obfuscatedAssemblyOutputDir,
-                _obfuscationPasses, _secretKey, _globalRandomSeed);
+                _obfuscationPasses, _secretKey, _globalRandomSeed, _encryptionVmGenerationSecretKey);
         }
 
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target)
@@ -84,12 +91,17 @@ namespace Obfuz
             {
                 _secretKey = settings.secretKey,
                 _globalRandomSeed = settings.globalRandomSeed,
+                _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
                 _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
             };
             ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))
+            {
+                builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings));
+            }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.FieldEncrypt))
             {
                 builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings));
@@ -97,10 +109,6 @@ namespace Obfuz
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallObfus))
             {
                 builder.AddPass(new CallObfusPass(settings.callObfusSettings));
-            }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))
-            {
-                builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
             {

@@ -1,12 +1,12 @@
 ﻿namespace Obfuz.Encryption
 {
-    public class EncryptOpCode
+    public class EncryptionInstructionWithOpCode
     {
         public readonly ushort code;
 
-        public readonly EncryptFunction function;
+        public readonly IEncryptionInstruction function;
 
-        public EncryptOpCode(ushort code, EncryptFunction function)
+        public EncryptionInstructionWithOpCode(ushort code, IEncryptionInstruction function)
         {
             this.code = code;
             this.function = function;

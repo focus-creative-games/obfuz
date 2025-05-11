@@ -31,6 +31,7 @@ namespace Obfuz
         private readonly Pipeline _pipeline = new Pipeline();
         private readonly byte[] _secretKey;
         private readonly int _globalRandomSeed;
+        private readonly string _encryptionVmSecretKey;
 
         private ObfuscationPassContext _ctx;
 
@@ -38,10 +39,11 @@ namespace Obfuz
             List<string> notObfuscatedAssemblyNamesReferencingObfuscated,
             List<string> assemblySearchDirs,
             string obfuscatedAssemblyOutputDir,
-            List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed)
+            List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed, string encryptionVmSecretKey)
         {
-            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, VirtualMachine.SecretKeyLength);
+            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, EncryptionVirtualMachine.SecretKeyLength);
             _globalRandomSeed = globalRandomSeed;
+            _encryptionVmSecretKey = encryptionVmSecretKey;
 
             _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
             _notObfuscatedAssemblyNamesReferencingObfuscated = notObfuscatedAssemblyNamesReferencingObfuscated;
@@ -63,13 +65,20 @@ namespace Obfuz
             OnPostObfuscation();
         }
 
+        private IEncryptor CreateEncryptionVirtualMachine()
+        {
+            var vmCreator = new EncryptionVirtualMachineCreator(_encryptionVmSecretKey, _secretKey);
+            var vm = vmCreator.CreateVirtualMachine(1);
+            return new EncryptionVirtualMachineSimulator(vm);
+        }
+
         private void OnPreObfuscation()
         {
             LoadAssemblies();
 
 
             var random = new RandomWithKey(_secretKey, _globalRandomSeed);
-            var encryptor = new NullEncryptor(_secretKey);
+            var encryptor = CreateEncryptionVirtualMachine();
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
             var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
             _ctx = new ObfuscationPassContext

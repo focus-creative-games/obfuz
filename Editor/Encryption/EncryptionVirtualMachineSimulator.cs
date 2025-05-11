@@ -12,15 +12,26 @@ namespace Obfuz.Encryption
 
     public class EncryptionVirtualMachineSimulator : EncryptorBase
     {
-        private readonly EncryptOpCode[] _opCodes;
+        private readonly EncryptionInstructionWithOpCode[] _opCodes;
         private readonly int[] _secretKey;
 
-        public EncryptionVirtualMachineSimulator(EncryptOpCode[] opCodes, int[] secretKey)
+        public EncryptionVirtualMachineSimulator(EncryptionVirtualMachine vm)
         {
-            _opCodes = opCodes;
-            // should be power of 2
-            Assert.AreEqual(0, opCodes.Length ^ (opCodes.Length - 1));
-            _secretKey = secretKey;
+            _opCodes = vm.opCodes;
+            _secretKey = vm.secretKey;
+
+            VerifyInstructions();
+        }
+
+        private void VerifyInstructions()
+        {
+            int value = 0x11223344;
+            for (int i = 0; i < _opCodes.Length; i++)
+            {
+                int encryptedValue = _opCodes[i].Encrypt(value, _secretKey, i);
+                int decryptedValue = _opCodes[i].Decrypt(encryptedValue, _secretKey, i);
+                Assert.AreEqual(value, decryptedValue);
+            }
         }
 
         private List<ushort> DecodeOps(int ops)

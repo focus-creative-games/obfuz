@@ -1,6 +1,6 @@
-﻿namespace Obfuz.Encryption
+﻿namespace Obfuz.Encryption.Instructions
 {
-    public class BitRotateInstruction : EncryptInstructionBase
+    public class BitRotateInstruction : EncryptionInstructionBase
     {
         private readonly int _rotateBitNum;
         private readonly int _opKeyIndex;
