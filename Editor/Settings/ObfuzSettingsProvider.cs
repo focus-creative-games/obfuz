@@ -34,6 +34,8 @@ namespace Obfuz.Settings
         private SerializedProperty _extraAssemblySearchDirs;
 
         private SerializedProperty _enabledObfuscationPasses;
+        private SerializedProperty _secretKey;
+        private SerializedProperty _globalRandomSeed;
 
         private SerializedProperty _symbolObfusSettings;
         private SerializedProperty _constEncryptSettings;
@@ -64,7 +66,10 @@ namespace Obfuz.Settings
             _toObfuscatedAssemblyNames = _serializedObject.FindProperty("toObfuscatedAssemblyNames");
             _notObfuscatedAssemblyNamesReferencingObfuscated = _serializedObject.FindProperty("notObfuscatedAssemblyNamesReferencingObfuscated");
             _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
+
             _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
+            _secretKey = _serializedObject.FindProperty("secretKey");
+            _globalRandomSeed = _serializedObject.FindProperty("globalRandomSeed");
 
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
             _constEncryptSettings = _serializedObject.FindProperty("constEncryptSettings");
@@ -85,7 +90,10 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_toObfuscatedAssemblyNames);
             EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
             EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
+
             EditorGUILayout.PropertyField(_enabledObfuscationPasses);
+            EditorGUILayout.PropertyField(_secretKey);
+            EditorGUILayout.PropertyField(_globalRandomSeed);
 
             EditorGUILayout.PropertyField(_symbolObfusSettings);
             EditorGUILayout.PropertyField(_constEncryptSettings);

@@ -13,12 +13,26 @@ namespace Obfuz
 {
     public class ObfuscatorBuilder
     {
+        private string _secretKey;
+        private int _globalRandomSeed;
         private List<string> _toObfuscatedAssemblyNames = new List<string>();
         private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();
         private List<string> _assemblySearchDirs = new List<string>();
 
         private string _obfuscatedAssemblyOutputDir;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
+
+        public string SecretKey
+        {
+            get => _secretKey;
+            set => _secretKey = value;
+        }
+
+        public int GlobalRandomSeed
+        {
+            get => _globalRandomSeed;
+            set => _globalRandomSeed = value;
+        }
 
         public List<string> ToObfuscatedAssemblyNames
         {
@@ -61,13 +75,15 @@ namespace Obfuz
                 _notObfuscatedAssemblyNamesReferencingObfuscated,
                 _assemblySearchDirs,
                 _obfuscatedAssemblyOutputDir,
-                _obfuscationPasses);
+                _obfuscationPasses, _secretKey, _globalRandomSeed);
         }
 
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target)
         {
             var builder = new ObfuscatorBuilder
             {
+                _secretKey = settings.secretKey,
+                _globalRandomSeed = settings.globalRandomSeed,
                 _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),

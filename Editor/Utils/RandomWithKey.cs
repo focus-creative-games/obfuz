@@ -9,7 +9,6 @@ namespace Obfuz.Utils
 {
     public class RandomWithKey : IRandom
     {
-        // LCG 参数（使用经典的数值）
         private const long a = 1664525;
         private const long c = 1013904223;
         private const long m = 4294967296; // 2^32
@@ -45,7 +44,7 @@ namespace Obfuz.Utils
             return (int)((uint)NextInt() % (uint)max);
         }
 
-        private int GetNextKeyByte()
+        private int GetNextSalt()
         {
             if (_nextIndex >= _key.Length)
             {
@@ -57,7 +56,7 @@ namespace Obfuz.Utils
         public int NextInt()
         {
             _seed = (int)((a * _seed + c) % m);
-            return _seed ^ GetNextKeyByte();
+            return _seed ^ GetNextSalt();
         }
 
         public long NextLong()

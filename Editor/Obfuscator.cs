@@ -28,6 +28,8 @@ namespace Obfuz
         private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
 
         private readonly Pipeline _pipeline = new Pipeline();
+        private readonly byte[] _secretKey;
+        private readonly int _globalRandomSeed;
 
         private ObfuscationPassContext _ctx;
 
@@ -35,8 +37,11 @@ namespace Obfuz
             List<string> notObfuscatedAssemblyNamesReferencingObfuscated,
             List<string> assemblySearchDirs,
             string obfuscatedAssemblyOutputDir,
-            List<IObfuscationPass> obfuscationPasses)
+            List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed)
         {
+            _secretKey = KeyGenerator.GenerateKey(rawSecretKey);
+            _globalRandomSeed = globalRandomSeed;
+
             _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
             _notObfuscatedAssemblyNamesReferencingObfuscated = notObfuscatedAssemblyNamesReferencingObfuscated;
             _obfuscatedAssemblyOutputDir = obfuscatedAssemblyOutputDir;
@@ -62,8 +67,8 @@ namespace Obfuz
             LoadAssemblies();
 
 
-            var random = new RandomWithKey(new byte[] { 0x1, 0x2, 0x3, 0x4 }, 0x5);
-            var encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
+            var random = new RandomWithKey(_secretKey, _globalRandomSeed);
+            var encryptor = new DefaultEncryptor(_secretKey);
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
             var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
             _ctx = new ObfuscationPassContext

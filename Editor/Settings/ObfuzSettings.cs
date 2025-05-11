@@ -26,6 +26,12 @@ namespace Obfuz.Settings
         [Tooltip("enable obfuscation pass")]
         public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
 
+        [Tooltip("secret key")]
+        public string secretKey = "Code Philosophy";
+
+        [Tooltip("global random seed")]
+        public int globalRandomSeed = 0;
+
         [Tooltip("symbol obfuscation settings")]
         public SymbolObfusSettings symbolObfusSettings;
 
