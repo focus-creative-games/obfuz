@@ -13,19 +13,21 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
     public class FieldEncryptPass : InstructionObfuscationPassBase
     {
         private readonly List<string> _configFiles;
+        private readonly int _encryptionLevel;
         private IEncryptPolicy _encryptionPolicy;
         private IFieldEncryptor _memoryEncryptor;
 
         public FieldEncryptPass(FieldEncryptSettings settings)
         {
             _configFiles = settings.configFiles.ToList();
+            _encryptionLevel = settings.encryptionLevel;
         }
 
         protected override bool NeedProcessNotObfuscatedAssembly => true;
 
         public override void Start(ObfuscationPassContext ctx)
         {
-            _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor);
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor, _encryptionLevel);
             _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 

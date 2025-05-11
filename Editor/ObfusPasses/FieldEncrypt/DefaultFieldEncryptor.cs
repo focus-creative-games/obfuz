@@ -14,11 +14,13 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
     {
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly int _encryptionLevel;
 
-        public DefaultFieldEncryptor(IRandom random, IEncryptor encryptor)
+        public DefaultFieldEncryptor(IRandom random, IEncryptor encryptor, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
+            _encryptionLevel = encryptionLevel;
         }
 
         private DefaultMetadataImporter GetMetadataImporter(MethodDef method)
@@ -54,6 +56,17 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             }
         }
 
+
+        private int GenerateEncryptionOperations()
+        {
+            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
+        }
+
+        public int GenerateSalt()
+        {
+            return _random.NextInt();
+        }
+
         private FieldEncryptInfo GetFieldEncryptInfo(FieldDef field)
         {
             if (_fieldEncryptInfoCache.TryGetValue(field, out var info))
@@ -61,8 +74,8 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 return info;
             }
 
-            int encryptOps = _random.NextInt();
-            int salt = _random.NextInt();
+            int encryptOps = GenerateEncryptionOperations();
+            int salt = GenerateSalt();
             ElementType fieldType = field.FieldSig.Type.RemovePinnedAndModifiers().ElementType;
             long xorValueForZero = CalcXorValueForZero(fieldType, encryptOps, salt);
 

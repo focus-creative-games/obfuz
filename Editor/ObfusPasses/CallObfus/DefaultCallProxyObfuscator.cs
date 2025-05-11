@@ -10,17 +10,15 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public class DefaultCallProxyObfuscator : ObfuscatorBase
     {
-        private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly CallProxyAllocator _proxyCallAllocator;
 
-        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator)
+        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, int encryptionLevel)
         {
-            _random = random;
             _encryptor = encryptor;
             _constFieldAllocator = constFieldAllocator;
-            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor);
+            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor, encryptionLevel);
         }
 
         public override void Done()

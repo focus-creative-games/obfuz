@@ -35,6 +35,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         private ModuleDef _module;
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly int _encryptionLevel;
 
         class MethodKey : IEquatable<MethodKey>
         {
@@ -92,10 +93,11 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleCallProxyAllocator(IRandom random, IEncryptor encryptor)
+        public ModuleCallProxyAllocator(IRandom random, IEncryptor encryptor, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
+            _encryptionLevel = encryptionLevel;
         }
 
         public void Init(ModuleDef mod)
@@ -156,7 +158,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private int GenerateEncryptOps()
         {
-            return _random.NextInt();
+            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
         }
 
         private DispatchMethodInfo GetDispatchMethod(IMethod method)
@@ -240,16 +242,18 @@ namespace Obfuz.ObfusPasses.CallObfus
     {
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly int _encryptionLevel;
 
-        public CallProxyAllocator(IRandom random, IEncryptor encryptor)
+        public CallProxyAllocator(IRandom random, IEncryptor encryptor, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
+            _encryptionLevel = encryptionLevel;
         }
 
         private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return GroupByModuleEntityManager.Ins.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor));
+            return GroupByModuleEntityManager.Ins.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor, _encryptionLevel));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)

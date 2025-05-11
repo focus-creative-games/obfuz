@@ -15,6 +15,8 @@ namespace Obfuz.EncryptionVM
         private readonly EncryptionInstructionWithOpCode[] _opCodes;
         private readonly int[] _secretKey;
 
+        public override int OpCodeCount => _opCodes.Length;
+
         public VirtualMachineSimulator(VirtualMachine vm, byte[] byteSecretKey)
         {
             _opCodes = vm.opCodes;

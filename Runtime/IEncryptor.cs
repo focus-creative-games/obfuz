@@ -6,6 +6,8 @@ namespace Obfuz
 {
     public interface IEncryptor
     {
+        int OpCodeCount { get; }
+
         void EncryptBlock(byte[] data, int ops, int salt);
         void DecryptBlock(byte[] data, int ops, int salt);
 

@@ -19,7 +19,7 @@ namespace Obfuz
         private int _globalRandomSeed;
         private string _encryptionVmGenerationSecretKey;
         private int _encryptionVmOpCodeCount;
-        public string _encryptionVmCodeFile;
+        private string _encryptionVmCodeFile;
 
         private List<string> _toObfuscatedAssemblyNames = new List<string>();
         private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();

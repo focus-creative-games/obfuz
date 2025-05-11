@@ -16,18 +16,20 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
     public class ConstEncryptPass : BasicBlockObfuscationPassBase
     {
         private readonly List<string> _configFiles;
+        private readonly int _encryptionLevel;
         private IEncryptPolicy _dataObfuscatorPolicy;
         private IConstEncryptor _dataObfuscator;
 
         public ConstEncryptPass(ConstEncryptSettings settings)
         {
             _configFiles = settings.configFiles.ToList();
+            _encryptionLevel = settings.encryptionLevel;
         }
 
         public override void Start(ObfuscationPassContext ctx)
         {
             _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
-            _dataObfuscator = new DefaultConstEncryptor(ctx.random, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator);
+            _dataObfuscator = new DefaultConstEncryptor(ctx.random, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator, _encryptionLevel);
         }
 
         public override void Stop(ObfuscationPassContext ctx)

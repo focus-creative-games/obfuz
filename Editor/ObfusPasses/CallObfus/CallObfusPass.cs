@@ -16,6 +16,7 @@ namespace Obfuz.ObfusPasses.CallObfus
     public class CallObfusPass : BasicBlockObfuscationPassBase
     {
         private readonly List<string> _configFiles;
+        private readonly int _obfuscationLevel;
         private IRandom _random;
         private IEncryptor _encryptor;
         private IObfuscator _dynamicProxyObfuscator;
@@ -24,6 +25,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public CallObfusPass(CallObfusSettings settings)
         {
             _configFiles = settings.configFiles.ToList();
+            _obfuscationLevel = settings.callObfuscationLevel;
         }
 
         public override void Stop(ObfuscationPassContext ctx)
@@ -35,7 +37,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             _random = ctx.random;
             _encryptor = ctx.encryptor;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor, ctx.constFieldAllocator);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor, ctx.constFieldAllocator, _obfuscationLevel);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 

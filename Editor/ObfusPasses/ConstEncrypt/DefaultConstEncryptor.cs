@@ -16,18 +16,20 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly IEncryptor _encryptor;
+        private readonly int _encryptionLevel;
 
-        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator)
+        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
             _rvaDataAllocator = rvaDataAllocator;
             _constFieldAllocator = constFieldAllocator;
+            _encryptionLevel = encryptionLevel;
         }
 
         private int GenerateEncryptionOperations()
         {
-            return _random.NextInt();
+            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
         }
 
         public int GenerateSalt()

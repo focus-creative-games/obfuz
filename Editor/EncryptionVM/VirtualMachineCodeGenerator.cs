@@ -19,27 +19,17 @@ namespace Obfuz.EncryptionVM
         public VirtualMachineCodeGenerator(string vmCodeGenerateSecretKey, int opCodeCount)
         {
             _opCodeCount = opCodeCount;
-            _opCodeBits = GetBitCount(opCodeCount - 1);
+            _opCodeBits = EncryptionUtil.GetBitCount(opCodeCount - 1);
             _vm = new VirtualMachineCreator(vmCodeGenerateSecretKey).CreateVirtualMachine(opCodeCount);
         }
 
         public VirtualMachineCodeGenerator(VirtualMachine vm)
         {
             _opCodeCount = vm.opCodes.Length;
-            _opCodeBits = GetBitCount(_opCodeCount - 1);
+            _opCodeBits = EncryptionUtil.GetBitCount(_opCodeCount - 1);
             _vm = vm;
         }
 
-        private static int GetBitCount(int value)
-        {
-            int count = 0;
-            while (value > 0)
-            {
-                count++;
-                value >>= 1;
-            }
-            return count;
-        }
 
         public bool ValidateMatch(string outputFile)
         {
@@ -143,11 +133,11 @@ namespace Obfuz.EncryptionVM
     public class GeneratedEncryptionVirtualMachine : Obfuz.EncryptorBase
     {");
             lines.Add(@$"
-        private const int OpCodeBits = {_opCodeBits};
+        private const int kOpCodeBits = {_opCodeBits};
 
-        private const int OpCodeCount = {_opCodeCount};
+        private const int kOpCodeCount = {_opCodeCount};
 
-        private const int OpCodeMask = {_opCodeCount - 1};
+        private const int kOpCodeMask = {_opCodeCount - 1};
 ");
             lines.Add(@"
 
@@ -158,13 +148,15 @@ namespace Obfuz.EncryptionVM
             this._secretKey = ConvertToIntKey(secretKey);
         }
 
+        public override int OpCodeCount => kOpCodeCount;
+
         public override int Encrypt(int value, int opts, int salt)
         {
             while (opts > 0)
             {
-                int opCode = opts & OpCodeMask;
+                int opCode = opts & kOpCodeMask;
                 value = ExecuteEncrypt(value, opCode, salt);
-                opts >>= OpCodeBits;
+                opts >>= kOpCodeBits;
             }
             return value;
         }
@@ -173,9 +165,9 @@ namespace Obfuz.EncryptionVM
         {
             while (opts > 0)
             {
-                int opCode = opts & OpCodeMask;
+                int opCode = opts & kOpCodeMask;
                 value = ExecuteDecrypt(value, opCode, salt);
-                opts >>= OpCodeBits;
+                opts >>= kOpCodeBits;
             }
             return value;
         }

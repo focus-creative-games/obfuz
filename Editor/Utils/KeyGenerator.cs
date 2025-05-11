@@ -33,11 +33,7 @@ namespace Obfuz.Utils
 
         public static int[] ConvertToIntKey(byte[] key)
         {
-            Assert.AreEqual(0, key.Length % 4);
-            int align4Length = key.Length / 4;
-            int[] intKey = new int[align4Length];
-            Buffer.BlockCopy(key, 0, intKey, 0, key.Length);
-            return intKey;
+            return EncryptorBase.ConvertToIntKey(key);
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Obfuz
     {
         private readonly byte[] _key;
 
+        public override int OpCodeCount => 256;
+
         public NullEncryptor(byte[] key)
         {
             _key = key;

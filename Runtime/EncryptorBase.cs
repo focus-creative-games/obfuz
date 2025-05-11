@@ -7,6 +7,8 @@ namespace Obfuz
 {
     public abstract class EncryptorBase : IEncryptor
     {
+        public abstract int OpCodeCount { get; }
+
         public static int[] ConvertToIntKey(byte[] key)
         {
             Assert.AreEqual(0, key.Length % 4);
