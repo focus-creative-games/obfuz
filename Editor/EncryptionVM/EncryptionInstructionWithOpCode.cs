@@ -1,4 +1,4 @@
-﻿namespace Obfuz.Encryption
+﻿namespace Obfuz.EncryptionVM
 {
     public class EncryptionInstructionWithOpCode
     {

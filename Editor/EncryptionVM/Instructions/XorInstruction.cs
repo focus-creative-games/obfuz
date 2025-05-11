@@ -1,4 +1,4 @@
-﻿namespace Obfuz.Encryption.Instructions
+﻿namespace Obfuz.EncryptionVM.Instructions
 {
     public class  XorInstruction : EncryptionInstructionBase
     {

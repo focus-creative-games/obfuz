@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.Encryption.Instructions
+namespace Obfuz.EncryptionVM.Instructions
 {
 
     public class EncryptFunction : EncryptionInstructionBase

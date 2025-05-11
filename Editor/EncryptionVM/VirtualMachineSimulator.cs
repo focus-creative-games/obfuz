@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
-namespace Obfuz.Encryption
+namespace Obfuz.EncryptionVM
 {
 
-    public class EncryptionVirtualMachineSimulator : EncryptorBase
+    public class VirtualMachineSimulator : EncryptorBase
     {
         private readonly EncryptionInstructionWithOpCode[] _opCodes;
         private readonly int[] _secretKey;
 
-        public EncryptionVirtualMachineSimulator(EncryptionVirtualMachine vm)
+        public VirtualMachineSimulator(VirtualMachine vm)
         {
             _opCodes = vm.opCodes;
             _secretKey = vm.secretKey;

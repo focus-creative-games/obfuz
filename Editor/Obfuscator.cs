@@ -2,7 +2,7 @@
 using dnlib.Protection;
 using Obfuz.Data;
 using Obfuz.Emit;
-using Obfuz.Encryption;
+using Obfuz.EncryptionVM;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CleanUp;
 using Obfuz.Utils;
@@ -41,7 +41,7 @@ namespace Obfuz
             string obfuscatedAssemblyOutputDir,
             List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed, string encryptionVmSecretKey)
         {
-            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, EncryptionVirtualMachine.SecretKeyLength);
+            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, VirtualMachine.SecretKeyLength);
             _globalRandomSeed = globalRandomSeed;
             _encryptionVmSecretKey = encryptionVmSecretKey;
 
@@ -67,9 +67,9 @@ namespace Obfuz
 
         private IEncryptor CreateEncryptionVirtualMachine()
         {
-            var vmCreator = new EncryptionVirtualMachineCreator(_encryptionVmSecretKey, _secretKey);
+            var vmCreator = new VirtualMachineCreator(_encryptionVmSecretKey, _secretKey);
             var vm = vmCreator.CreateVirtualMachine(1);
-            return new EncryptionVirtualMachineSimulator(vm);
+            return new VirtualMachineSimulator(vm);
         }
 
         private void OnPreObfuscation()
