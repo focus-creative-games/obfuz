@@ -37,7 +37,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         private DefaultModuleMetadataImporter GetModuleMetadataImporter(MethodDef method)
         {
-            return MetadataImporter.Instance.GetDefaultModuleMetadataImporter(method.Module);
+            return GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
         }
 
         public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)

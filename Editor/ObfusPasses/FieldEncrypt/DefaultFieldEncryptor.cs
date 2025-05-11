@@ -23,7 +23,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         private DefaultModuleMetadataImporter GetMetadataImporter(MethodDef method)
         {
-            return MetadataImporter.Instance.GetDefaultModuleMetadataImporter(method.Module);
+            return GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
         }
 
          class FieldEncryptInfo

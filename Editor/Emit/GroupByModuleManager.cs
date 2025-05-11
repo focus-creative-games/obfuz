@@ -7,29 +7,29 @@ using System.Threading.Tasks;
 
 namespace Obfuz.Emit
 {
-    public interface IModuleEmitManager
+    public interface IGroupByModuleEntity
     {
         void Init(ModuleDef mod);
     }
 
-    public abstract class ModuleEmitManagerBase : IModuleEmitManager
+    public abstract class GroupByModuleEntityBase : IGroupByModuleEntity
     {
         public abstract void Init(ModuleDef mod);
     }
 
-    public class EmitManager
+    public class GroupByModuleManager
     {
-        public static EmitManager Ins { get; private set; }
+        public static GroupByModuleManager Ins { get; private set; }
 
 
-        private readonly Dictionary<(ModuleDef, Type), IModuleEmitManager> _moduleEmitManagers = new System.Collections.Generic.Dictionary<(ModuleDef, Type), IModuleEmitManager>();
+        private readonly Dictionary<(ModuleDef, Type), IGroupByModuleEntity> _moduleEmitManagers = new Dictionary<(ModuleDef, Type), IGroupByModuleEntity>();
 
         public static void Reset()
         {
-            Ins = new EmitManager();
+            Ins = new GroupByModuleManager();
         }
 
-        public T GetEmitManager<T>(ModuleDef mod, Func<T> creator = null) where T : IModuleEmitManager
+        public T GetEntity<T>(ModuleDef mod, Func<T> creator = null) where T : IGroupByModuleEntity
         {
             var key = (mod, typeof(T));
             if (_moduleEmitManagers.TryGetValue(key, out var emitManager))
@@ -53,7 +53,7 @@ namespace Obfuz.Emit
             }
         }
 
-        public List<T> GetEmitManagers<T>()  where T: IModuleEmitManager
+        public List<T> GetEntities<T>()  where T: IGroupByModuleEntity
         {
             var managers = new List<T>();
             foreach (var kv in _moduleEmitManagers)
@@ -64,6 +64,11 @@ namespace Obfuz.Emit
                 }
             }
             return managers;
+        }
+
+        public DefaultModuleMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module)
+        {
+            return GetEntity<DefaultModuleMetadataImporter>(module);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Obfuz.Data
         }
     }
 
-    public class ModuleRvaDataAllocator : ModuleEmitManagerBase
+    public class ModuleRvaDataAllocator : GroupByModuleEntityBase
     {
         // randomized
         const int maxRvaDataSize = 0x1000;
@@ -234,7 +234,7 @@ namespace Obfuz.Data
             cctorMethod.Body = body;
             var ins = body.Instructions;
 
-            DefaultModuleMetadataImporter importer = MetadataImporter.Instance.GetDefaultModuleMetadataImporter(mod);
+            DefaultModuleMetadataImporter importer = GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(mod);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -296,7 +296,7 @@ namespace Obfuz.Data
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            return EmitManager.Ins.GetEmitManager<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
+            return GroupByModuleManager.Ins.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)
@@ -331,7 +331,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var allocator in EmitManager.Ins.GetEmitManagers<ModuleRvaDataAllocator>())
+            foreach (var allocator in GroupByModuleManager.Ins.GetEntities<ModuleRvaDataAllocator>())
             {
                 allocator.Done();
             }

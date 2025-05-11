@@ -12,7 +12,7 @@ using UnityEngine.Assertions;
 
 namespace Obfuz.Data
 {
-    public class ModuleConstFieldAllocator : IModuleEmitManager
+    public class ModuleConstFieldAllocator : IGroupByModuleEntity
     {
         private ModuleDef _module;
         private readonly IRandom _random;
@@ -138,7 +138,7 @@ namespace Obfuz.Data
 
         private DefaultModuleMetadataImporter GetModuleMetadataImporter()
         {
-            return MetadataImporter.Instance.GetDefaultModuleMetadataImporter(_module);
+            return GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(_module);
         }
 
         private void CreateCCtorOfRvaTypeDef(TypeDef type)
@@ -268,7 +268,7 @@ namespace Obfuz.Data
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return EmitManager.Ins.GetEmitManager<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
+            return GroupByModuleManager.Ins.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)
@@ -303,7 +303,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var moduleAllocator in EmitManager.Ins.GetEmitManagers<ModuleConstFieldAllocator>())
+            foreach (var moduleAllocator in GroupByModuleManager.Ins.GetEntities<ModuleConstFieldAllocator>())
             {
                 moduleAllocator.Done();
             }
