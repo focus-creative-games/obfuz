@@ -249,7 +249,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return GroupByModuleManager.Ins.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor));
+            return GroupByModuleEntityManager.Ins.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
@@ -260,7 +260,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public void Done()
         {
-            foreach (var allocator in GroupByModuleManager.Ins.GetEntities<ModuleCallProxyAllocator>())
+            foreach (var allocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleCallProxyAllocator>())
             {
                 allocator.Done();
             }

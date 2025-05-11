@@ -17,16 +17,16 @@ namespace Obfuz.Emit
         public abstract void Init(ModuleDef mod);
     }
 
-    public class GroupByModuleManager
+    public class GroupByModuleEntityManager
     {
-        public static GroupByModuleManager Ins { get; private set; }
+        public static GroupByModuleEntityManager Ins { get; private set; }
 
 
         private readonly Dictionary<(ModuleDef, Type), IGroupByModuleEntity> _moduleEmitManagers = new Dictionary<(ModuleDef, Type), IGroupByModuleEntity>();
 
         public static void Reset()
         {
-            Ins = new GroupByModuleManager();
+            Ins = new GroupByModuleEntityManager();
         }
 
         public T GetEntity<T>(ModuleDef mod, Func<T> creator = null) where T : IGroupByModuleEntity
@@ -66,9 +66,9 @@ namespace Obfuz.Emit
             return managers;
         }
 
-        public DefaultModuleMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module)
+        public DefaultMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module)
         {
-            return GetEntity<DefaultModuleMetadataImporter>(module);
+            return GetEntity<DefaultMetadataImporter>(module);
         }
     }
 }

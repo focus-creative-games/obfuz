@@ -4,9 +4,9 @@ using UnityEngine.Assertions;
 
 namespace Obfuz.Emit
 {
-    public class DefaultModuleMetadataImporter : GroupByModuleEntityBase
+    public class DefaultMetadataImporter : GroupByModuleEntityBase
     {
-        public DefaultModuleMetadataImporter() { }
+        public DefaultMetadataImporter() { }
 
         public override void Init(ModuleDef mod)
         {

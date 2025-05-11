@@ -33,7 +33,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
             MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod));
             ProxyCallMethodData proxyCallMethodData = _proxyCallAllocator.Allocate(callerMethod.Module, calledMethod, callVir);
-            DefaultModuleMetadataImporter importer = GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(callerMethod.Module);
+            DefaultMetadataImporter importer = GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(callerMethod.Module);
 
             if (needCacheCall)
             {

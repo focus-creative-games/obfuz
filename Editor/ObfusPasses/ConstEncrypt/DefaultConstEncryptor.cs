@@ -35,9 +35,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             return _random.NextInt();
         }
 
-        private DefaultModuleMetadataImporter GetModuleMetadataImporter(MethodDef method)
+        private DefaultMetadataImporter GetModuleMetadataImporter(MethodDef method)
         {
-            return GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
+            return GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
         }
 
         public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)
@@ -54,7 +54,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             int encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -76,7 +76,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             long encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -98,7 +98,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             float encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -120,7 +120,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             double encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -143,7 +143,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             Assert.IsTrue(encryptedValue.Length % 4 == 0);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             // should use value.Length, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
@@ -169,7 +169,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             Assert.IsTrue(encryptedValue.Length % 4 == 0);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter(method);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             // should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.

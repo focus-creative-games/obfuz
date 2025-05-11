@@ -41,7 +41,7 @@ namespace Obfuz
             _notObfuscatedAssemblyNamesReferencingObfuscated = notObfuscatedAssemblyNamesReferencingObfuscated;
             _obfuscatedAssemblyOutputDir = obfuscatedAssemblyOutputDir;
 
-            GroupByModuleManager.Reset();
+            GroupByModuleEntityManager.Reset();
             _assemblyCache = new AssemblyCache(new PathAssemblyResolver(assemblySearchDirs.ToArray()));
             foreach (var pass in obfuscationPasses)
             {

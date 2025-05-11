@@ -234,7 +234,7 @@ namespace Obfuz.Data
             cctorMethod.Body = body;
             var ins = body.Instructions;
 
-            DefaultModuleMetadataImporter importer = GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(mod);
+            DefaultMetadataImporter importer = GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(mod);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -296,7 +296,7 @@ namespace Obfuz.Data
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            return GroupByModuleManager.Ins.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
+            return GroupByModuleEntityManager.Ins.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)
@@ -331,7 +331,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var allocator in GroupByModuleManager.Ins.GetEntities<ModuleRvaDataAllocator>())
+            foreach (var allocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleRvaDataAllocator>())
             {
                 allocator.Done();
             }

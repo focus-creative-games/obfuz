@@ -136,9 +136,9 @@ namespace Obfuz.Data
             return _random.NextInt();
         }
 
-        private DefaultModuleMetadataImporter GetModuleMetadataImporter()
+        private DefaultMetadataImporter GetModuleMetadataImporter()
         {
-            return GroupByModuleManager.Ins.GetDefaultModuleMetadataImporter(_module);
+            return GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(_module);
         }
 
         private void CreateCCtorOfRvaTypeDef(TypeDef type)
@@ -157,7 +157,7 @@ namespace Obfuz.Data
             //Assert.IsNotNull(method);
 
 
-            DefaultModuleMetadataImporter importer = GetModuleMetadataImporter();
+            DefaultMetadataImporter importer = GetModuleMetadataImporter();
             // TODO. obfuscate init codes
             foreach (var field in type.Fields)
             {
@@ -268,7 +268,7 @@ namespace Obfuz.Data
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return GroupByModuleManager.Ins.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
+            return GroupByModuleEntityManager.Ins.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)
@@ -303,7 +303,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var moduleAllocator in GroupByModuleManager.Ins.GetEntities<ModuleConstFieldAllocator>())
+            foreach (var moduleAllocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleConstFieldAllocator>())
             {
                 moduleAllocator.Done();
             }
