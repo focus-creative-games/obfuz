@@ -2,6 +2,7 @@
 using dnlib.Protection;
 using Obfuz.Data;
 using Obfuz.Emit;
+using Obfuz.Encryption;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CleanUp;
 using Obfuz.Utils;
@@ -39,7 +40,7 @@ namespace Obfuz
             string obfuscatedAssemblyOutputDir,
             List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed)
         {
-            _secretKey = KeyGenerator.GenerateKey(rawSecretKey);
+            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, VirtualMachine.SecretKeyLength);
             _globalRandomSeed = globalRandomSeed;
 
             _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;

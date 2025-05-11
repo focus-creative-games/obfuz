@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -9,14 +10,12 @@ namespace Obfuz.Utils
 {
     public static class KeyGenerator
     {
-        public const int KeyLength = 1024;
-
-        public static byte[] GenerateKey(string initialString)
+        public static byte[] GenerateKey(string initialString, int keyLength)
         {
             byte[] initialBytes = Encoding.UTF8.GetBytes(initialString);
             using var sha512 = SHA512.Create();
             byte[] hash = sha512.ComputeHash(initialBytes);
-            byte[] key = new byte[KeyLength];
+            byte[] key = new byte[keyLength];
             int bytesCopied = 0;
             while (bytesCopied < key.Length)
             {
@@ -30,6 +29,15 @@ namespace Obfuz.Utils
                 bytesCopied += bytesToCopy;
             }
             return key;
+        }
+
+        public static int[] ConvertToIntKey(byte[] key)
+        {
+            Assert.AreEqual(0, key.Length % 4);
+            int align4Length = key.Length / 4;
+            int[] intKey = new int[align4Length];
+            Buffer.BlockCopy(key, 0, intKey, 0, key.Length);
+            return intKey;
         }
     }
 }

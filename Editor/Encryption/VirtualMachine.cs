@@ -4,12 +4,12 @@
     {
         public const int SecretKeyLength = 1024;
 
-        public readonly int vmSeed;
+        public readonly byte[] secretKey;
         public readonly EncryptOpCode[] opCodes;
 
-        public VirtualMachine(int vmSeed, EncryptOpCode[] opCodes)
+        public VirtualMachine(byte[] secretKey, EncryptOpCode[] opCodes)
         {
-            this.vmSeed = vmSeed;
+            this.secretKey = secretKey;
             this.opCodes = opCodes;
         }
     }

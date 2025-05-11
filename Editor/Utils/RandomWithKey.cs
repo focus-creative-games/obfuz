@@ -21,17 +21,8 @@ namespace Obfuz.Utils
 
         public RandomWithKey(byte[] key, int seed)
         {
-            _key = ConvertToIntKey(key);
+            _key = KeyGenerator.ConvertToIntKey(key);
             _seed = seed;
-        }
-
-        private static int[] ConvertToIntKey(byte[] key)
-        {
-            // ignore last bytes if not aligned to 4
-            int align4Length = key.Length / 4;
-            int[] intKey = new int[align4Length];
-            Buffer.BlockCopy(key, 0, intKey, 0, align4Length * 4);
-            return intKey;
         }
 
         public int NextInt(int min, int max)

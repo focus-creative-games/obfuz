@@ -2,6 +2,6 @@
 {
     public interface IVirtualMachineCreator
     {
-        VirtualMachine CreateVirtualMachine(int opCodeCount, int vmSeed);
+        VirtualMachine CreateVirtualMachine(int opCodeCount);
     }
 }
