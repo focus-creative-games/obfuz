@@ -36,6 +36,8 @@ namespace Obfuz.Settings
         private SerializedProperty _enabledObfuscationPasses;
         private SerializedProperty _secretKey;
         private SerializedProperty _globalRandomSeed;
+        
+        private SerializedProperty _encryptionVMSettings;
 
         private SerializedProperty _symbolObfusSettings;
         private SerializedProperty _constEncryptSettings;
@@ -71,6 +73,8 @@ namespace Obfuz.Settings
             _secretKey = _serializedObject.FindProperty("secretKey");
             _globalRandomSeed = _serializedObject.FindProperty("globalRandomSeed");
 
+            _encryptionVMSettings = _serializedObject.FindProperty("encryptionVMSettings");
+
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
             _constEncryptSettings = _serializedObject.FindProperty("constEncryptSettings");
             _fieldEncryptSettings = _serializedObject.FindProperty("fieldEncryptSettings");
@@ -94,6 +98,8 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_enabledObfuscationPasses);
             EditorGUILayout.PropertyField(_secretKey);
             EditorGUILayout.PropertyField(_globalRandomSeed);
+
+            EditorGUILayout.PropertyField(_encryptionVMSettings);
 
             EditorGUILayout.PropertyField(_symbolObfusSettings);
             EditorGUILayout.PropertyField(_constEncryptSettings);

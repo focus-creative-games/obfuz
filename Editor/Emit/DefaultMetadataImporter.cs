@@ -26,9 +26,9 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_initializeArray);
 
             Type encryptionService = typeof(EncryptionService);
-            _encryptBlock = mod.Import(encryptionService.GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+            _encryptBlock = mod.Import(encryptionService.GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptBlock);
-            _decryptBlock = mod.Import(encryptionService.GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(long), typeof(int) }));
+            _decryptBlock = mod.Import(encryptionService.GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptBlock);
             _encryptInt = mod.Import(encryptionService.GetMethod("Encrypt", new[] { typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptInt);

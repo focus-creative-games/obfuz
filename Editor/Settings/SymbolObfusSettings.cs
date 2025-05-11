@@ -15,7 +15,7 @@ namespace Obfuz.Settings
         [Tooltip("prefix for obfuscated name to avoid name confliction with original name")]
         public string obfuscatedNamePrefix = "$";
 
-        [Tooltip("obfuscate same namespace to same name")]
+        [Tooltip("obfuscate same namespace to one name")]
         public bool useConsistentNamespaceObfuscation = true;
 
         [Tooltip("path of mapping.xml")]

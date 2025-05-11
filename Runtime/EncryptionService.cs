@@ -8,14 +8,14 @@ namespace Obfuz
 {
     public static class EncryptionService
     {
-        private static readonly IEncryptor _encryptor = new DefaultEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
+        private static readonly IEncryptor _encryptor = new NullEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
 
-        public static void EncryptBlock(byte[] data, long ops, int salt)
+        public static void EncryptBlock(byte[] data, int ops, int salt)
         {
             _encryptor.EncryptBlock(data, ops, salt);
         }
 
-        public static void DecryptBlock(byte[] data, long ops, int salt)
+        public static void DecryptBlock(byte[] data, int ops, int salt)
         {
             _encryptor.DecryptBlock(data, ops, salt);
         }

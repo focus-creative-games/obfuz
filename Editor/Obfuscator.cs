@@ -68,7 +68,7 @@ namespace Obfuz
 
 
             var random = new RandomWithKey(_secretKey, _globalRandomSeed);
-            var encryptor = new DefaultEncryptor(_secretKey);
+            var encryptor = new NullEncryptor(_secretKey);
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
             var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
             _ctx = new ObfuscationPassContext

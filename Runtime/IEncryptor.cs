@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Obfuz
 {
     public interface IEncryptor
     {
-        void EncryptBlock(byte[] data, long ops, int salt);
-        void DecryptBlock(byte[] data, long ops, int salt);
+        void EncryptBlock(byte[] data, int ops, int salt);
+        void DecryptBlock(byte[] data, int ops, int salt);
 
         int Encrypt(int value, int opts, int salt);
         int Decrypt(int value, int opts, int salt);

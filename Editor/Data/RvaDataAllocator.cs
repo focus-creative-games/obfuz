@@ -38,7 +38,7 @@ namespace Obfuz.Data
         {
             public FieldDef holderDataField;
             public FieldDef runtimeValueField;
-            public long encryptionOps;
+            public int encryptionOps;
             public uint size;
             public List<byte> bytes;
             public int salt;
@@ -134,7 +134,7 @@ namespace Obfuz.Data
                 runtimeValueField = runtimeValueField,
                 size = dataHolderType.ClassSize,
                 bytes = new List<byte>((int)dataHolderType.ClassSize),
-                encryptionOps = _random.NextLong(),
+                encryptionOps = _random.NextInt(),
                 salt = _random.NextInt(),
             };
             _rvaFields.Add(newRvaField);
@@ -252,7 +252,7 @@ namespace Obfuz.Data
                 ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArrayMethod));
 
                 // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
-                ins.Add(Instruction.Create(OpCodes.Ldc_I8, field.encryptionOps));
+                ins.Add(Instruction.CreateLdcI4(field.encryptionOps));
                 ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.salt));
                 ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptBlock));
 

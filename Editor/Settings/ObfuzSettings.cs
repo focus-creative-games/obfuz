@@ -32,6 +32,9 @@ namespace Obfuz.Settings
         [Tooltip("global random seed")]
         public int globalRandomSeed = 0;
 
+        [Tooltip("encryption virtual machine settings")]
+        public EncryptionVMSettings encryptionVMSettings;
+
         [Tooltip("symbol obfuscation settings")]
         public SymbolObfusSettings symbolObfusSettings;
 
