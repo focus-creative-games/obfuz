@@ -1,4 +1,5 @@
-﻿using Obfuz.ObfusPasses;
+﻿using Obfuz.EncryptionVM;
+using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CallObfus;
 using Obfuz.ObfusPasses.ConstEncrypt;
 using Obfuz.ObfusPasses.ExprObfus;
@@ -6,6 +7,7 @@ using Obfuz.ObfusPasses.FieldEncrypt;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Settings;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 
@@ -17,6 +19,8 @@ namespace Obfuz
         private int _globalRandomSeed;
         private string _encryptionVmGenerationSecretKey;
         private int _encryptionVmOpCodeCount;
+        public string _encryptionVmCodeFile;
+
         private List<string> _toObfuscatedAssemblyNames = new List<string>();
         private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();
         private List<string> _assemblySearchDirs = new List<string>();
@@ -46,6 +50,12 @@ namespace Obfuz
         {
             get => _encryptionVmOpCodeCount;
             set => _encryptionVmOpCodeCount = value;
+        }
+
+        public string EncryptionVmCodeFile
+        {
+            get => _encryptionVmCodeFile;
+            set => _encryptionVmCodeFile = value;
         }
 
         public List<string> ToObfuscatedAssemblyNames
@@ -98,6 +108,7 @@ namespace Obfuz
                 _globalRandomSeed = settings.globalRandomSeed,
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
+                _encryptionVmCodeFile = settings.encryptionVMSettings.CodeOutputPath,
                 _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),

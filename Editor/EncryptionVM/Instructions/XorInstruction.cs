@@ -1,4 +1,6 @@
-﻿namespace Obfuz.EncryptionVM.Instructions
+﻿using System.Collections.Generic;
+
+namespace Obfuz.EncryptionVM.Instructions
 {
     public class  XorInstruction : EncryptionInstructionBase
     {
@@ -19,6 +21,16 @@
         public override int Decrypt(int value, int[] secretKey, int salt)
         {
             return value ^ secretKey[_opKeyIndex] ^ salt ^ _xorValue;
+        }
+
+        public override void GenerateEncryptCode(List<string> lines, string indent)
+        {
+            lines.Add(indent + $"value ^= _secretKey[{_opKeyIndex}] ^ salt ^ {_xorValue};");
+        }
+
+        public override void GenerateDecryptCode(List<string> lines, string indent)
+        {
+            lines.Add(indent + $"value ^= _secretKey[{_opKeyIndex}] ^ salt ^ {_xorValue};");
         }
     }
 }

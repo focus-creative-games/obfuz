@@ -1,3 +1,5 @@
+using Obfuz.EncryptionVM;
+using Obfuz.Settings;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,8 +8,16 @@ namespace Obfuz.Unity
     public static class ObfuzMenu
     {
 
-        [MenuItem("Obfuz/Settings...", priority = 61)]
+        [MenuItem("Obfuz/Settings...", priority = 1)]
         public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/Obfuz");
+
+        [MenuItem("Obfuz/GenerateVM", priority = 62)]
+        public static void GenerateEncryptionVM()
+        {
+            EncryptionVMSettings settings = ObfuzSettings.Instance.encryptionVMSettings;
+            var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecretKey, settings.encryptionOpCodeCount);
+            generator.Generate(settings.CodeOutputPath);
+        }
 
         [MenuItem("Obfuz/Documents/Quick Start")]
         public static void OpenQuickStart() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/beginner/quickstart");

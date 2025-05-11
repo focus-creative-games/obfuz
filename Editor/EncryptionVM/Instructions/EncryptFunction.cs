@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +32,16 @@ namespace Obfuz.EncryptionVM.Instructions
                 value = _instructions[i].Decrypt(value, secretKey, salt);
             }
             return value;
+        }
+
+        public override void GenerateEncryptCode(List<string> lines, string indent)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void GenerateDecryptCode(List<string> lines, string indent)
+        {
+            throw new NotImplementedException();
         }
     }
 }

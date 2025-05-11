@@ -10,6 +10,10 @@ namespace Obfuz.Utils
 {
     public static class FileUtil
     {
+        public static void CreateParentDir(string path)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+        }
 
         public static void RemoveDir(string dir, bool log = false)
         {

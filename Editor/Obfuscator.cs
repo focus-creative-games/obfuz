@@ -33,6 +33,7 @@ namespace Obfuz
         private readonly int _globalRandomSeed;
         private readonly string _encryptionVmGenerationSecretKey;
         private readonly int _encryptionVmOpCodeCount;
+        private readonly string _encryptionVmCodeFile;
 
         private ObfuscationPassContext _ctx;
 
@@ -42,6 +43,7 @@ namespace Obfuz
             _globalRandomSeed = builder.GlobalRandomSeed;
             _encryptionVmGenerationSecretKey = builder.EncryptionVmGenerationSecretKey;
             _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
+            _encryptionVmCodeFile = builder.EncryptionVmCodeFile;
 
             _toObfuscatedAssemblyNames = builder.ToObfuscatedAssemblyNames;
             _notObfuscatedAssemblyNamesReferencingObfuscated = builder.NotObfuscatedAssemblyNamesReferencingObfuscated;
@@ -67,7 +69,55 @@ namespace Obfuz
         {
             var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecretKey);
             var vm = vmCreator.CreateVirtualMachine(_encryptionVmOpCodeCount);
-            return new VirtualMachineSimulator(vm, _secretKey);
+            var vmGenerator = new VirtualMachineCodeGenerator(vm);
+
+            if (!File.Exists(_encryptionVmCodeFile))
+            {
+                throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not exists! Please run `Obfuz/GenerateVm` to generate it!");
+            }
+            if (!vmGenerator.ValidateMatch(_encryptionVmCodeFile))
+            {
+                throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
+            }
+            var vms = new VirtualMachineSimulator(vm, _secretKey);
+
+            var generatedVmTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine"))
+                .Where(type => type != null)
+                .ToList();
+            if (generatedVmTypes.Count == 0)
+            {
+                throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine not found in any assembly! Please run `Obfuz/GenerateVm` to generate it!");
+            }
+            if (generatedVmTypes.Count > 1)
+            {
+                throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine found in multiple assemblies! Please retain only one!");
+            }
+
+            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _secretKey } );
+
+            int testValue = 11223344;
+            for (int i = 0; i < vm.opCodes.Length; i++)
+            {
+                int encryptedValueOfVms = vms.Encrypt(testValue, i, i);
+                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, i, i);
+                if (decryptedValueOfVms != testValue)
+                {
+                    throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfVms}");
+                }
+                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, i, i);
+                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, i, i);
+                if (encryptedValueOfGvm != encryptedValueOfVms)
+                {
+                    throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testValue} encryptedValue VirtualMachineSimulator:{encryptedValueOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
+                }
+                if (decryptedValueOfGvm != testValue)
+                {
+                    throw new Exception($"GeneratedEncryptionVirtualMachine decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfGvm}");
+                }
+            }
+
+            return vms;
         }
 
         private void OnPreObfuscation()

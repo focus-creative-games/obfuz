@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,5 +19,7 @@ namespace Obfuz.Settings
 
         [Tooltip("encryption virtual machine source code output dir")]
         public string codeOutputDir = "Assets/Obfuz";
+
+        public string CodeOutputPath { get => Path.Combine(codeOutputDir, "GeneratedEncryptionVirtualMachine.cs"); }
     }
 }
