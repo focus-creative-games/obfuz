@@ -4,12 +4,13 @@
     {
         public const int SecretKeyLength = 1024;
 
-        public readonly int[] secretKey;
+        public readonly int version;
+        public readonly string codeGenerationSecretKey;
         public readonly EncryptionInstructionWithOpCode[] opCodes;
 
-        public VirtualMachine(int[] secretKey, EncryptionInstructionWithOpCode[] opCodes)
+        public VirtualMachine(int version, string codeGenerationSecretKey, EncryptionInstructionWithOpCode[] opCodes)
         {
-            this.secretKey = secretKey;
+            this.codeGenerationSecretKey = codeGenerationSecretKey;
             this.opCodes = opCodes;
         }
     }

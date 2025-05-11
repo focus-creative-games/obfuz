@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Obfuz.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -14,10 +15,10 @@ namespace Obfuz.EncryptionVM
         private readonly EncryptionInstructionWithOpCode[] _opCodes;
         private readonly int[] _secretKey;
 
-        public VirtualMachineSimulator(VirtualMachine vm)
+        public VirtualMachineSimulator(VirtualMachine vm, byte[] byteSecretKey)
         {
             _opCodes = vm.opCodes;
-            _secretKey = vm.secretKey;
+            _secretKey = KeyGenerator.ConvertToIntKey(byteSecretKey);
 
             VerifyInstructions();
         }

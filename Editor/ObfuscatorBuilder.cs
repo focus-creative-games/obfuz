@@ -16,6 +16,7 @@ namespace Obfuz
         private string _secretKey;
         private int _globalRandomSeed;
         private string _encryptionVmGenerationSecretKey;
+        private int _encryptionVmOpCodeCount;
         private List<string> _toObfuscatedAssemblyNames = new List<string>();
         private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();
         private List<string> _assemblySearchDirs = new List<string>();
@@ -39,6 +40,12 @@ namespace Obfuz
         {
             get => _encryptionVmGenerationSecretKey;
             set => _encryptionVmGenerationSecretKey = value;
+        }
+
+        public int EncryptionVmOpCodeCount
+        {
+            get => _encryptionVmOpCodeCount;
+            set => _encryptionVmOpCodeCount = value;
         }
 
         public List<string> ToObfuscatedAssemblyNames
@@ -65,6 +72,8 @@ namespace Obfuz
             set => _obfuscatedAssemblyOutputDir = value;
         }
 
+        public List<IObfuscationPass> ObfuscationPasses { get => _obfuscationPasses; set => _obfuscationPasses = value; }
+
         public void InsertTopPriorityAssemblySearchDirs(List<string> assemblySearchDirs)
         {
             _assemblySearchDirs.InsertRange(0, assemblySearchDirs);
@@ -78,11 +87,7 @@ namespace Obfuz
 
         public Obfuscator Build()
         {
-            return new Obfuscator(_toObfuscatedAssemblyNames,
-                _notObfuscatedAssemblyNamesReferencingObfuscated,
-                _assemblySearchDirs,
-                _obfuscatedAssemblyOutputDir,
-                _obfuscationPasses, _secretKey, _globalRandomSeed, _encryptionVmGenerationSecretKey);
+            return new Obfuscator(this);
         }
 
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target)
@@ -92,6 +97,7 @@ namespace Obfuz
                 _secretKey = settings.secretKey,
                 _globalRandomSeed = settings.globalRandomSeed,
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
+                _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
                 _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),

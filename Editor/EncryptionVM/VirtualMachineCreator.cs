@@ -6,15 +6,18 @@ namespace Obfuz.EncryptionVM
 {
     public class VirtualMachineCreator
     {
-        private readonly int[] _vmGenerationSecretKey;
+        private readonly string _vmGenerationSecretKey;
         private readonly IRandom _random;
 
         public const int CodeGenerationSecretKeyLength = 1024;
 
-        public VirtualMachineCreator(string vmGenerationSecretKey, byte[] encryptionSecretKey)
+        public const int VirtualMachineVersion = 1;
+
+        public VirtualMachineCreator(string vmGenerationSecretKey)
         {
-            _vmGenerationSecretKey = KeyGenerator.ConvertToIntKey(KeyGenerator.GenerateKey(vmGenerationSecretKey, CodeGenerationSecretKeyLength));
-            _random = new RandomWithKey(encryptionSecretKey, 0);
+            _vmGenerationSecretKey = vmGenerationSecretKey;
+            byte[] byteGenerationSecretKey = KeyGenerator.GenerateKey(vmGenerationSecretKey, CodeGenerationSecretKeyLength);
+            _random = new RandomWithKey(byteGenerationSecretKey, 0);
         }
 
         private IEncryptionInstruction CreateRandomInstruction(int intSecretKeyLength)
@@ -35,20 +38,25 @@ namespace Obfuz.EncryptionVM
         private EncryptionInstructionWithOpCode CreateEncryptOpCode(ushort code)
         {
             IEncryptionInstruction inst = CreateRandomInstruction(VirtualMachine.SecretKeyLength / sizeof(int));
-            Assert.AreEqual(1234, inst.Decrypt(inst.Encrypt(1234, _vmGenerationSecretKey, 0x12345678), _vmGenerationSecretKey, 0x12345678));
             return new EncryptionInstructionWithOpCode(code, inst);
         }
 
         public VirtualMachine CreateVirtualMachine(int opCodeCount)
         {
-            Assert.IsTrue(opCodeCount > 0);
-            Assert.AreEqual(0, opCodeCount & (opCodeCount - 1));
+            if (opCodeCount < 64)
+            {
+                throw new System.Exception("OpCode count should be >= 64");
+            }
+            if ((opCodeCount & (opCodeCount - 1)) != 0)
+            {
+                throw new System.Exception("OpCode count should be power of 2");
+            }
             var opCodes = new EncryptionInstructionWithOpCode[opCodeCount];
             for (int i = 0; i < opCodes.Length; i++)
             {
                 opCodes[i] = CreateEncryptOpCode((ushort)i);
             }
-            return new VirtualMachine(_vmGenerationSecretKey, opCodes);
+            return new VirtualMachine(VirtualMachineVersion, _vmGenerationSecretKey, opCodes);
         }
     }
 }

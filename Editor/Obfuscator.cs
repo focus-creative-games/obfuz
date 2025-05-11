@@ -31,27 +31,25 @@ namespace Obfuz
         private readonly Pipeline _pipeline = new Pipeline();
         private readonly byte[] _secretKey;
         private readonly int _globalRandomSeed;
-        private readonly string _encryptionVmSecretKey;
+        private readonly string _encryptionVmGenerationSecretKey;
+        private readonly int _encryptionVmOpCodeCount;
 
         private ObfuscationPassContext _ctx;
 
-        public Obfuscator(List<string> toObfuscatedAssemblyNames,
-            List<string> notObfuscatedAssemblyNamesReferencingObfuscated,
-            List<string> assemblySearchDirs,
-            string obfuscatedAssemblyOutputDir,
-            List<IObfuscationPass> obfuscationPasses, string rawSecretKey, int globalRandomSeed, string encryptionVmSecretKey)
+        public Obfuscator(ObfuscatorBuilder builder)
         {
-            _secretKey = KeyGenerator.GenerateKey(rawSecretKey, VirtualMachine.SecretKeyLength);
-            _globalRandomSeed = globalRandomSeed;
-            _encryptionVmSecretKey = encryptionVmSecretKey;
+            _secretKey = KeyGenerator.GenerateKey(builder.SecretKey, VirtualMachine.SecretKeyLength);
+            _globalRandomSeed = builder.GlobalRandomSeed;
+            _encryptionVmGenerationSecretKey = builder.EncryptionVmGenerationSecretKey;
+            _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
 
-            _toObfuscatedAssemblyNames = toObfuscatedAssemblyNames;
-            _notObfuscatedAssemblyNamesReferencingObfuscated = notObfuscatedAssemblyNamesReferencingObfuscated;
-            _obfuscatedAssemblyOutputDir = obfuscatedAssemblyOutputDir;
+            _toObfuscatedAssemblyNames = builder.ToObfuscatedAssemblyNames;
+            _notObfuscatedAssemblyNamesReferencingObfuscated = builder.NotObfuscatedAssemblyNamesReferencingObfuscated;
+            _obfuscatedAssemblyOutputDir = builder.ObfuscatedAssemblyOutputDir;
 
             GroupByModuleEntityManager.Reset();
-            _assemblyCache = new AssemblyCache(new PathAssemblyResolver(assemblySearchDirs.ToArray()));
-            foreach (var pass in obfuscationPasses)
+            _assemblyCache = new AssemblyCache(new PathAssemblyResolver(builder.AssemblySearchDirs.ToArray()));
+            foreach (var pass in builder.ObfuscationPasses)
             {
                 _pipeline.AddPass(pass);
             }
@@ -67,9 +65,9 @@ namespace Obfuz
 
         private IEncryptor CreateEncryptionVirtualMachine()
         {
-            var vmCreator = new VirtualMachineCreator(_encryptionVmSecretKey, _secretKey);
-            var vm = vmCreator.CreateVirtualMachine(1);
-            return new VirtualMachineSimulator(vm);
+            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecretKey);
+            var vm = vmCreator.CreateVirtualMachine(_encryptionVmOpCodeCount);
+            return new VirtualMachineSimulator(vm, _secretKey);
         }
 
         private void OnPreObfuscation()
