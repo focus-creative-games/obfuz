@@ -444,12 +444,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             {
                 foreach (TypeDef type in mod.GetTypes())
                 {
-                    _virtualMethodGroupCalculator.CalculateType(type);
                     foreach (MethodDef method in type.Methods)
                     {
                         if (method.IsVirtual)
                         {
-                            virtualMethods.Add(method);
                             continue;
                         }
                         if (_renamePolicy.NeedRename(method))
@@ -459,6 +457,22 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     }
                 }
             }
+
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
+            {
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    _virtualMethodGroupCalculator.CalculateType(type);
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        if (method.IsVirtual)
+                        {
+                            virtualMethods.Add(method);
+                        }
+                    }
+                }
+            }
+
             Debug.Log("Rename not virtual methods end");
 
 
