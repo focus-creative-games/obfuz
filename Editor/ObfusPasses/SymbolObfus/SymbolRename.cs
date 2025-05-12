@@ -186,11 +186,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             RenameEvents();
         }
 
-        private List<AssemblyReferenceInfo> GetReferenceMeAssemblies(ModuleDef mod)
-        {
-            return _obfuzAssemblies.Find(ass => ass.module == mod).referenceMeAssemblies;
-        }
-
         class RefTypeDefMetas
         {
             public readonly List<TypeRef> typeRefs = new List<TypeRef>();
@@ -200,10 +195,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private void BuildRefTypeDefMetasMap(Dictionary<TypeDef, RefTypeDefMetas> refTypeDefMetasMap)
         {
-            foreach (ModuleDef mod in _toObfuscatedModules)
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
                 foreach (TypeRef typeRef in mod.GetTypeRefs())
                 {
+                    if (typeRef.DefinitionAssembly.IsCorLib())
+                    {
+                        continue;
+                    }
                     TypeDef typeDef = typeRef.ResolveThrow();
                     if (!refTypeDefMetasMap.TryGetValue(typeDef, out var typeDefMetas))
                     {

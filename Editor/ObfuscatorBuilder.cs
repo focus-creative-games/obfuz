@@ -107,6 +107,24 @@ namespace Obfuz
             return new Obfuscator(this);
         }
 
+        public static List<string> BuildUnityAssemblySearchPaths()
+        {
+            string applicationContentsPath = EditorApplication.applicationContentsPath;
+            return new List<string>
+                {
+#if UNITY_2021_1_OR_NEWER
+                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
+                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api"),
+#elif UNITY_2020 || UNITY_2019
+                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api/Facades"),
+                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api"),
+#else
+#error "Unsupported Unity version"
+#endif
+                    Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
+                };
+        }
+
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target)
         {
             var builder = new ObfuscatorBuilder
@@ -119,7 +137,7 @@ namespace Obfuz
                 _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
                 _toObfuscatedAssemblyNames = settings.assemblySettings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
-                _assemblySearchDirs = settings.assemblySettings.extraAssemblySearchDirs.ToList(),
+                _assemblySearchDirs = BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.extraAssemblySearchDirs).ToList(),
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
             };
             ObfuscationPassType obfuscationPasses = settings.obfuscationPassSettings.enabledPasses;
