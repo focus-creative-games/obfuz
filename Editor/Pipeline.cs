@@ -7,6 +7,8 @@ namespace Obfuz
     {
         private readonly List<IObfuscationPass> _passes = new List<IObfuscationPass>();
 
+        public bool Empty => _passes.Count == 0;
+
         public Pipeline AddPass(IObfuscationPass pass)
         {
             _passes.Add(pass);

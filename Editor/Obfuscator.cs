@@ -5,6 +5,7 @@ using Obfuz.Emit;
 using Obfuz.EncryptionVM;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CleanUp;
+using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,13 @@ namespace Obfuz
     public class Obfuscator
     {
         private readonly string _obfuscatedAssemblyOutputDir;
-        private readonly AssemblyCache _assemblyCache;
 
         private readonly List<string> _toObfuscatedAssemblyNames;
         private readonly List<string> _notObfuscatedAssemblyNamesReferencingObfuscated;
-        private readonly List<ModuleDef> _toObfuscatedModules = new List<ModuleDef>();
-        private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
+        private readonly List<string> _assemblySearchDirs;
 
-        private readonly Pipeline _pipeline = new Pipeline();
+        private readonly Pipeline _pipeline1 = new Pipeline();
+        private readonly Pipeline _pipeline2 = new Pipeline();
         private readonly byte[] _secret;
         private readonly int _randomSeed;
         private readonly string _encryptionVmGenerationSecret;
@@ -49,14 +49,20 @@ namespace Obfuz
             _toObfuscatedAssemblyNames = builder.ToObfuscatedAssemblyNames;
             _notObfuscatedAssemblyNamesReferencingObfuscated = builder.NotObfuscatedAssemblyNamesReferencingObfuscated;
             _obfuscatedAssemblyOutputDir = builder.ObfuscatedAssemblyOutputDir;
+            _assemblySearchDirs = builder.AssemblySearchDirs;
 
-            GroupByModuleEntityManager.Reset();
-            _assemblyCache = new AssemblyCache(new PathAssemblyResolver(builder.AssemblySearchDirs.ToArray()));
             foreach (var pass in builder.ObfuscationPasses)
             {
-                _pipeline.AddPass(pass);
+                if (pass is SymbolObfusPass symbolObfusPass)
+                {
+                    _pipeline2.AddPass(pass);
+                }
+                else
+                {
+                    _pipeline1.AddPass(pass);
+                }
             }
-            _pipeline.AddPass(new CleanUpInstructionPass());
+            _pipeline1.AddPass(new CleanUpInstructionPass());
         }
 
         public static void SaveKey(byte[] secret, string secretOutputPath)
@@ -68,9 +74,21 @@ namespace Obfuz
 
         public void Run()
         {
-            OnPreObfuscation();
-            DoObfuscation();
-            OnPostObfuscation();
+            FileUtil.RecreateDir(_obfuscatedAssemblyOutputDir);
+            RunPipeline(_pipeline1);
+            _assemblySearchDirs.Insert(0, _obfuscatedAssemblyOutputDir);
+            RunPipeline(_pipeline2);
+        }
+
+        private void RunPipeline(Pipeline pipeline)
+        {
+            if (pipeline.Empty)
+            {
+                return;
+            }
+            OnPreObfuscation(pipeline);
+            DoObfuscation(pipeline);
+            OnPostObfuscation(pipeline);
         }
 
         private IEncryptor CreateEncryptionVirtualMachine()
@@ -128,9 +146,16 @@ namespace Obfuz
             return vms;
         }
 
-        private void OnPreObfuscation()
+        private void OnPreObfuscation(Pipeline pipeline)
         {
-            LoadAssemblies();
+
+
+            AssemblyCache assemblyCache = new AssemblyCache(new PathAssemblyResolver(_assemblySearchDirs.ToArray()));
+            List<ModuleDef> toObfuscatedModules = new List<ModuleDef>();
+            List<ModuleDef> obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
+
+            GroupByModuleEntityManager.Reset();
+            LoadAssemblies(assemblyCache, toObfuscatedModules, obfuscatedAndNotObfuscatedModules);
 
 
             var random = new RandomWithKey(_secret, _randomSeed);
@@ -139,9 +164,9 @@ namespace Obfuz
             var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
             _ctx = new ObfuscationPassContext
             {
-                assemblyCache = _assemblyCache,
-                toObfuscatedModules = _toObfuscatedModules,
-                obfuscatedAndNotObfuscatedModules = _obfuscatedAndNotObfuscatedModules,
+                assemblyCache = assemblyCache,
+                toObfuscatedModules = toObfuscatedModules,
+                obfuscatedAndNotObfuscatedModules = obfuscatedAndNotObfuscatedModules,
                 toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
                 notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
                 obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
@@ -151,14 +176,14 @@ namespace Obfuz
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,
             };
-            _pipeline.Start(_ctx);
+            pipeline.Start(_ctx);
         }
 
-        private void LoadAssemblies()
+        private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> toObfuscatedModules, List<ModuleDef> obfuscatedAndNotObfuscatedModules)
         {
             foreach (string assName in _toObfuscatedAssemblyNames.Concat(_notObfuscatedAssemblyNamesReferencingObfuscated))
             {
-                ModuleDefMD mod = _assemblyCache.TryLoadModule(assName);
+                ModuleDefMD mod = assemblyCache.TryLoadModule(assName);
                 if (mod == null)
                 {
                     Debug.Log($"assembly: {assName} not found! ignore.");
@@ -166,30 +191,33 @@ namespace Obfuz
                 }
                 if (_toObfuscatedAssemblyNames.Contains(assName))
                 {
-                    _toObfuscatedModules.Add(mod);
+                    toObfuscatedModules.Add(mod);
                 }
-                _obfuscatedAndNotObfuscatedModules.Add(mod);
+                obfuscatedAndNotObfuscatedModules.Add(mod);
             }
         }
 
-        private void DoObfuscation()
+        private void WriteAssemblies()
         {
-            FileUtil.RecreateDir(_obfuscatedAssemblyOutputDir);
-
-            _pipeline.Run(_ctx);
-        }
-
-        private void OnPostObfuscation()
-        {
-            _pipeline.Stop(_ctx);
-
-            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
+            foreach (ModuleDef mod in _ctx.obfuscatedAndNotObfuscatedModules)
             {
                 string assNameWithExt = mod.Name;
                 string outputFile = $"{_obfuscatedAssemblyOutputDir}/{assNameWithExt}";
                 mod.Write(outputFile);
                 Debug.Log($"save module. name:{mod.Assembly.Name} output:{outputFile}");
             }
+        }
+
+        private void DoObfuscation(Pipeline pipeline)
+        {
+
+            pipeline.Run(_ctx);
+        }
+
+        private void OnPostObfuscation(Pipeline pipeline)
+        {
+            pipeline.Stop(_ctx);
+            WriteAssemblies();
         }
     }
 }
