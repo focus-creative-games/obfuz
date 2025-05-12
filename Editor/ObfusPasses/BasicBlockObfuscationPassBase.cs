@@ -12,19 +12,24 @@ namespace Obfuz.ObfusPasses
 
         public override void Process(ObfuscationPassContext ctx)
         {
+            NotObfuscatedMethodWhiteList whiteList = ctx.whiteList;
             foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {
+                if (whiteList.IsInWhiteList(mod))
+                {
+                    continue;
+                }
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
-                    if (type.Name.StartsWith("$Obfuz$"))
+                    if (whiteList.IsInWhiteList(type))
                     {
                         continue;
                     }
                     // ToArray to avoid modify list exception
                     foreach (MethodDef method in type.Methods.ToArray())
                     {
-                        if (!method.HasBody || method.Name.StartsWith("$Obfuz$") || !NeedObfuscateMethod(method))
+                        if (!method.HasBody || ctx.whiteList.IsInWhiteList(method) || !NeedObfuscateMethod(method))
                         {
                             continue;
                         }

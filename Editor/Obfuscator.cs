@@ -175,6 +175,7 @@ namespace Obfuz
                 encryptor = encryptor,
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,
+                whiteList = new NotObfuscatedMethodWhiteList(),
             };
             pipeline.Start(_ctx);
         }

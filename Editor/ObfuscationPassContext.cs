@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Data;
+using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Utils;
 using System;
@@ -27,5 +28,6 @@ namespace Obfuz
         public IEncryptor encryptor;
         public ConstFieldAllocator constFieldAllocator;
         public RvaDataAllocator rvaDataAllocator;
+        public NotObfuscatedMethodWhiteList whiteList;
     }
 }

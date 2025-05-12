@@ -38,7 +38,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private List<ModuleDef> _toObfuscatedModules;
         private List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
-        private List<AssemblyReferenceInfo> _obfuzAssemblies;
         private HashSet<ModuleDef> _toObfuscatedModuleSet;
         private IObfuscationPolicy _renamePolicy;
         private INameMaker _nameMaker;
@@ -70,42 +69,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _toObfuscatedModules = ctx.toObfuscatedModules;
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
             _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
-            _obfuzAssemblies = BuildAssemblyReferenceInfos(ctx);
             var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
-        }
-
-        private static List<AssemblyReferenceInfo> BuildAssemblyReferenceInfos(ObfuscationPassContext ctx)
-        {
-            var obfuzAssemblies = new List<AssemblyReferenceInfo>();
-            foreach (ModuleDef mod in ctx.obfuscatedAndNotObfuscatedModules)
-            {
-                var obfuzAsm = new AssemblyReferenceInfo
-                {
-                    name = mod.Assembly.Name,
-                    needObfuscated = ctx.toObfuscatedModules.Contains(mod),
-                    module = mod,
-                    referenceMeAssemblies = new List<AssemblyReferenceInfo>(),
-                };
-                obfuzAsm.referenceMeAssemblies.Add(obfuzAsm);
-                obfuzAssemblies.Add(obfuzAsm);
-            }
-
-            var assByName = obfuzAssemblies.ToDictionary(x => x.name);
-            foreach (var ass in obfuzAssemblies)
-            {
-                foreach (var refAss in ass.module.GetAssemblyRefs())
-                {
-                    string refAssName = refAss.Name;
-                    if (assByName.TryGetValue(refAssName, out var refAssembly))
-                    {
-                        //UnityEngine.Debug.Log($"assembly:{ass.name} reference to {refAssName}");
-                        refAssembly.referenceMeAssemblies.Add(ass);
-                    }
-                }
-            }
-            return obfuzAssemblies;
         }
 
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
