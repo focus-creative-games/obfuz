@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Obfuz.ObfusPasses
+namespace Obfuz
 {
     public class NotObfuscatedMethodWhiteList
     {
@@ -36,6 +36,10 @@ namespace Obfuz.ObfusPasses
             //    continue;
             //}
             if (IsInWhiteList(type.Module))
+            {
+                return true;
+            }
+            if (type.FullName == "Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine")
             {
                 return true;
             }
