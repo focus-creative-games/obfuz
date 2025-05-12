@@ -238,7 +238,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private void LoadXmlMappingFile(string mappingFile)
         {
-            if (!File.Exists(mappingFile))
+            if (string.IsNullOrEmpty(mappingFile) || !File.Exists(mappingFile))
             {
                 return;
             }
@@ -389,6 +389,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public void WriteXmlMappingFile()
         {
+            if (string.IsNullOrEmpty(_mappingFile))
+            {
+                return;
+            }
             var doc = new XmlDocument();
             var root = doc.CreateElement("mapping");
             doc.AppendChild(root);
