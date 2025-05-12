@@ -29,15 +29,9 @@ namespace Obfuz.Settings
 
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
-        private SerializedProperty _toObfuscatedAssemblyNames;
-        private SerializedProperty _notObfuscatedAssemblyNamesReferencingObfuscated;
-        private SerializedProperty _extraAssemblySearchDirs;
-
-        private SerializedProperty _enabledObfuscationPasses;
-        private SerializedProperty _secret;
-        private SerializedProperty _secretOutputPath;
-        private SerializedProperty _randomSeed;
-        
+        private SerializedProperty _assemblySettings;
+        private SerializedProperty _obfuscationPassSettings;
+        private SerializedProperty _secretSettings;
         private SerializedProperty _encryptionVMSettings;
 
         private SerializedProperty _symbolObfusSettings;
@@ -66,14 +60,9 @@ namespace Obfuz.Settings
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
-            _toObfuscatedAssemblyNames = _serializedObject.FindProperty("toObfuscatedAssemblyNames");
-            _notObfuscatedAssemblyNamesReferencingObfuscated = _serializedObject.FindProperty("notObfuscatedAssemblyNamesReferencingObfuscated");
-            _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
-
-            _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
-            _secret = _serializedObject.FindProperty("secret");
-            _secretOutputPath = _serializedObject.FindProperty("secretOutputPath");
-            _randomSeed = _serializedObject.FindProperty("randomSeed");
+            _assemblySettings = _serializedObject.FindProperty("assemblySettings");
+            _obfuscationPassSettings = _serializedObject.FindProperty("obfuscationPassSettings");
+            _secretSettings = _serializedObject.FindProperty("secretSettings");
 
             _encryptionVMSettings = _serializedObject.FindProperty("encryptionVMSettings");
 
@@ -93,14 +82,9 @@ namespace Obfuz.Settings
             EditorGUI.BeginChangeCheck();
 
             EditorGUILayout.PropertyField(_enable);
-            EditorGUILayout.PropertyField(_toObfuscatedAssemblyNames);
-            EditorGUILayout.PropertyField(_notObfuscatedAssemblyNamesReferencingObfuscated);
-            EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
-
-            EditorGUILayout.PropertyField(_enabledObfuscationPasses);
-            EditorGUILayout.PropertyField(_secret);
-            EditorGUILayout.PropertyField(_secretOutputPath);
-            EditorGUILayout.PropertyField(_randomSeed);
+            EditorGUILayout.PropertyField(_assemblySettings);
+            EditorGUILayout.PropertyField(_obfuscationPassSettings);
+            EditorGUILayout.PropertyField(_secretSettings);
 
             EditorGUILayout.PropertyField(_encryptionVMSettings);
 

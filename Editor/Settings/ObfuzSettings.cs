@@ -1,4 +1,3 @@
-using Obfuz.ObfusPasses;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
@@ -9,31 +8,20 @@ using UnityEngine;
 namespace Obfuz.Settings
 {
 
+
     public class ObfuzSettings : ScriptableObject
     {
         [Tooltip("enable Obfuz")]
         public bool enable = true;
 
-        [Tooltip("name of assemblies to obfuscated")]
-        public string[] toObfuscatedAssemblyNames;
+        [Tooltip("assembly settings")]
+        public AssemblySettings assemblySettings;
 
-        [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
-        public string[] notObfuscatedAssemblyNamesReferencingObfuscated;
+        [Tooltip("obfuscation pass settings")]
+        public ObfuscationPassSettings obfuscationPassSettings;
 
-        [Tooltip("extra assembly search dirs")]
-        public string[] extraAssemblySearchDirs;
-
-        [Tooltip("enable obfuscation pass")]
-        public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
-
-        [Tooltip("secret key")]
-        public string secret = "Code Philosophy";
-
-        [Tooltip("secret key save path")]
-        public string secretOutputPath = $"Assets/Obfuz/secret.bytes";
-
-        [Tooltip("global random seed")]
-        public int randomSeed = 0;
+        [Tooltip("secret settings")]
+        public SecretSettings secretSettings;
 
         [Tooltip("encryption virtual machine settings")]
         public EncryptionVMSettings encryptionVMSettings;

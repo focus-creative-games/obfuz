@@ -111,18 +111,18 @@ namespace Obfuz
         {
             var builder = new ObfuscatorBuilder
             {
-                _secret = settings.secret,
-                _secretOutputPath = settings.secretOutputPath,
-                _randomSeed = settings.randomSeed,
+                _secret = settings.secretSettings.secret,
+                _secretOutputPath = settings.secretSettings.secretOutputPath,
+                _randomSeed = settings.secretSettings.randomSeed,
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecret,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
                 _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
-                _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
-                _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
-                _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),
+                _toObfuscatedAssemblyNames = settings.assemblySettings.toObfuscatedAssemblyNames.ToList(),
+                _notObfuscatedAssemblyNamesReferencingObfuscated = settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
+                _assemblySearchDirs = settings.assemblySettings.extraAssemblySearchDirs.ToList(),
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
             };
-            ObfuscationPassType obfuscationPasses = settings.enabledObfuscationPasses;
+            ObfuscationPassType obfuscationPasses = settings.obfuscationPassSettings.enabledPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))
             {
                 builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings));

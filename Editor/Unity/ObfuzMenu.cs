@@ -26,7 +26,7 @@ namespace Obfuz.Unity
         [MenuItem("Obfuz/SaveSecretFile", priority = 63)]
         public static void SaveSecretFile()
         {
-            ObfuzSettings settings = ObfuzSettings.Instance;
+            SecretSettings settings = ObfuzSettings.Instance.secretSettings;
 
             var secretBytes = KeyGenerator.GenerateKey(settings.secret, VirtualMachine.SecretKeyLength);
             Obfuscator.SaveKey(secretBytes, settings.secretOutputPath);

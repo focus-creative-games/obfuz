@@ -115,7 +115,7 @@ namespace Obfuz.Unity
                 Obfuscator obfuz = obfuscatorBuilder.Build();
                 obfuz.Run();
 
-                foreach (var dllName in settings.toObfuscatedAssemblyNames)
+                foreach (var dllName in settings.assemblySettings.toObfuscatedAssemblyNames)
                 {
                     string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
                     string dst = $"{scriptAssembliesPath}/{dllName}.dll";
