@@ -1,7 +1,11 @@
 using Obfuz.EncryptionVM;
 using Obfuz.Settings;
+using Obfuz.Utils;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.ObjectChangeEventStream;
+using FileUtil = Obfuz.Utils.FileUtil;
 
 namespace Obfuz.Unity
 {
@@ -15,8 +19,17 @@ namespace Obfuz.Unity
         public static void GenerateEncryptionVM()
         {
             EncryptionVMSettings settings = ObfuzSettings.Instance.encryptionVMSettings;
-            var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecretKey, settings.encryptionOpCodeCount);
-            generator.Generate(settings.CodeOutputPath);
+            var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecret, settings.encryptionOpCodeCount);
+            generator.Generate(settings.codeOutputPath);
+        }
+
+        [MenuItem("Obfuz/SaveSecretFile", priority = 63)]
+        public static void SaveSecretFile()
+        {
+            ObfuzSettings settings = ObfuzSettings.Instance;
+
+            var secretBytes = KeyGenerator.GenerateKey(settings.secret, VirtualMachine.SecretKeyLength);
+            Obfuscator.SaveKey(secretBytes, settings.secretOutputPath);
         }
 
         [MenuItem("Obfuz/Documents/Quick Start")]

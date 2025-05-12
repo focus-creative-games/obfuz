@@ -8,7 +8,13 @@ namespace Obfuz
 {
     public static class EncryptionService
     {
-        private static readonly IEncryptor _encryptor = new NullEncryptor(new byte[] { 0x1A, 0x2B, 0x3C, 0x4D });
+        private static IEncryptor _encryptor;
+
+        public static IEncryptor Encryptor
+        {
+            get => _encryptor;
+            set { _encryptor = value; }
+        }
 
         public static void EncryptBlock(byte[] data, int ops, int salt)
         {

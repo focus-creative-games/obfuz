@@ -15,8 +15,9 @@ namespace Obfuz
 {
     public class ObfuscatorBuilder
     {
-        private string _secretKey;
-        private int _globalRandomSeed;
+        private string _secret;
+        private string _secretOutputPath;
+        private int _randomSeed;
         private string _encryptionVmGenerationSecretKey;
         private int _encryptionVmOpCodeCount;
         private string _encryptionVmCodeFile;
@@ -28,16 +29,22 @@ namespace Obfuz
         private string _obfuscatedAssemblyOutputDir;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
 
-        public string SecretKey
+        public string Secret
         {
-            get => _secretKey;
-            set => _secretKey = value;
+            get => _secret;
+            set => _secret = value;
         }
 
-        public int GlobalRandomSeed
+        public string SecretOutputPath
         {
-            get => _globalRandomSeed;
-            set => _globalRandomSeed = value;
+            get => _secretOutputPath;
+            set => _secretOutputPath = value;
+        }
+
+        public int RandomSeed
+        {
+            get => _randomSeed;
+            set => _randomSeed = value;
         }
 
         public string EncryptionVmGenerationSecretKey
@@ -104,11 +111,12 @@ namespace Obfuz
         {
             var builder = new ObfuscatorBuilder
             {
-                _secretKey = settings.secretKey,
-                _globalRandomSeed = settings.globalRandomSeed,
-                _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
+                _secret = settings.secret,
+                _secretOutputPath = settings.secretOutputPath,
+                _randomSeed = settings.randomSeed,
+                _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecret,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
-                _encryptionVmCodeFile = settings.encryptionVMSettings.CodeOutputPath,
+                _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
                 _toObfuscatedAssemblyNames = settings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = settings.extraAssemblySearchDirs.ToList(),

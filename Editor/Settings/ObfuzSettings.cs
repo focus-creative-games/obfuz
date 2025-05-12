@@ -27,10 +27,13 @@ namespace Obfuz.Settings
         public ObfuscationPassType enabledObfuscationPasses = ObfuscationPassType.All;
 
         [Tooltip("secret key")]
-        public string secretKey = "Code Philosophy";
+        public string secret = "Code Philosophy";
+
+        [Tooltip("secret key save path")]
+        public string secretOutputPath = $"Assets/Obfuz/secret.bytes";
 
         [Tooltip("global random seed")]
-        public int globalRandomSeed = 0;
+        public int randomSeed = 0;
 
         [Tooltip("encryption virtual machine settings")]
         public EncryptionVMSettings encryptionVMSettings;

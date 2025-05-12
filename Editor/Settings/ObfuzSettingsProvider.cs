@@ -34,8 +34,9 @@ namespace Obfuz.Settings
         private SerializedProperty _extraAssemblySearchDirs;
 
         private SerializedProperty _enabledObfuscationPasses;
-        private SerializedProperty _secretKey;
-        private SerializedProperty _globalRandomSeed;
+        private SerializedProperty _secret;
+        private SerializedProperty _secretOutputPath;
+        private SerializedProperty _randomSeed;
         
         private SerializedProperty _encryptionVMSettings;
 
@@ -70,8 +71,9 @@ namespace Obfuz.Settings
             _extraAssemblySearchDirs = _serializedObject.FindProperty("extraAssemblySearchDirs");
 
             _enabledObfuscationPasses = _serializedObject.FindProperty("enabledObfuscationPasses");
-            _secretKey = _serializedObject.FindProperty("secretKey");
-            _globalRandomSeed = _serializedObject.FindProperty("globalRandomSeed");
+            _secret = _serializedObject.FindProperty("secret");
+            _secretOutputPath = _serializedObject.FindProperty("secretOutputPath");
+            _randomSeed = _serializedObject.FindProperty("randomSeed");
 
             _encryptionVMSettings = _serializedObject.FindProperty("encryptionVMSettings");
 
@@ -96,8 +98,9 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_extraAssemblySearchDirs);
 
             EditorGUILayout.PropertyField(_enabledObfuscationPasses);
-            EditorGUILayout.PropertyField(_secretKey);
-            EditorGUILayout.PropertyField(_globalRandomSeed);
+            EditorGUILayout.PropertyField(_secret);
+            EditorGUILayout.PropertyField(_secretOutputPath);
+            EditorGUILayout.PropertyField(_randomSeed);
 
             EditorGUILayout.PropertyField(_encryptionVMSettings);
 

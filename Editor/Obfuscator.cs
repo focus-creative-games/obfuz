@@ -29,9 +29,9 @@ namespace Obfuz
         private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
 
         private readonly Pipeline _pipeline = new Pipeline();
-        private readonly byte[] _secretKey;
-        private readonly int _globalRandomSeed;
-        private readonly string _encryptionVmGenerationSecretKey;
+        private readonly byte[] _secret;
+        private readonly int _randomSeed;
+        private readonly string _encryptionVmGenerationSecret;
         private readonly int _encryptionVmOpCodeCount;
         private readonly string _encryptionVmCodeFile;
 
@@ -39,9 +39,10 @@ namespace Obfuz
 
         public Obfuscator(ObfuscatorBuilder builder)
         {
-            _secretKey = KeyGenerator.GenerateKey(builder.SecretKey, VirtualMachine.SecretKeyLength);
-            _globalRandomSeed = builder.GlobalRandomSeed;
-            _encryptionVmGenerationSecretKey = builder.EncryptionVmGenerationSecretKey;
+            _secret = KeyGenerator.GenerateKey(builder.Secret, VirtualMachine.SecretKeyLength);
+            SaveKey(_secret, builder.SecretOutputPath);
+            _randomSeed = builder.RandomSeed;
+            _encryptionVmGenerationSecret = builder.EncryptionVmGenerationSecretKey;
             _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
             _encryptionVmCodeFile = builder.EncryptionVmCodeFile;
 
@@ -58,6 +59,13 @@ namespace Obfuz
             _pipeline.AddPass(new CleanUpInstructionPass());
         }
 
+        public static void SaveKey(byte[] secret, string secretOutputPath)
+        {
+            FileUtil.CreateParentDir(secretOutputPath);
+            File.WriteAllBytes(secretOutputPath, secret);
+            Debug.Log($"Save secret key to {secretOutputPath}, secret length:{secret.Length}");
+        }
+
         public void Run()
         {
             OnPreObfuscation();
@@ -67,7 +75,7 @@ namespace Obfuz
 
         private IEncryptor CreateEncryptionVirtualMachine()
         {
-            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecretKey);
+            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecret);
             var vm = vmCreator.CreateVirtualMachine(_encryptionVmOpCodeCount);
             var vmGenerator = new VirtualMachineCodeGenerator(vm);
 
@@ -79,7 +87,7 @@ namespace Obfuz
             {
                 throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
             }
-            var vms = new VirtualMachineSimulator(vm, _secretKey);
+            var vms = new VirtualMachineSimulator(vm, _secret);
 
             var generatedVmTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine"))
@@ -94,7 +102,7 @@ namespace Obfuz
                 throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine found in multiple assemblies! Please retain only one!");
             }
 
-            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _secretKey } );
+            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _secret } );
 
             int testValue = 11223344;
             for (int i = 0; i < vm.opCodes.Length; i++)
@@ -125,7 +133,7 @@ namespace Obfuz
             LoadAssemblies();
 
 
-            var random = new RandomWithKey(_secretKey, _globalRandomSeed);
+            var random = new RandomWithKey(_secret, _randomSeed);
             var encryptor = CreateEncryptionVirtualMachine();
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
             var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
