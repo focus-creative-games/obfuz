@@ -42,6 +42,8 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             return _dataObfuscatorPolicy.NeedObfuscateMethod(method);
         }
 
+        private readonly HashSet<FieldDef> _encryptedRvaFields = new HashSet<FieldDef>();
+
         protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, BasicBlock block, int instructionIndex, IList<Instruction> globalInstructions,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
         {
@@ -127,25 +129,34 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case OperandType.InlineMethod:
                 {
-                    if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
-                    {
-                        Instruction prevInst = globalInstructions[instructionIndex - 1];
-                        if (prevInst.OpCode.Code == Code.Ldtoken)
-                        {
-                            IField rvaField = (IField)prevInst.Operand;
-                            FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
-                            byte[] data = ravFieldDef.InitialValue;
-                            if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, currentInLoop, data))
-                            {
-                                // remove prev ldtoken instruction
-                                Assert.AreEqual(Code.Ldtoken, totalFinalInstructions[totalFinalInstructions.Count - 1].OpCode.Code);
-                                totalFinalInstructions.RemoveAt(totalFinalInstructions.Count - 1);
-                                bool needCache = currentInLoop ? constCachePolicy.cacheStringInLoop : constCachePolicy.cacheStringNotInLoop;
-                                _dataObfuscator.ObfuscateBytes(method, needCache, data, outputInstructions);
-                                return true;
-                            }
-                        }
-                    }
+                    //if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
+                    //{
+                    //    Instruction prevInst = globalInstructions[instructionIndex - 1];
+                    //    if (prevInst.OpCode.Code == Code.Ldtoken)
+                    //    {
+                    //        IField rvaField = (IField)prevInst.Operand;
+                    //        FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
+                    //        byte[] data = ravFieldDef.InitialValue;
+                    //        if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, currentInLoop, data))
+                    //        {
+                    //            if (_encryptedRvaFields.Add(ravFieldDef))
+                    //            {
+                                    
+                    //            }
+
+                    //            // remove prev ldtoken instruction
+                    //            Assert.AreEqual(Code.Ldtoken, totalFinalInstructions.Last().OpCode.Code);
+                    //            //totalFinalInstructions.RemoveAt(totalFinalInstructions.Count - 1);
+                    //            // dup arr argument for decryption operation
+                    //            totalFinalInstructions.Insert(totalFinalInstructions.Count - 1, Instruction.Create(OpCodes.Dup));
+                    //            totalFinalInstructions.Add(inst.Clone());
+                    //            //bool needCache = currentInLoop ? constCachePolicy.cacheStringInLoop : constCachePolicy.cacheStringNotInLoop;
+                    //            bool needCache = false;
+                    //            _dataObfuscator.ObfuscateBytes(method, needCache, data, outputInstructions);
+                    //            return true;
+                    //        }
+                    //    }
+                    //}
                     return false;
                 }
                 default: return false;
