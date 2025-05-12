@@ -309,7 +309,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private void BuildRefFieldMetasMap(Dictionary<FieldDef, RefFieldMetas> refFieldMetasMap)
         {
-            foreach (ModuleDef mod in _toObfuscatedModules)
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
                 foreach (MemberRef memberRef in mod.GetMemberRefs())
                 {
@@ -401,7 +401,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
-            foreach (ModuleDef mod in _toObfuscatedModules)
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
                 foreach (MemberRef memberRef in mod.GetMemberRefs())
                 {
