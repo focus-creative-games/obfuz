@@ -70,7 +70,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
             _toObfuscatedModuleSet = ctx.toObfuscatedModules.ToHashSet();
             var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
-            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
+            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SupportPassPolicy(ctx.passPolicy), new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
         }
 

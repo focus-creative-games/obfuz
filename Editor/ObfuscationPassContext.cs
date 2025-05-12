@@ -29,5 +29,6 @@ namespace Obfuz
         public ConstFieldAllocator constFieldAllocator;
         public RvaDataAllocator rvaDataAllocator;
         public NotObfuscatedMethodWhiteList whiteList;
+        public ConfigurablePassPolicy passPolicy;
     }
 }

@@ -27,6 +27,8 @@ namespace Obfuz
         private readonly List<string> _notObfuscatedAssemblyNamesReferencingObfuscated;
         private readonly List<string> _assemblySearchDirs;
 
+        private readonly ConfigurablePassPolicy _passPolicy;
+
         private readonly Pipeline _pipeline1 = new Pipeline();
         private readonly Pipeline _pipeline2 = new Pipeline();
         private readonly byte[] _secret;
@@ -50,6 +52,8 @@ namespace Obfuz
             _notObfuscatedAssemblyNamesReferencingObfuscated = builder.NotObfuscatedAssemblyNamesReferencingObfuscated;
             _obfuscatedAssemblyOutputDir = builder.ObfuscatedAssemblyOutputDir;
             _assemblySearchDirs = builder.AssemblySearchDirs;
+
+            _passPolicy = new ConfigurablePassPolicy(_toObfuscatedAssemblyNames, builder.EnableObfuscationPasses, builder.ObfuscationPassConfigFiles);
 
             foreach (var pass in builder.ObfuscationPasses)
             {
@@ -176,6 +180,7 @@ namespace Obfuz
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,
                 whiteList = new NotObfuscatedMethodWhiteList(),
+                passPolicy = _passPolicy,
             };
             pipeline.Start(_ctx);
         }

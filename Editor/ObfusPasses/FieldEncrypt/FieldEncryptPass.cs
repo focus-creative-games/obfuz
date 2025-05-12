@@ -17,6 +17,8 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         private IEncryptPolicy _encryptionPolicy;
         private IFieldEncryptor _memoryEncryptor;
 
+        public override ObfuscationPassType Type => ObfuscationPassType.FieldEncrypt;
+
         public FieldEncryptPass(FieldEncryptSettings settings)
         {
             _configFiles = settings.configFiles.ToList();

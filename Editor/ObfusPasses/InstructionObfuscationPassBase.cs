@@ -15,23 +15,24 @@ namespace Obfuz.ObfusPasses
         {
             var modules = NeedProcessNotObfuscatedAssembly ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
             NotObfuscatedMethodWhiteList whiteList = ctx.whiteList;
+            ConfigurablePassPolicy passPolicy = ctx.passPolicy;
             foreach (ModuleDef mod in modules)
             {
-                if (whiteList.IsInWhiteList(mod))
+                if (whiteList.IsInWhiteList(mod) || !Support(passPolicy.GetAssemblyObfuscationPasses(mod)))
                 {
                     continue;
                 }
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
-                    if (whiteList.IsInWhiteList(type))
+                    if (whiteList.IsInWhiteList(type) || !Support(passPolicy.GetTypeObfuscationPasses(type)))
                     {
                         continue;
                     }
                     // ToArray to avoid modify list exception
                     foreach (MethodDef method in type.Methods.ToArray())
                     {
-                        if (!method.HasBody || ctx.whiteList.IsInWhiteList(method) || !NeedObfuscateMethod(method))
+                        if (!method.HasBody || ctx.whiteList.IsInWhiteList(method) || !Support(passPolicy.GetMethodObfuscationPasses(method)) || !NeedObfuscateMethod(method))
                         {
                             continue;
                         }

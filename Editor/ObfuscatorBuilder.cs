@@ -27,6 +27,9 @@ namespace Obfuz
         private List<string> _assemblySearchDirs = new List<string>();
 
         private string _obfuscatedAssemblyOutputDir;
+        private List<string> _obfuscationPassConfigFiles;
+
+        private ObfuscationPassType _enabledObfuscationPasses;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
 
         public string Secret
@@ -89,7 +92,23 @@ namespace Obfuz
             set => _obfuscatedAssemblyOutputDir = value;
         }
 
-        public List<IObfuscationPass> ObfuscationPasses { get => _obfuscationPasses; set => _obfuscationPasses = value; }
+        public ObfuscationPassType EnableObfuscationPasses
+        {
+            get => _enabledObfuscationPasses;
+            set => _enabledObfuscationPasses = value;
+        }
+
+        public List<string> ObfuscationPassConfigFiles
+        {
+            get => _obfuscationPassConfigFiles;
+            set => _obfuscationPassConfigFiles = value;
+        }
+
+        public List<IObfuscationPass> ObfuscationPasses
+        {
+            get => _obfuscationPasses;
+            set => _obfuscationPasses = value;
+        }
 
         public void InsertTopPriorityAssemblySearchDirs(List<string> assemblySearchDirs)
         {
@@ -139,6 +158,8 @@ namespace Obfuz
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
                 _assemblySearchDirs = BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.extraAssemblySearchDirs).ToList(),
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
+                _enabledObfuscationPasses = settings.obfuscationPassSettings.enabledPasses,
+                _obfuscationPassConfigFiles = settings.obfuscationPassSettings.configFiles.ToList(),
             };
             ObfuscationPassType obfuscationPasses = settings.obfuscationPassSettings.enabledPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))

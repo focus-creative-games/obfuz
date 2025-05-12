@@ -10,6 +10,8 @@ namespace Obfuz.ObfusPasses.CleanUp
 {
     public class CleanUpInstructionPass : ObfuscationPassBase
     {
+        public override ObfuscationPassType Type => ObfuscationPassType.None;
+
         public override void Start(ObfuscationPassContext ctx)
         {
         }

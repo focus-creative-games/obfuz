@@ -19,6 +19,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private readonly int _encryptionLevel;
         private IEncryptPolicy _dataObfuscatorPolicy;
         private IConstEncryptor _dataObfuscator;
+        public override ObfuscationPassType Type => ObfuscationPassType.ConstEncrypt;
 
         public ConstEncryptPass(ConstEncryptSettings settings)
         {

@@ -22,6 +22,8 @@ namespace Obfuz.ObfusPasses.CallObfus
         private IObfuscator _dynamicProxyObfuscator;
         private IObfuscationPolicy _dynamicProxyPolicy;
 
+        public override ObfuscationPassType Type => ObfuscationPassType.CallObfus;
+
         public CallObfusPass(CallObfusSettings settings)
         {
             _configFiles = settings.configFiles.ToList();

@@ -10,7 +10,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
 {
     public class ExprObfusPass : InstructionObfuscationPassBase
     {
-
+        public override ObfuscationPassType Type => ObfuscationPassType.ExprObfus;
 
         public override void Start(ObfuscationPassContext ctx)
         {
