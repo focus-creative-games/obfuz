@@ -778,5 +778,15 @@ namespace Obfuz.Utils
             result.Append(")");
             return result.ToString();
         }
+
+        public static bool HasObfuzIgnoreAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+        }
+
+        public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
+        }
     }
 }

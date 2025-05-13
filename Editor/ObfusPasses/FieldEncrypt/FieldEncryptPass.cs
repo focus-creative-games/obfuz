@@ -25,7 +25,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             _encryptionLevel = settings.encryptionLevel;
         }
 
-        protected override bool NeedProcessNotObfuscatedAssembly => true;
+        protected override bool ForceProcessAllAssembliesAndIgnoreAllPolicy => true;
 
         public override void Start()
         {

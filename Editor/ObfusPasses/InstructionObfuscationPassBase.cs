@@ -7,33 +7,33 @@ namespace Obfuz.ObfusPasses
 {
     public abstract class InstructionObfuscationPassBase : ObfuscationPassBase
     {
-        protected virtual bool NeedProcessNotObfuscatedAssembly => false;
+        protected virtual bool ForceProcessAllAssembliesAndIgnoreAllPolicy => false;
 
         protected abstract bool NeedObfuscateMethod(MethodDef method);
 
         public override void Process()
         {
             var ctx = ObfuscationPassContext.Current;
-            var modules = NeedProcessNotObfuscatedAssembly ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
+            var modules = ForceProcessAllAssembliesAndIgnoreAllPolicy ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
             NotObfuscatedMethodWhiteList whiteList = ctx.whiteList;
             ConfigurablePassPolicy passPolicy = ctx.passPolicy;
             foreach (ModuleDef mod in modules)
             {
-                if (whiteList.IsInWhiteList(mod) || !Support(passPolicy.GetAssemblyObfuscationPasses(mod)))
+                if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && (whiteList.IsInWhiteList(mod) || !Support(passPolicy.GetAssemblyObfuscationPasses(mod))))
                 {
                     continue;
                 }
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
-                    if (whiteList.IsInWhiteList(type) || !Support(passPolicy.GetTypeObfuscationPasses(type)))
+                    if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && (whiteList.IsInWhiteList(type) || !Support(passPolicy.GetTypeObfuscationPasses(type))))
                     {
                         continue;
                     }
                     // ToArray to avoid modify list exception
                     foreach (MethodDef method in type.Methods.ToArray())
                     {
-                        if (!method.HasBody || ctx.whiteList.IsInWhiteList(method) || !Support(passPolicy.GetMethodObfuscationPasses(method)) || !NeedObfuscateMethod(method))
+                        if (!method.HasBody || (!ForceProcessAllAssembliesAndIgnoreAllPolicy && (ctx.whiteList.IsInWhiteList(method) || !Support(passPolicy.GetMethodObfuscationPasses(method)) || !NeedObfuscateMethod(method))))
                         {
                             continue;
                         }

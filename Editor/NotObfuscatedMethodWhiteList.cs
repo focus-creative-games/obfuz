@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,19 @@ namespace Obfuz
 {
     public class NotObfuscatedMethodWhiteList
     {
+        private bool ShouldBeIgnoredByCustomAttribute(IHasCustomAttribute obj)
+        {
+            return MetaUtil.HasObfuzIgnoreAttribute(obj) || MetaUtil.HasCompilerGeneratedAttribute(obj);
+        }
 
         public bool IsInWhiteList(ModuleDef module)
         {
             string modName = module.Assembly.Name;
             if (modName == "Obfuz.Runtime")
+            {
+                return true;
+            }
+            if (ShouldBeIgnoredByCustomAttribute(module))
             {
                 return true;
             }
@@ -23,6 +32,10 @@ namespace Obfuz
         public bool IsInWhiteList(MethodDef method)
         {
             if (IsInWhiteList(method.DeclaringType))
+            {
+                return true;
+            }
+            if (ShouldBeIgnoredByCustomAttribute(method))
             {
                 return true;
             }
@@ -36,6 +49,10 @@ namespace Obfuz
             //    continue;
             //}
             if (IsInWhiteList(type.Module))
+            {
+                return true;
+            }
+            if (ShouldBeIgnoredByCustomAttribute(type))
             {
                 return true;
             }
