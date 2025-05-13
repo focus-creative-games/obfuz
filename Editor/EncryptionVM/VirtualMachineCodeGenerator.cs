@@ -78,10 +78,10 @@ namespace Obfuz.EncryptionVM
             foreach (var opCode in _vm.opCodes)
             {
                 lines.Add(@$"            case {opCode.code}:
-            {{");
+            {{
+                // {opCode.function.GetType().Name}");
                 AppendEncryptCode(lines, opCode.function);
-                lines.Add(@"
-                return value;
+                lines.Add(@"                return value;
             }");
             }
 
@@ -102,10 +102,10 @@ namespace Obfuz.EncryptionVM
             foreach (var opCode in _vm.opCodes)
             {
                 lines.Add(@$"            case {opCode.code}:
-            {{");
+            {{
+                // {opCode.function.GetType().Name}");
                 AppendDecryptCode(lines, opCode.function);
-                lines.Add(@"
-                return value;
+                lines.Add(@"                return value;
             }");
             }
 

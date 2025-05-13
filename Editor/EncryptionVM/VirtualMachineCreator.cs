@@ -34,7 +34,9 @@ namespace Obfuz.EncryptionVM
             (r, len) => new AddRotateXorInstruction(r.NextInt(), r.NextInt(len), r.NextInt(32), r.NextInt()),
             (r, len) => new AddXorRotateInstruction(r.NextInt(), r.NextInt(len), r.NextInt(), r.NextInt(32)),
             (r, len) => new XorAddRotateInstruction(r.NextInt(), r.NextInt(), r.NextInt(len), r.NextInt(32)),
-
+            (r, len) => new MultipleRotateXorInstruction(r.NextInt() | 0x1, r.NextInt(len), r.NextInt(32), r.NextInt()),
+            (r, len) => new MultipleXorRotateInstruction(r.NextInt() | 0x1,  r.NextInt(len), r.NextInt(), r.NextInt(32)),
+            (r, len) => new XorMultipleRotateInstruction(r.NextInt(), r.NextInt() | 0x1, r.NextInt(len), r.NextInt(32)),
         };
 
         private IEncryptionInstruction CreateRandomInstruction(int intSecretKeyLength)
