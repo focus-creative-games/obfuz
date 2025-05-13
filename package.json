@@ -1,6 +1,6 @@
 {
   "name": "com.code-philosophy.obfuz",
-  "version": "1.0.0-beta",
+  "version": "1.0.0-alpha",
   "displayName": "Obfuz",
   "description": "Obfuz is a powerful code obfuscation tool designed specifically for Unity projects.",
   "category": "Editor",

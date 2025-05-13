@@ -1,6 +1,10 @@
-﻿using Obfuz.EncryptionVM.Instructions;
+﻿using NUnit.Framework;
+using Obfuz.EncryptionVM.Instructions;
 using Obfuz.Utils;
+using System;
+using System.Collections.Generic;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 
 namespace Obfuz.EncryptionVM
 {
@@ -21,19 +25,21 @@ namespace Obfuz.EncryptionVM
             _random = new RandomWithKey(intGenerationSecretKey, 0);
         }
 
+        private readonly List<Func<IRandom, int, EncryptionInstructionBase>> _instructionCreators = new List<Func<IRandom, int, EncryptionInstructionBase>>
+        {
+            (r, len) => new AddInstruction(r.NextInt(), r.NextInt(len)),
+            (r, len) => new XorInstruction(r.NextInt(), r.NextInt(len)),
+            (r, len) => new BitRotateInstruction(r.NextInt(32), r.NextInt(len)),
+            (r, len) => new MultipleInstruction(r.NextInt() | 0x1, r.NextInt(len)),
+            (r, len) => new AddRotateXorInstruction(r.NextInt(), r.NextInt(len), r.NextInt(32), r.NextInt()),
+            (r, len) => new AddXorRotateInstruction(r.NextInt(), r.NextInt(len), r.NextInt(), r.NextInt(32)),
+            (r, len) => new XorAddRotateInstruction(r.NextInt(), r.NextInt(), r.NextInt(len), r.NextInt(32)),
+
+        };
+
         private IEncryptionInstruction CreateRandomInstruction(int intSecretKeyLength)
         {
-            switch (_random.NextInt(3))
-            {
-                case 0:
-                    return new AddInstruction(_random.NextInt(), _random.NextInt(intSecretKeyLength));
-                case 1:
-                    return new XorInstruction(_random.NextInt(), _random.NextInt(intSecretKeyLength));
-                case 2:
-                    return new BitRotateInstruction(_random.NextInt(32), _random.NextInt(intSecretKeyLength));
-                default:
-                throw new System.Exception("Invalid instruction type");
-            }
+            return _instructionCreators[_random.NextInt(_instructionCreators.Count)](_random, intSecretKeyLength);
         }
 
         private EncryptionInstructionWithOpCode CreateEncryptOpCode(ushort code)
