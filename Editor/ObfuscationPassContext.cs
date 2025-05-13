@@ -30,7 +30,9 @@ namespace Obfuz
 
         public string obfuscatedAssemblyOutputDir;
 
-        public IRandom random;
+        public IRandom globalRandom;
+        public Func<int, IRandom> localScopeRandomCreator;
+        
         public IEncryptor encryptor;
         public ConstFieldAllocator constFieldAllocator;
         public RvaDataAllocator rvaDataAllocator;

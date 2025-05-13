@@ -38,7 +38,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _random = ctx.random;
+            _random = ctx.globalRandom;
             _encryptor = ctx.encryptor;
             _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);

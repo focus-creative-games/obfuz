@@ -31,7 +31,8 @@ namespace Obfuz
 
         private readonly Pipeline _pipeline1 = new Pipeline();
         private readonly Pipeline _pipeline2 = new Pipeline();
-        private readonly byte[] _secret;
+        private readonly byte[] _byteSecret;
+        private readonly int[] _intSecret;
         private readonly int _randomSeed;
         private readonly string _encryptionVmGenerationSecret;
         private readonly int _encryptionVmOpCodeCount;
@@ -41,8 +42,9 @@ namespace Obfuz
 
         public Obfuscator(ObfuscatorBuilder builder)
         {
-            _secret = KeyGenerator.GenerateKey(builder.Secret, VirtualMachine.SecretKeyLength);
-            SaveKey(_secret, builder.SecretOutputPath);
+            _byteSecret = KeyGenerator.GenerateKey(builder.Secret, VirtualMachine.SecretKeyLength);
+            _intSecret = KeyGenerator.ConvertToIntKey(_byteSecret);
+            SaveKey(_byteSecret, builder.SecretOutputPath);
             _randomSeed = builder.RandomSeed;
             _encryptionVmGenerationSecret = builder.EncryptionVmGenerationSecretKey;
             _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
@@ -109,7 +111,7 @@ namespace Obfuz
             {
                 throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
             }
-            var vms = new VirtualMachineSimulator(vm, _secret);
+            var vms = new VirtualMachineSimulator(vm, _byteSecret);
 
             var generatedVmTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine"))
@@ -124,7 +126,7 @@ namespace Obfuz
                 throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine found in multiple assemblies! Please retain only one!");
             }
 
-            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _secret } );
+            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _byteSecret } );
 
             int testValue = 11223344;
             for (int i = 0; i < vm.opCodes.Length; i++)
@@ -152,16 +154,12 @@ namespace Obfuz
 
         private void OnPreObfuscation(Pipeline pipeline)
         {
-
-
             AssemblyCache assemblyCache = new AssemblyCache(new PathAssemblyResolver(_assemblySearchDirs.ToArray()));
             List<ModuleDef> toObfuscatedModules = new List<ModuleDef>();
             List<ModuleDef> obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
-
             LoadAssemblies(assemblyCache, toObfuscatedModules, obfuscatedAndNotObfuscatedModules);
 
-
-            var random = new RandomWithKey(_secret, _randomSeed);
+            var random = new RandomWithKey(_intSecret, _randomSeed);
             var encryptor = CreateEncryptionVirtualMachine();
             var moduleEntityManager = new GroupByModuleEntityManager();
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor, moduleEntityManager);
@@ -176,7 +174,8 @@ namespace Obfuz
                 obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
                 moduleEntityManager = moduleEntityManager,
 
-                random = random,
+                globalRandom = random,
+                localScopeRandomCreator = (seed) => new RandomWithKey(_intSecret, _randomSeed ^ seed),
                 encryptor = encryptor,
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,

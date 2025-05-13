@@ -17,7 +17,8 @@ namespace Obfuz.EncryptionVM
         {
             _vmGenerationSecretKey = vmGenerationSecretKey;
             byte[] byteGenerationSecretKey = KeyGenerator.GenerateKey(vmGenerationSecretKey, CodeGenerationSecretKeyLength);
-            _random = new RandomWithKey(byteGenerationSecretKey, 0);
+            int[] intGenerationSecretKey = KeyGenerator.ConvertToIntKey(byteGenerationSecretKey);
+            _random = new RandomWithKey(intGenerationSecretKey, 0);
         }
 
         private IEncryptionInstruction CreateRandomInstruction(int intSecretKeyLength)

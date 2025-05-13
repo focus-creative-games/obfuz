@@ -19,9 +19,9 @@ namespace Obfuz.Utils
 
         private int _seed;
 
-        public RandomWithKey(byte[] key, int seed)
+        public RandomWithKey(int[] key, int seed)
         {
-            _key = KeyGenerator.ConvertToIntKey(key);
+            _key = key;
             _seed = seed;
         }
 
