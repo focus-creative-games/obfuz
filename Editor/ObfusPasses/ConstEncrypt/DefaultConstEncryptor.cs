@@ -12,16 +12,16 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 {
     public class DefaultConstEncryptor : IConstEncryptor
     {
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly IEncryptor _encryptor;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultConstEncryptor(RandomCreator randomCreator, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
-            _random = random;
+            _randomCreator = randomCreator;
             _encryptor = encryptor;
             _rvaDataAllocator = rvaDataAllocator;
             _constFieldAllocator = constFieldAllocator;
@@ -29,14 +29,19 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             _encryptionLevel = encryptionLevel;
         }
 
-        private int GenerateEncryptionOperations()
+        private IRandom CreateRandomForValue(int value)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
+            return _randomCreator(value);
         }
 
-        public int GenerateSalt()
+        private int GenerateEncryptionOperations(IRandom random)
         {
-            return _random.NextInt();
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, _encryptor, _encryptionLevel);
+        }
+
+        public int GenerateSalt(IRandom random)
+        {
+            return random.NextInt();
         }
 
         private DefaultMetadataImporter GetModuleMetadataImporter(MethodDef method)
@@ -53,8 +58,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 return;
             }
 
-            int ops = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForValue(value.GetHashCode());
+            int ops = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             int encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
@@ -75,8 +81,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 return;
             }
 
-            int ops = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForValue(value.GetHashCode());
+            int ops = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             long encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
@@ -97,8 +104,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 return;
             }
 
-            int ops = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForValue(value.GetHashCode());
+            int ops = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             float encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
@@ -119,8 +127,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 return;
             }
 
-            int ops = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForValue(value.GetHashCode());
+            int ops = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             double encryptedValue = _encryptor.Encrypt(value, ops, salt);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
@@ -167,8 +176,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 return;
             }
 
-            int ops = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForValue(HashUtil.ComputeHash(value));
+            int ops = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             int stringByteLength = Encoding.UTF8.GetByteCount(value);
             byte[] encryptedValue = _encryptor.Encrypt(value, ops, salt);
             Assert.IsTrue(encryptedValue.Length % 4 == 0);

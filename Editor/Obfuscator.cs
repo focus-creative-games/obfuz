@@ -175,7 +175,7 @@ namespace Obfuz
                 moduleEntityManager = moduleEntityManager,
 
                 globalRandom = random,
-                localScopeRandomCreator = (seed) => new RandomWithKey(_intSecret, _randomSeed ^ seed),
+                localRandomCreator = (seed) => new RandomWithKey(_intSecret, _randomSeed ^ seed),
                 encryptor = encryptor,
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,

@@ -12,14 +12,14 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 {
     public class DefaultFieldEncryptor : FieldEncryptorBase
     {
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly IEncryptor _encryptor;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public DefaultFieldEncryptor(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultFieldEncryptor(RandomCreator randomCreator, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
-            _random = random;
+            _randomCreator = randomCreator;
             _encryptor = encryptor;
             _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
@@ -59,14 +59,19 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         }
 
 
-        private int GenerateEncryptionOperations()
+        private IRandom CreateRandomForField(FieldDef field)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
+            return _randomCreator(FieldEqualityComparer.CompareDeclaringTypes.GetHashCode(field));
         }
 
-        public int GenerateSalt()
+        private int GenerateEncryptionOperations(IRandom random)
         {
-            return _random.NextInt();
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, _encryptor, _encryptionLevel);
+        }
+
+        public int GenerateSalt(IRandom random)
+        {
+            return random.NextInt();
         }
 
         private FieldEncryptInfo GetFieldEncryptInfo(FieldDef field)
@@ -76,8 +81,9 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 return info;
             }
 
-            int encryptOps = GenerateEncryptionOperations();
-            int salt = GenerateSalt();
+            IRandom random = CreateRandomForField(field);
+            int encryptOps = GenerateEncryptionOperations(random);
+            int salt = GenerateSalt(random);
             ElementType fieldType = field.FieldSig.Type.RemovePinnedAndModifiers().ElementType;
             long xorValueForZero = CalcXorValueForZero(fieldType, encryptOps, salt);
 

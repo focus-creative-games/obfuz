@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz
 {
+    public delegate IRandom RandomCreator(int seed);
 
     public class ObfuscationPassContext
     {
@@ -31,7 +32,7 @@ namespace Obfuz
         public string obfuscatedAssemblyOutputDir;
 
         public IRandom globalRandom;
-        public Func<int, IRandom> localScopeRandomCreator;
+        public RandomCreator localRandomCreator;
         
         public IEncryptor encryptor;
         public ConstFieldAllocator constFieldAllocator;

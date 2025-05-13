@@ -30,7 +30,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _memoryEncryptor = new DefaultFieldEncryptor(ctx.globalRandom, ctx.encryptor, ctx.moduleEntityManager, _encryptionLevel);
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.localRandomCreator, ctx.encryptor, ctx.moduleEntityManager, _encryptionLevel);
             _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 

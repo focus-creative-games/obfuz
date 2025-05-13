@@ -33,7 +33,7 @@ namespace Obfuz.ObfusPasses.CallObfus
     class ModuleCallProxyAllocator : IGroupByModuleEntity
     {
         private ModuleDef _module;
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly IEncryptor _encryptor;
         private readonly int _encryptionLevel;
 
@@ -93,9 +93,9 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleCallProxyAllocator(IRandom random, IEncryptor encryptor, int encryptionLevel)
+        public ModuleCallProxyAllocator(RandomCreator randomCreator, IEncryptor encryptor, int encryptionLevel)
         {
-            _random = random;
+            _randomCreator = randomCreator;
             _encryptor = encryptor;
             _encryptionLevel = encryptionLevel;
         }
@@ -151,14 +151,14 @@ namespace Obfuz.ObfusPasses.CallObfus
             return MethodSig.CreateStatic(methodSig.RetType, methodSig.Params.ToArray());
         }
 
-        private int GenerateSalt()
+        private int GenerateSalt(IRandom random)
         {
-            return _random.NextInt();
+            return random.NextInt();
         }
 
-        private int GenerateEncryptOps()
+        private int GenerateEncryptOps(IRandom random)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(_random, _encryptor, _encryptionLevel);
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, _encryptor, _encryptionLevel);
         }
 
         private DispatchMethodInfo GetDispatchMethod(IMethod method)
@@ -180,6 +180,12 @@ namespace Obfuz.ObfusPasses.CallObfus
             return dispatchMethods.Last();
         }
 
+        private IRandom CreateRandomForMethod(IMethod method, bool callVir)
+        {
+            int seed = MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method);
+            return _randomCreator(seed);
+        }
+
         public ProxyCallMethodData Allocate(IMethod method, bool callVir)
         {
             var key = new MethodKey(method, callVir);
@@ -188,8 +194,9 @@ namespace Obfuz.ObfusPasses.CallObfus
                 var methodDispatcher = GetDispatchMethod(method);
 
                 int index = methodDispatcher.methods.Count;
-                int encryptOps = GenerateEncryptOps();
-                int salt = GenerateSalt();
+                IRandom localRandom = CreateRandomForMethod(method, callVir);
+                int encryptOps = GenerateEncryptOps(localRandom);
+                int salt = GenerateSalt(localRandom);
                 int encryptedIndex = _encryptor.Encrypt(index, encryptOps, salt);
                 proxyInfo = new MethodProxyInfo()
                 {
@@ -240,14 +247,14 @@ namespace Obfuz.ObfusPasses.CallObfus
 
     public class CallProxyAllocator
     {
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly IEncryptor _encryptor;
         private GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public CallProxyAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public CallProxyAllocator(RandomCreator randomCreator, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
-            _random = random;
+            _randomCreator = randomCreator;
             _encryptor = encryptor;
             _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
@@ -255,7 +262,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor, _encryptionLevel));
+            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_randomCreator, _encryptor, _encryptionLevel));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)

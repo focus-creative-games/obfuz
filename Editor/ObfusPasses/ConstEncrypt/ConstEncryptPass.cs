@@ -31,7 +31,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         {
             var ctx = ObfuscationPassContext.Current;
             _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
-            _dataObfuscator = new DefaultConstEncryptor(ctx.globalRandom, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator, ctx.moduleEntityManager, _encryptionLevel);
+            _dataObfuscator = new DefaultConstEncryptor(ctx.localRandomCreator, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator, ctx.moduleEntityManager, _encryptionLevel);
         }
 
         public override void Stop()

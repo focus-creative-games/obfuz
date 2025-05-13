@@ -15,12 +15,12 @@ namespace Obfuz.ObfusPasses.CallObfus
         private readonly CallProxyAllocator _proxyCallAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultCallProxyObfuscator(RandomCreator randomCreator, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
             _encryptor = encryptor;
             _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
-            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor, moduleEntityManager, encryptionLevel);
+            _proxyCallAllocator = new CallProxyAllocator(randomCreator, _encryptor, moduleEntityManager, encryptionLevel);
         }
 
         public override void Done()
