@@ -34,6 +34,27 @@ namespace Obfuz.EncryptionVM
                 int decryptedValue = _opCodes[i].Decrypt(encryptedValue, _secretKey, i);
                 Assert.AreEqual(value, decryptedValue);
             }
+
+            int ops = 11223344;
+            int salt = 789;
+            Assert.AreEqual(1, Decrypt(Encrypt(1, ops, salt), ops, salt));
+            Assert.AreEqual(1L, Decrypt(Encrypt(1L, ops, salt), ops, salt));
+            Assert.AreEqual(1.0f, Decrypt(Encrypt(1.0f, ops, salt), ops, salt));
+            Assert.AreEqual(1.0, Decrypt(Encrypt(1.0, ops, salt), ops, salt));
+
+            byte[] strBytes = Encrypt("abcdef", ops, salt);
+            Assert.AreEqual("abcdef", DecryptString(strBytes, 0, strBytes.Length, ops, salt));
+            var arr = new byte[100];
+            for (int i = 0; i < arr.Length ; i++)
+            {
+                arr[i] = (byte)i;
+            }
+            EncryptBlock(arr, ops, salt);
+            DecryptBlock(arr, ops, salt);
+            for (int i = 0; i < arr.Length; i++)
+            {
+                Assert.AreEqual(i, arr[i]);
+            }
         }
 
         private List<ushort> DecodeOps(int ops)

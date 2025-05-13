@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using System;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
@@ -87,10 +88,11 @@ namespace Obfuz
                 fixed (byte* dstBytePtr = &encryptedBytes[0])
                 {
                     int* dstIntPtr = (int*)dstBytePtr;
-
+                    int last = 0;
                     for (int i = 0; i < intArrLength; i++)
                     {
-                        dstIntPtr[i] = Encrypt(dstIntPtr[i], ops, salt);
+                        last ^= Encrypt(dstIntPtr[i], ops, salt);
+                        dstIntPtr[i] = last;
                     }
                 }
                 for (int i = intArrLength * 4; i < length; i++)
@@ -108,9 +110,11 @@ namespace Obfuz
                         int* srcIntPtr = (int*)srcBytePtr;
                         int* dstIntPtr = (int*)dstBytePtr;
 
+                        int last = 0;
                         for (int i = 0; i < intArrLength; i++)
                         {
-                            dstIntPtr[i] = Encrypt(srcIntPtr[i], ops, salt);
+                            last ^= Encrypt(srcIntPtr[i], ops, salt);
+                            dstIntPtr[i] = last;
                         }
                     }
                 }
@@ -137,10 +141,12 @@ namespace Obfuz
                 fixed (byte* dstBytePtr = &decryptedBytes[0])
                 {
                     int* dstIntPtr = (int*)dstBytePtr;
-
+                    int last = 0;
                     for (int i = 0; i < intArrLength; i++)
                     {
-                        dstIntPtr[i] = Decrypt(dstIntPtr[i], ops, salt);
+                        int oldLast = last;
+                        last = dstIntPtr[i];
+                        dstIntPtr[i] = Decrypt(last ^ oldLast, ops, salt);
                     }
                 }
                 for (int i = intArrLength * 4; i < length; i++)
@@ -157,10 +163,12 @@ namespace Obfuz
                     {
                         int* srcIntPtr = (int*)srcBytePtr;
                         int* dstIntPtr = (int*)dstBytePtr;
-
+                        int last = 0;
                         for (int i = 0; i < intArrLength; i++)
                         {
-                            dstIntPtr[i] = Decrypt(srcIntPtr[i], ops, salt);
+                            int oldLast = last;
+                            last = srcIntPtr[i];
+                            dstIntPtr[i] = Decrypt(last ^ oldLast, ops, salt);
                         }
                     }
                 }
@@ -192,10 +200,11 @@ namespace Obfuz
             fixed (byte* dstBytePtr = &data[0])
             {
                 int* dstIntPtr = (int*)dstBytePtr;
-
+                int last = 0;
                 for (int i = 0; i < intArrLength; i++)
                 {
-                    dstIntPtr[i] = Encrypt(dstIntPtr[i], ops, salt);
+                    last ^= Encrypt(dstIntPtr[i], ops, salt);
+                    dstIntPtr[i] = last;
                 }
             }
             for (int i = intArrLength * 4; i < length; i++)
@@ -212,10 +221,12 @@ namespace Obfuz
             fixed (byte* dstBytePtr = &data[0])
             {
                 int* dstIntPtr = (int*)dstBytePtr;
-
+                int last = 0;
                 for (int i = 0; i < intArrLength; i++)
                 {
-                    dstIntPtr[i] = Decrypt(dstIntPtr[i], ops, salt);
+                    int oldLast = last;
+                    last = dstIntPtr[i];
+                    dstIntPtr[i] = Decrypt(oldLast ^ last, ops, salt);
                 }
             }
             for (int i = intArrLength * 4; i < length; i++)
