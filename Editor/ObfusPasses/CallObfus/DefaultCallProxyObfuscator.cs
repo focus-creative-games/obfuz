@@ -13,12 +13,14 @@ namespace Obfuz.ObfusPasses.CallObfus
         private readonly IEncryptor _encryptor;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly CallProxyAllocator _proxyCallAllocator;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, int encryptionLevel)
+        public DefaultCallProxyObfuscator(IRandom random, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
             _encryptor = encryptor;
             _constFieldAllocator = constFieldAllocator;
-            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor, encryptionLevel);
+            _moduleEntityManager = moduleEntityManager;
+            _proxyCallAllocator = new CallProxyAllocator(random, _encryptor, moduleEntityManager, encryptionLevel);
         }
 
         public override void Done()
@@ -31,7 +33,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
             MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod));
             ProxyCallMethodData proxyCallMethodData = _proxyCallAllocator.Allocate(callerMethod.Module, calledMethod, callVir);
-            DefaultMetadataImporter importer = GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(callerMethod.Module);
+            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(callerMethod.Module);
 
             if (needCacheCall)
             {

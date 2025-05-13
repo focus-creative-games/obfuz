@@ -12,12 +12,12 @@ namespace Obfuz.ObfusPasses.ExprObfus
     {
         public override ObfuscationPassType Type => ObfuscationPassType.ExprObfus;
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
 
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
 
         }

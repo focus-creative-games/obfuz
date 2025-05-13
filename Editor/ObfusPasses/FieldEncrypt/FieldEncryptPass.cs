@@ -27,13 +27,14 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         protected override bool NeedProcessNotObfuscatedAssembly => true;
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
-            _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor, _encryptionLevel);
+            var ctx = ObfuscationPassContext.Current;
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.random, ctx.encryptor, ctx.moduleEntityManager, _encryptionLevel);
             _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
 
         }

@@ -33,6 +33,7 @@ namespace Obfuz.Data
         private ModuleDef _module;
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
 
         class RvaField
         {
@@ -69,10 +70,11 @@ namespace Obfuz.Data
 
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
 
-        public ModuleRvaDataAllocator(IRandom random, IEncryptor encryptor)
+        public ModuleRvaDataAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager)
         {
             _random = random;
             _encryptor = encryptor;
+            _moduleEntityManager = moduleEntityManager;
         }
 
         public override void Init(ModuleDef mod)
@@ -234,7 +236,7 @@ namespace Obfuz.Data
             cctorMethod.Body = body;
             var ins = body.Instructions;
 
-            DefaultMetadataImporter importer = GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(mod);
+            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(mod);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -287,16 +289,18 @@ namespace Obfuz.Data
 
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public RvaDataAllocator(IRandom random, IEncryptor encryptor)
+        public RvaDataAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager)
         {
             _random = random;
             _encryptor = encryptor;
+            _moduleEntityManager = moduleEntityManager;
         }
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            return GroupByModuleEntityManager.Ins.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor));
+            return _moduleEntityManager.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor, _moduleEntityManager));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)
@@ -331,7 +335,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var allocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleRvaDataAllocator>())
+            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleRvaDataAllocator>())
             {
                 allocator.Done();
             }

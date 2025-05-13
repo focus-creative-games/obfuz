@@ -12,17 +12,18 @@ namespace Obfuz.ObfusPasses.CleanUp
     {
         public override ObfuscationPassType Type => ObfuscationPassType.None;
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
 
         }
 
-        public override void Process(ObfuscationPassContext ctx)
+        public override void Process()
         {
+            var ctx = ObfuscationPassContext.Current;
             foreach (ModuleDef mod in ctx.toObfuscatedModules)
             {
                 foreach (TypeDef type in mod.GetTypes())

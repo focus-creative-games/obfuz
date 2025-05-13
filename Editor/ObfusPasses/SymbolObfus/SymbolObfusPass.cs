@@ -18,17 +18,17 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _symbolRename = new SymbolRename(settings);
         }
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
-            _symbolRename.Init(ctx);
+            _symbolRename.Init();
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
             _symbolRename.Save();
         }
 
-        public override void Process(ObfuscationPassContext ctx)
+        public override void Process()
         {
             _symbolRename.Process();
         }

@@ -11,10 +11,10 @@ namespace Obfuz.ObfusPasses
             return passType.HasFlag(Type);
         }
 
-        public abstract void Start(ObfuscationPassContext ctx);
+        public abstract void Start();
 
-        public abstract void Stop(ObfuscationPassContext ctx);
+        public abstract void Stop();
 
-        public abstract void Process(ObfuscationPassContext ctx);
+        public abstract void Process();
     }
 }

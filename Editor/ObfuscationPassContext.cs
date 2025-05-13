@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Data;
+using Obfuz.Emit;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Utils;
@@ -14,6 +15,11 @@ namespace Obfuz
 
     public class ObfuscationPassContext
     {
+        public static ObfuscationPassContext Current { get; set; }
+
+
+        public GroupByModuleEntityManager moduleEntityManager;
+
         public AssemblyCache assemblyCache;
 
         public List<ModuleDef> toObfuscatedModules;

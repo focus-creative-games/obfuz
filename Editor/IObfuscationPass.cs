@@ -11,10 +11,10 @@ namespace Obfuz
     {
         ObfuscationPassType Type { get; }
 
-        void Start(ObfuscationPassContext ctx);
+        void Start();
 
-        void Stop(ObfuscationPassContext ctx);
+        void Stop();
 
-        void Process(ObfuscationPassContext ctx);
+        void Process();
     }
 }

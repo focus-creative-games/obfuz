@@ -30,16 +30,17 @@ namespace Obfuz.ObfusPasses.CallObfus
             _obfuscationLevel = settings.callObfuscationLevel;
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
             _dynamicProxyObfuscator.Done();
         }
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
+            var ctx = ObfuscationPassContext.Current;
             _random = ctx.random;
             _encryptor = ctx.encryptor;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor, ctx.constFieldAllocator, _obfuscationLevel);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(_random, _encryptor, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 

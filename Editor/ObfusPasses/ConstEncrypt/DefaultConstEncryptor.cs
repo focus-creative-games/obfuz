@@ -16,14 +16,16 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly IEncryptor _encryptor;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, int encryptionLevel)
+        public DefaultConstEncryptor(IRandom random, IEncryptor encryptor, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
             _rvaDataAllocator = rvaDataAllocator;
             _constFieldAllocator = constFieldAllocator;
+            _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
         }
 
@@ -39,7 +41,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         private DefaultMetadataImporter GetModuleMetadataImporter(MethodDef method)
         {
-            return GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
+            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module);
         }
 
         public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)

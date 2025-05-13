@@ -15,28 +15,28 @@ namespace Obfuz
             return this;
         }
 
-        public void Start(ObfuscationPassContext ctx)
+        public void Start()
         {
             foreach (var pass in _passes)
             {
-                pass.Start(ctx);
+                pass.Start();
             }
         }
 
-        public void Stop(ObfuscationPassContext ctx)
+        public void Stop()
         {
 
             foreach (var pass in _passes)
             {
-                pass.Stop(ctx);
+                pass.Stop();
             }
         }
 
-        public void Run(ObfuscationPassContext ctx)
+        public void Run()
         {
             foreach (var pass in _passes)
             {
-                pass.Process(ctx);
+                pass.Process();
             }
         }
     }

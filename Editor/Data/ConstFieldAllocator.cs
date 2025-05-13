@@ -18,6 +18,7 @@ namespace Obfuz.Data
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
         private readonly RvaDataAllocator _rvaDataAllocator;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
 
         private TypeDef _holderTypeDef;
 
@@ -32,11 +33,12 @@ namespace Obfuz.Data
         private readonly List<TypeDef> _holderTypeDefs = new List<TypeDef>();
 
 
-        public ModuleConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator)
+        public ModuleConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
             _encryptor = encryptor;
             _random = random;
             _rvaDataAllocator = rvaDataAllocator;
+            _moduleEntityManager = moduleEntityManager;
         }
 
         public void Init(ModuleDef mod)
@@ -138,7 +140,7 @@ namespace Obfuz.Data
 
         private DefaultMetadataImporter GetModuleMetadataImporter()
         {
-            return GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(_module);
+            return _moduleEntityManager.GetDefaultModuleMetadataImporter(_module);
         }
 
         private void CreateCCtorOfRvaTypeDef(TypeDef type)
@@ -258,17 +260,19 @@ namespace Obfuz.Data
         private readonly IEncryptor _encryptor;
         private readonly IRandom _random;
         private readonly RvaDataAllocator _rvaDataAllocator;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public ConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator)
+        public ConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
             _encryptor = encryptor;
             _random = random;
             _rvaDataAllocator = rvaDataAllocator;
+            _moduleEntityManager = moduleEntityManager;
         }
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return GroupByModuleEntityManager.Ins.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator));
+            return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator, _moduleEntityManager));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)
@@ -303,7 +307,7 @@ namespace Obfuz.Data
 
         public void Done()
         {
-            foreach (var moduleAllocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleConstFieldAllocator>())
+            foreach (var moduleAllocator in _moduleEntityManager.GetEntities<ModuleConstFieldAllocator>())
             {
                 moduleAllocator.Done();
             }

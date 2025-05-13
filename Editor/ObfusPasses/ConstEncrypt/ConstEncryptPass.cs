@@ -27,13 +27,14 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             _encryptionLevel = settings.encryptionLevel;
         }
 
-        public override void Start(ObfuscationPassContext ctx)
+        public override void Start()
         {
+            var ctx = ObfuscationPassContext.Current;
             _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
-            _dataObfuscator = new DefaultConstEncryptor(ctx.random, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator, _encryptionLevel);
+            _dataObfuscator = new DefaultConstEncryptor(ctx.random, ctx.encryptor, ctx.rvaDataAllocator, ctx.constFieldAllocator, ctx.moduleEntityManager, _encryptionLevel);
         }
 
-        public override void Stop(ObfuscationPassContext ctx)
+        public override void Stop()
         {
             _dataObfuscator.Done();
         }
@@ -42,8 +43,6 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         {
             return _dataObfuscatorPolicy.NeedObfuscateMethod(method);
         }
-
-        private readonly HashSet<FieldDef> _encryptedRvaFields = new HashSet<FieldDef>();
 
         protected override bool TryObfuscateInstruction(MethodDef method, Instruction inst, BasicBlock block, int instructionIndex, IList<Instruction> globalInstructions,
             List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)

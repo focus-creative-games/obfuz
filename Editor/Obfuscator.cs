@@ -158,14 +158,14 @@ namespace Obfuz
             List<ModuleDef> toObfuscatedModules = new List<ModuleDef>();
             List<ModuleDef> obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
 
-            GroupByModuleEntityManager.Reset();
             LoadAssemblies(assemblyCache, toObfuscatedModules, obfuscatedAndNotObfuscatedModules);
 
 
             var random = new RandomWithKey(_secret, _randomSeed);
             var encryptor = CreateEncryptionVirtualMachine();
-            var rvaDataAllocator = new RvaDataAllocator(random, encryptor);
-            var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator);
+            var moduleEntityManager = new GroupByModuleEntityManager();
+            var rvaDataAllocator = new RvaDataAllocator(random, encryptor, moduleEntityManager);
+            var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator, moduleEntityManager);
             _ctx = new ObfuscationPassContext
             {
                 assemblyCache = assemblyCache,
@@ -174,6 +174,7 @@ namespace Obfuz
                 toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
                 notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
                 obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
+                moduleEntityManager = moduleEntityManager,
 
                 random = random,
                 encryptor = encryptor,
@@ -182,7 +183,8 @@ namespace Obfuz
                 whiteList = new NotObfuscatedMethodWhiteList(),
                 passPolicy = _passPolicy,
             };
-            pipeline.Start(_ctx);
+            ObfuscationPassContext.Current = _ctx;
+            pipeline.Start();
         }
 
         private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> toObfuscatedModules, List<ModuleDef> obfuscatedAndNotObfuscatedModules)
@@ -216,13 +218,12 @@ namespace Obfuz
 
         private void DoObfuscation(Pipeline pipeline)
         {
-
-            pipeline.Run(_ctx);
+            pipeline.Run();
         }
 
         private void OnPostObfuscation(Pipeline pipeline)
         {
-            pipeline.Stop(_ctx);
+            pipeline.Stop();
             WriteAssemblies();
         }
     }

@@ -19,20 +19,12 @@ namespace Obfuz.Emit
 
     public class GroupByModuleEntityManager
     {
-        public static GroupByModuleEntityManager Ins { get; private set; }
-
-
-        private readonly Dictionary<(ModuleDef, Type), IGroupByModuleEntity> _moduleEmitManagers = new Dictionary<(ModuleDef, Type), IGroupByModuleEntity>();
-
-        public static void Reset()
-        {
-            Ins = new GroupByModuleEntityManager();
-        }
+        private readonly Dictionary<(ModuleDef, Type), IGroupByModuleEntity> _moduleEntityManagers = new Dictionary<(ModuleDef, Type), IGroupByModuleEntity>();
 
         public T GetEntity<T>(ModuleDef mod, Func<T> creator = null) where T : IGroupByModuleEntity
         {
             var key = (mod, typeof(T));
-            if (_moduleEmitManagers.TryGetValue(key, out var emitManager))
+            if (_moduleEntityManagers.TryGetValue(key, out var emitManager))
             {
                 return (T)emitManager;
             }
@@ -48,7 +40,7 @@ namespace Obfuz.Emit
                     newEmitManager = (T)Activator.CreateInstance(typeof(T));
                 }
                 newEmitManager.Init(mod);
-                _moduleEmitManagers[key] = newEmitManager;
+                _moduleEntityManagers[key] = newEmitManager;
                 return newEmitManager;
             }
         }
@@ -56,7 +48,7 @@ namespace Obfuz.Emit
         public List<T> GetEntities<T>()  where T: IGroupByModuleEntity
         {
             var managers = new List<T>();
-            foreach (var kv in _moduleEmitManagers)
+            foreach (var kv in _moduleEntityManagers)
             {
                 if (kv.Key.Item2 == typeof(T))
                 {

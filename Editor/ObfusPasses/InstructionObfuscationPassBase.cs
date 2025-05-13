@@ -11,8 +11,9 @@ namespace Obfuz.ObfusPasses
 
         protected abstract bool NeedObfuscateMethod(MethodDef method);
 
-        public override void Process(ObfuscationPassContext ctx)
+        public override void Process()
         {
+            var ctx = ObfuscationPassContext.Current;
             var modules = NeedProcessNotObfuscatedAssembly ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
             NotObfuscatedMethodWhiteList whiteList = ctx.whiteList;
             ConfigurablePassPolicy passPolicy = ctx.passPolicy;

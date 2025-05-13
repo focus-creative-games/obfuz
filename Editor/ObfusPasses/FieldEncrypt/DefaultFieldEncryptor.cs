@@ -14,18 +14,20 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
     {
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public DefaultFieldEncryptor(IRandom random, IEncryptor encryptor, int encryptionLevel)
+        public DefaultFieldEncryptor(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
+            _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
         }
 
         private DefaultMetadataImporter GetMetadataImporter(MethodDef method)
         {
-            return GroupByModuleEntityManager.Ins.GetDefaultModuleMetadataImporter(method.Module);
+            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module);
         }
 
          class FieldEncryptInfo

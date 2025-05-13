@@ -63,8 +63,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
         }
 
-        public void Init(ObfuscationPassContext ctx)
+        public void Init()
         {
+            var ctx = ObfuscationPassContext.Current;
             _assemblyCache = ctx.assemblyCache;
             _toObfuscatedModules = ctx.toObfuscatedModules;
             _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;

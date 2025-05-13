@@ -242,18 +242,20 @@ namespace Obfuz.ObfusPasses.CallObfus
     {
         private readonly IRandom _random;
         private readonly IEncryptor _encryptor;
+        private GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public CallProxyAllocator(IRandom random, IEncryptor encryptor, int encryptionLevel)
+        public CallProxyAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
             _random = random;
             _encryptor = encryptor;
+            _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
         }
 
         private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return GroupByModuleEntityManager.Ins.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor, _encryptionLevel));
+            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_random, _encryptor, _encryptionLevel));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
@@ -264,7 +266,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public void Done()
         {
-            foreach (var allocator in GroupByModuleEntityManager.Ins.GetEntities<ModuleCallProxyAllocator>())
+            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleCallProxyAllocator>())
             {
                 allocator.Done();
             }
