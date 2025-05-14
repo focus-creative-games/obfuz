@@ -133,14 +133,17 @@ namespace Obfuz
             for (int i = 0; i < vm.opCodes.Length; i++)
             {
                 int ops = i * vm.opCodes.Length + i;
-                int encryptedValueOfVms = vms.Encrypt(testValue, ops, i);
-                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, ops, i);
+                //int salt = i;
+                //int ops = -1135538782;
+                int salt = -879409147;
+                int encryptedValueOfVms = vms.Encrypt(testValue, ops, salt);
+                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, ops, salt);
                 if (decryptedValueOfVms != testValue)
                 {
                     throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfVms}");
                 }
-                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, ops, i);
-                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, i);
+                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, ops, salt);
+                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
                 if (encryptedValueOfGvm != encryptedValueOfVms)
                 {
                     throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testValue} encryptedValue VirtualMachineSimulator:{encryptedValueOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
@@ -150,14 +153,14 @@ namespace Obfuz
                     throw new Exception($"GeneratedEncryptionVirtualMachine decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfGvm}");
                 }
 
-                byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, i);
-                string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, i);
+                byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, salt);
+                string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, salt);
                 if (descryptedStrOfVms != testString)
                 {
                     throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfVms}");
                 }
-                byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, i);
-                string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, i);
+                byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, salt);
+                string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, salt);
                 if (!encryptedStrOfGvm.SequenceEqual(encryptedStrOfVms))
                 {
                     throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testString} encryptedValue VirtualMachineSimulator:{encryptedStrOfVms} GeneratedEncryptionVirtualMachine:{encryptedStrOfGvm}");

@@ -62,7 +62,7 @@ namespace Obfuz.EncryptionVM
         private List<uint> DecodeOps(uint ops)
         {
             var codes = new List<uint>();
-            while (ops > 0)
+            while (ops != 0)
             {
                 uint code = ops % (uint)_opCodes.Length;
                 codes.Add(code);

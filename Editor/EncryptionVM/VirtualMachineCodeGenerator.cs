@@ -152,19 +152,20 @@ namespace Obfuz.EncryptionVM
 
         public override int Encrypt(int value, int opts, int salt)
         {
-            int revertOps = 0;
-            while (opts > 0)
+            uint uopts = (uint)opts;
+            uint revertOps = 0;
+            while (uopts != 0)
             {
-                int opCode = opts & kOpCodeMask;
+                uint opCode = uopts & kOpCodeMask;
                 revertOps <<= kOpCodeBits;
                 revertOps |= opCode;
-                opts >>= kOpCodeBits;
+                uopts >>= kOpCodeBits;
             }
 
-            while (revertOps > 0)
+            while (revertOps != 0)
             {
-                int opCode = revertOps & kOpCodeMask;
-                value = ExecuteEncrypt(value, opCode, salt);
+                uint opCode = revertOps & kOpCodeMask;
+                value = ExecuteEncrypt(value, (int)opCode, salt);
                 revertOps >>= kOpCodeBits;
             }
             return value;
@@ -172,11 +173,12 @@ namespace Obfuz.EncryptionVM
 
         public override int Decrypt(int value, int opts, int salt)
         {
-            while (opts > 0)
+            uint uopts = (uint)opts;
+            while (uopts != 0)
             {
-                int opCode = opts & kOpCodeMask;
-                value = ExecuteDecrypt(value, opCode, salt);
-                opts >>= kOpCodeBits;
+                uint opCode = uopts & kOpCodeMask;
+                value = ExecuteDecrypt(value, (int)opCode, salt);
+                uopts >>= kOpCodeBits;
             }
             return value;
         }
