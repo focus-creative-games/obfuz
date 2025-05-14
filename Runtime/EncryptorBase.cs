@@ -42,29 +42,49 @@ namespace Obfuz
 
         public virtual float Encrypt(float value, int opts, int salt)
         {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+            {
+                return value;
+            }
             ref int intValue = ref UnsafeUtility.As<float, int>(ref value);
-            intValue = Encrypt(intValue, opts, salt);
+            int xorValue = ((1 << 23) - 1) & (opts ^ salt);
+            intValue ^= xorValue;
             return value;
         }
 
         public virtual float Decrypt(float value, int opts, int salt)
         {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+            {
+                return value;
+            }
             ref int intValue = ref UnsafeUtility.As<float, int>(ref value);
-            intValue = Decrypt(intValue, opts, salt);
+            int xorValue = ((1 << 23) - 1) & (opts ^ salt);
+            intValue ^= xorValue;
             return value;
         }
 
         public virtual double Encrypt(double value, int opts, int salt)
         {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                return value;
+            }
             ref long longValue = ref UnsafeUtility.As<double, long>(ref value);
-            longValue = Encrypt(longValue, opts, salt);
+            long xorValue = ((1L << 52) - 1) & (((long)opts << 32) | (uint)salt);
+            longValue ^= xorValue;
             return value;
         }
 
         public virtual double Decrypt(double value, int opts, int salt)
         {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                return value;
+            }
             ref long longValue = ref UnsafeUtility.As<double, long>(ref value);
-            longValue = Decrypt(longValue, opts, salt);
+            long xorValue = ((1L << 52) - 1) & (((long)opts << 32) | (uint)salt);
+            longValue ^= xorValue;
             return value;
         }
 
