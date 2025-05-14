@@ -129,16 +129,18 @@ namespace Obfuz
             var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _byteSecret } );
 
             int testValue = 11223344;
+            string testString = "hello,world";
             for (int i = 0; i < vm.opCodes.Length; i++)
             {
-                int encryptedValueOfVms = vms.Encrypt(testValue, i, i);
-                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, i, i);
+                int ops = i * vm.opCodes.Length + i;
+                int encryptedValueOfVms = vms.Encrypt(testValue, ops, i);
+                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, ops, i);
                 if (decryptedValueOfVms != testValue)
                 {
                     throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfVms}");
                 }
-                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, i, i);
-                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, i, i);
+                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, ops, i);
+                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, i);
                 if (encryptedValueOfGvm != encryptedValueOfVms)
                 {
                     throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testValue} encryptedValue VirtualMachineSimulator:{encryptedValueOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
@@ -146,6 +148,23 @@ namespace Obfuz
                 if (decryptedValueOfGvm != testValue)
                 {
                     throw new Exception($"GeneratedEncryptionVirtualMachine decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfGvm}");
+                }
+
+                byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, i);
+                string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, i);
+                if (descryptedStrOfVms != testString)
+                {
+                    throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfVms}");
+                }
+                byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, i);
+                string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, i);
+                if (!encryptedStrOfGvm.SequenceEqual(encryptedStrOfVms))
+                {
+                    throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testString} encryptedValue VirtualMachineSimulator:{encryptedStrOfVms} GeneratedEncryptionVirtualMachine:{encryptedStrOfGvm}");
+                }
+                if (descryptedStrOfGvm != testString)
+                {
+                    throw new Exception($"GeneratedEncryptionVirtualMachine decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfGvm}");
                 }
             }
 
@@ -223,6 +242,9 @@ namespace Obfuz
         private void OnPostObfuscation(Pipeline pipeline)
         {
             pipeline.Stop();
+
+            _ctx.constFieldAllocator.Done();
+            _ctx.rvaDataAllocator.Done();
             WriteAssemblies();
         }
     }

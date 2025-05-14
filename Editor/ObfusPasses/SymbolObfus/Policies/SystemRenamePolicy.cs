@@ -8,7 +8,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(TypeDef typeDef)
         {
             string name = typeDef.Name;
-            if (name == "<Module>")
+            if (name == "<Module>" || name == "ObfuzIgnoreAttribute")
             {
                 return false;
             }

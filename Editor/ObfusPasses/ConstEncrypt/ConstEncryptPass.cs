@@ -36,7 +36,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public override void Stop()
         {
-            _dataObfuscator.Done();
+
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)

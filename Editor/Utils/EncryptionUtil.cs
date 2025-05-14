@@ -30,8 +30,8 @@ namespace Obfuz.Utils
             for (int i = 0; i < encryptionLevel; i++)
             {
                 ops *= vmOpCodeCount;
-                // first op code can't be 0
-                int op = random.NextInt(i == 0 ? 1 : 0, vmOpCodeCount);
+                // don't use 0
+                int op = random.NextInt(1, vmOpCodeCount);
                 ops |= (uint)op;
                 if (ops > uint.MaxValue)
                 {

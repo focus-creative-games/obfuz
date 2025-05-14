@@ -196,8 +196,6 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public void Done()
         {
-            _rvaDataAllocator.Done();
-            _constFieldAllocator.Done();
         }
     }
 }

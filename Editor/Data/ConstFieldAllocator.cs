@@ -5,6 +5,7 @@ using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -31,6 +32,7 @@ namespace Obfuz.Data
         private readonly Dictionary<FieldDef, ConstFieldInfo> _field2Fields = new Dictionary<FieldDef, ConstFieldInfo>();
 
         private readonly List<TypeDef> _holderTypeDefs = new List<TypeDef>();
+        private bool _done;
 
 
         public ModuleConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
@@ -89,6 +91,10 @@ namespace Obfuz.Data
 
         private FieldDef AllocateAny(object value)
         {
+            if (_done)
+            {
+                throw new Exception("can't Allocate after done");
+            }
             if (!_allocatedFields.TryGetValue(value, out var field))
             {
                 field = CreateConstFieldInfo(value);
@@ -248,6 +254,11 @@ namespace Obfuz.Data
 
         public void Done()
         {
+            if (_done)
+            {
+                throw new Exception("Already done");
+            }
+            _done = true;
             foreach (var typeDef in _holderTypeDefs)
             {
                 CreateCCtorOfRvaTypeDef(typeDef);

@@ -69,6 +69,7 @@ namespace Obfuz.Data
         private TypeDef _rvaTypeDef;
 
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
+        private bool _done;
 
         public ModuleRvaDataAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager)
         {
@@ -99,10 +100,10 @@ namespace Obfuz.Data
             }
 
 
-            var holderField = new FieldDefUser($"$RVA_Data{_rvaTypeDef.Fields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
+            var holderField = new FieldDefUser($"$RVA_Data{_rvaFields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
             holderField.DeclaringType = _rvaTypeDef;
 
-            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaTypeDef.Fields.Count}", new FieldSig(new SZArraySig(_module.CorLibTypes.Byte)), FieldAttributes.Static);
+            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaFields.Count}", new FieldSig(new SZArraySig(_module.CorLibTypes.Byte)), FieldAttributes.Static);
             runtimeValueField.DeclaringType = _rvaTypeDef;
             return (holderField, runtimeValueField);
         }
@@ -145,6 +146,10 @@ namespace Obfuz.Data
 
         private RvaField GetRvaField(int preservedSize, int alignment)
         {
+            if (_done)
+            {
+                throw new Exception("can't GetRvaField after done");
+            }
             Assert.IsTrue(preservedSize % alignment == 0);
             // for big size, create a new field
             if (preservedSize >= maxRvaDataSize)
@@ -279,6 +284,11 @@ namespace Obfuz.Data
 
         public void Done()
         {
+            if (_done)
+            {
+                throw new Exception("can't call Done twice");
+            }
+            _done = true;
             SetFieldsRVA();
             CreateCCtorOfRvaTypeDef();
         }

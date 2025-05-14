@@ -57,24 +57,24 @@ namespace Obfuz.EncryptionVM
             }
         }
 
-        private List<ushort> DecodeOps(int ops)
+        private List<uint> DecodeOps(uint ops)
         {
-            var codes = new List<ushort>();
+            var codes = new List<uint>();
             while (ops > 0)
             {
-                var code = (ushort)(ops % _opCodes.Length);
+                uint code = ops % (uint)_opCodes.Length;
                 codes.Add(code);
-                ops >>= 16;
+                ops /= (uint)_opCodes.Length;
             }
             return codes;
         }
 
         public override int Encrypt(int value, int ops, int salt)
         {
-            var codes = DecodeOps(ops);
-            foreach (var code in codes)
+            var codes = DecodeOps((uint)ops);
+            for (int i = codes.Count - 1; i >= 0; i--)
             {
-                var opCode = _opCodes[code];
+                var opCode = _opCodes[codes[i]];
                 value = opCode.Encrypt(value, _secretKey, salt);
             }
             return value;
@@ -82,10 +82,10 @@ namespace Obfuz.EncryptionVM
 
         public override int Decrypt(int value, int ops, int salt)
         {
-            var codes = DecodeOps(ops);
-            for (int i = codes.Count - 1; i >= 0; i--)
+            var codes = DecodeOps((uint)ops);
+            foreach (var code in codes)
             {
-                var opCode = _opCodes[codes[i]];
+                var opCode = _opCodes[code];
                 value = opCode.Decrypt(value, _secretKey, salt);
             }
             return value;

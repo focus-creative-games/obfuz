@@ -36,6 +36,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         private readonly RandomCreator _randomCreator;
         private readonly IEncryptor _encryptor;
         private readonly int _encryptionLevel;
+        private bool _done;
 
         class MethodKey : IEquatable<MethodKey>
         {
@@ -188,6 +189,10 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public ProxyCallMethodData Allocate(IMethod method, bool callVir)
         {
+            if (_done)
+            {
+                throw new Exception("can't Allocate after done");
+            }
             var key = new MethodKey(method, callVir);
             if (!_methodProxys.TryGetValue(key, out var proxyInfo))
             {
@@ -214,6 +219,12 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public void Done()
         {
+            if (_done)
+            {
+                throw new Exception("Already done");
+            }
+            _done = true;
+
             foreach (DispatchMethodInfo dispatchMethod in _dispatchMethods.Values.SelectMany(ms => ms))
             {
                 var methodDef = dispatchMethod.methodDef;

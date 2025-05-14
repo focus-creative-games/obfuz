@@ -152,11 +152,20 @@ namespace Obfuz.EncryptionVM
 
         public override int Encrypt(int value, int opts, int salt)
         {
+            int revertOps = 0;
             while (opts > 0)
             {
                 int opCode = opts & kOpCodeMask;
-                value = ExecuteEncrypt(value, opCode, salt);
+                revertOps <<= kOpCodeBits;
+                revertOps |= opCode;
                 opts >>= kOpCodeBits;
+            }
+
+            while (revertOps > 0)
+            {
+                int opCode = revertOps & kOpCodeMask;
+                value = ExecuteEncrypt(value, opCode, salt);
+                revertOps >>= kOpCodeBits;
             }
             return value;
         }
