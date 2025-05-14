@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
@@ -32,6 +33,7 @@ namespace Obfuz.EncryptionVM
             {
                 int encryptedValue = _opCodes[i].Encrypt(value, _secretKey, i);
                 int decryptedValue = _opCodes[i].Decrypt(encryptedValue, _secretKey, i);
+                Debug.Log($"instruction type:{_opCodes[i].function.GetType()}");
                 Assert.AreEqual(value, decryptedValue);
             }
 
