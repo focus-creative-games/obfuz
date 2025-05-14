@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Editor;
 using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
@@ -74,13 +75,13 @@ namespace Obfuz.Data
             {
                 _module.EnableTypeDefFindCache = false;
                 ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
-                _holderTypeDef = new TypeDefUser($"$Obfuz$ConstFieldHolder${_holderTypeDefs.Count}", objectTypeRef);
+                _holderTypeDef = new TypeDefUser($"{ConstValues.ObfuzMetadataNamePrefix}ConstFieldHolder${_holderTypeDefs.Count}", objectTypeRef);
                 _module.Types.Add(_holderTypeDef);
                 _holderTypeDefs.Add(_holderTypeDef);
                 _module.EnableTypeDefFindCache = true;
             }
 
-            var field = new FieldDefUser($"$RVA_Value{_holderTypeDef.Fields.Count}", new FieldSig(GetTypeSigOfValue(value)), FieldAttributes.Static | FieldAttributes.Private | FieldAttributes.InitOnly);
+            var field = new FieldDefUser($"{ConstValues.ObfuzMetadataNamePrefix}RVA_Value{_holderTypeDef.Fields.Count}", new FieldSig(GetTypeSigOfValue(value)), FieldAttributes.Static | FieldAttributes.Private | FieldAttributes.InitOnly);
             field.DeclaringType = _holderTypeDef;
             return new ConstFieldInfo
             {

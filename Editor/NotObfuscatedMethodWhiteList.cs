@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Editor;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,10 @@ namespace Obfuz
             {
                 return true;
             }
+            if (method.Name.StartsWith(ConstValues.ObfuzMetadataNamePrefix))
+            {
+                return true;
+            }
             if (ShouldBeIgnoredByCustomAttribute(method))
             {
                 return true;
@@ -44,10 +49,10 @@ namespace Obfuz
 
         public bool IsInWhiteList(TypeDef type)
         {
-            //if (type.Name.StartsWith("$Obfuz$"))
-            //{
-            //    continue;
-            //}
+            if (type.Name.StartsWith(ConstValues.ObfuzMetadataNamePrefix))
+            {
+                return true;
+            }
             if (IsInWhiteList(type.Module))
             {
                 return true;

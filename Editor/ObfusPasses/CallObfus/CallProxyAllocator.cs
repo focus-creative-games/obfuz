@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Editor;
 using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
@@ -108,7 +109,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef CreateProxyTypeDef()
         {
-            var typeDef = new TypeDefUser("$Obfuz$ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
+            var typeDef = new TypeDefUser($"{ConstValues.ObfuzMetadataNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
             typeDef.Attributes = TypeAttributes.NotPublic | TypeAttributes.Sealed;
             _module.EnableTypeDefFindCache = false;
             _module.Types.Add(typeDef);
@@ -122,7 +123,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 _proxyTypeDef = CreateProxyTypeDef();
             }
-            MethodDef methodDef = new MethodDefUser($"$Obfuz$ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
+            MethodDef methodDef = new MethodDefUser($"{ConstValues.ObfuzMetadataNamePrefix}ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
                 MethodAttributes.Static | MethodAttributes.Private);
             methodDef.DeclaringType = _proxyTypeDef;
