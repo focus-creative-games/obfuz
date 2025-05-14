@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -48,6 +49,19 @@ namespace Obfuz.Utils
 
                 return num + num2 * 1566083941;
             }
+        }
+
+        public static int ComputePrimitiveOrStringOrBytesHashCode(object obj)
+        {
+            if (obj is byte[] bytes)
+            {
+                return StructuralComparisons.StructuralEqualityComparer.GetHashCode(bytes);
+            }
+            if (obj is string s)
+            {
+                return HashUtil.ComputeHash(s);
+            }
+            return obj.GetHashCode();
         }
     }
 }

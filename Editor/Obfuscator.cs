@@ -128,7 +128,17 @@ namespace Obfuz
 
             var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { _byteSecret } );
 
-            int testValue = 11223344;
+            VerifyVm(vm, vms, gvmInstance);
+
+            return vms;
+        }
+
+        private void VerifyVm(VirtualMachine vm, VirtualMachineSimulator vms, IEncryptor gvmInstance)
+        {
+            int testInt = 11223344;
+            long testLong = 1122334455667788L;
+            float testFloat = 1234f;
+            double testDouble = 1122334455.0;
             string testString = "hello,world";
             for (int i = 0; i < vm.opCodes.Length; i++)
             {
@@ -136,42 +146,98 @@ namespace Obfuz
                 //int salt = i;
                 //int ops = -1135538782;
                 int salt = -879409147;
-                int encryptedValueOfVms = vms.Encrypt(testValue, ops, salt);
-                int decryptedValueOfVms = vms.Decrypt(encryptedValueOfVms, ops, salt);
-                if (decryptedValueOfVms != testValue)
                 {
-                    throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfVms}");
+                    int encryptedIntOfVms = vms.Encrypt(testInt, ops, salt);
+                    int decryptedIntOfVms = vms.Decrypt(encryptedIntOfVms, ops, salt);
+                    if (decryptedIntOfVms != testInt)
+                    {
+                        throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testInt} decryptedValue:{decryptedIntOfVms}");
+                    }
+                    int encryptedValueOfGvm = gvmInstance.Encrypt(testInt, ops, salt);
+                    int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
+                    if (encryptedValueOfGvm != encryptedIntOfVms)
+                    {
+                        throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testInt} encryptedValue VirtualMachineSimulator:{encryptedIntOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
+                    }
+                    if (decryptedValueOfGvm != testInt)
+                    {
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt failed! opCode:{i}, originalValue:{testInt} decryptedValue:{decryptedValueOfGvm}");
+                    }
                 }
-                int encryptedValueOfGvm = gvmInstance.Encrypt(testValue, ops, salt);
-                int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
-                if (encryptedValueOfGvm != encryptedValueOfVms)
                 {
-                    throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testValue} encryptedValue VirtualMachineSimulator:{encryptedValueOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
+                    long encryptedLongOfVms = vms.Encrypt(testLong, ops, salt);
+                    long decryptedLongOfVms = vms.Decrypt(encryptedLongOfVms, ops, salt);
+                    if (decryptedLongOfVms != testLong)
+                    {
+                        throw new Exception($"VirtualMachineSimulator decrypt long failed! opCode:{i}, originalValue:{testLong} decryptedValue:{decryptedLongOfVms}");
+                    }
+                    long encryptedValueOfGvm = gvmInstance.Encrypt(testLong, ops, salt);
+                    long decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
+                    if (encryptedValueOfGvm != encryptedLongOfVms)
+                    {
+                        throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testLong} encryptedValue VirtualMachineSimulator:{encryptedLongOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
+                    }
+                    if (decryptedValueOfGvm != testLong)
+                    {
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt long failed! opCode:{i}, originalValue:{testLong} decryptedValue:{decryptedValueOfGvm}");
+                    }
                 }
-                if (decryptedValueOfGvm != testValue)
                 {
-                    throw new Exception($"GeneratedEncryptionVirtualMachine decrypt failed! opCode:{i}, originalValue:{testValue} decryptedValue:{decryptedValueOfGvm}");
+                    float encryptedFloatOfVms = vms.Encrypt(testFloat, ops, salt);
+                    float decryptedFloatOfVms = vms.Decrypt(encryptedFloatOfVms, ops, salt);
+                    if (decryptedFloatOfVms != testFloat)
+                    {
+                        throw new Exception("encryptedFloat not match");
+                    }
+                    float encryptedValueOfGvm = gvmInstance.Encrypt(testFloat, ops, salt);
+                    float decryptedValueOfGvm = gvmInstance.Decrypt(encryptedFloatOfVms, ops, salt);
+                    if (encryptedFloatOfVms != encryptedValueOfGvm)
+                    {
+                        throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testFloat} encryptedValue");
+                    }
+                    if (decryptedValueOfGvm != testFloat)
+                    {
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt float failed! opCode:{i}, originalValue:{testFloat}");
+                    }
+                }
+                {
+                    double encryptedFloatOfVms = vms.Encrypt(testDouble, ops, salt);
+                    double decryptedFloatOfVms = vms.Decrypt(encryptedFloatOfVms, ops, salt);
+                    if (decryptedFloatOfVms != testDouble)
+                    {
+                        throw new Exception("encryptedFloat not match");
+                    }
+                    double encryptedValueOfGvm = gvmInstance.Encrypt(testDouble, ops, salt);
+                    double decryptedValueOfGvm = gvmInstance.Decrypt(encryptedFloatOfVms, ops, salt);
+                    if (encryptedFloatOfVms != encryptedValueOfGvm)
+                    {
+                        throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testDouble} encryptedValue");
+                    }
+                    if (decryptedValueOfGvm != testDouble)
+                    {
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt float failed! opCode:{i}, originalValue:{testDouble}");
+                    }
                 }
 
-                byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, salt);
-                string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, salt);
-                if (descryptedStrOfVms != testString)
                 {
-                    throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfVms}");
-                }
-                byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, salt);
-                string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, salt);
-                if (!encryptedStrOfGvm.SequenceEqual(encryptedStrOfVms))
-                {
-                    throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testString} encryptedValue VirtualMachineSimulator:{encryptedStrOfVms} GeneratedEncryptionVirtualMachine:{encryptedStrOfGvm}");
-                }
-                if (descryptedStrOfGvm != testString)
-                {
-                    throw new Exception($"GeneratedEncryptionVirtualMachine decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfGvm}");
+                    byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, salt);
+                    string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, salt);
+                    if (descryptedStrOfVms != testString)
+                    {
+                        throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfVms}");
+                    }
+                    byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, salt);
+                    string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, salt);
+                    if (!encryptedStrOfGvm.SequenceEqual(encryptedStrOfVms))
+                    {
+                        throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testString} encryptedValue VirtualMachineSimulator:{encryptedStrOfVms} GeneratedEncryptionVirtualMachine:{encryptedStrOfGvm}");
+                    }
+                    if (descryptedStrOfGvm != testString)
+                    {
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfGvm}");
+                    }
                 }
             }
-
-            return vms;
         }
 
         private void OnPreObfuscation(Pipeline pipeline)
@@ -182,10 +248,11 @@ namespace Obfuz
             LoadAssemblies(assemblyCache, toObfuscatedModules, obfuscatedAndNotObfuscatedModules);
 
             var random = new RandomWithKey(_intSecret, _randomSeed);
+            RandomCreator localRandomCreator = (seed) => new RandomWithKey(_intSecret, _randomSeed ^ seed);
             var encryptor = CreateEncryptionVirtualMachine();
             var moduleEntityManager = new GroupByModuleEntityManager();
             var rvaDataAllocator = new RvaDataAllocator(random, encryptor, moduleEntityManager);
-            var constFieldAllocator = new ConstFieldAllocator(encryptor, random, rvaDataAllocator, moduleEntityManager);
+            var constFieldAllocator = new ConstFieldAllocator(encryptor, localRandomCreator, rvaDataAllocator, moduleEntityManager);
             _ctx = new ObfuscationPassContext
             {
                 assemblyCache = assemblyCache,
@@ -197,7 +264,7 @@ namespace Obfuz
                 moduleEntityManager = moduleEntityManager,
 
                 globalRandom = random,
-                localRandomCreator = (seed) => new RandomWithKey(_intSecret, _randomSeed ^ seed),
+                localRandomCreator = localRandomCreator,
                 encryptor = encryptor,
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,

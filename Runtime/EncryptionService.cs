@@ -101,13 +101,13 @@ namespace Obfuz
 
         public static float DecryptFromRvaFloat(byte[] data, int offset, int ops, int salt)
         {
-            int encryptedValue = ConstUtility.GetInt(data, offset);
+            float encryptedValue = ConstUtility.GetFloat(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 
         public static double DecryptFromRvaDouble(byte[] data, int offset, int ops, int salt)
         {
-            long encryptedValue = ConstUtility.GetLong(data, offset);
+            double encryptedValue = ConstUtility.GetDouble(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 

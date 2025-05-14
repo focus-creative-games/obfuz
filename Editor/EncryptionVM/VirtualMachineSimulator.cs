@@ -33,7 +33,7 @@ namespace Obfuz.EncryptionVM
             {
                 int encryptedValue = _opCodes[i].Encrypt(value, _secretKey, i);
                 int decryptedValue = _opCodes[i].Decrypt(encryptedValue, _secretKey, i);
-                Debug.Log($"instruction type:{_opCodes[i].function.GetType()}");
+                //Debug.Log($"instruction type:{_opCodes[i].function.GetType()}");
                 Assert.AreEqual(value, decryptedValue);
             }
 

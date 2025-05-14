@@ -4,6 +4,7 @@ using Obfuz.Editor;
 using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -17,7 +18,7 @@ namespace Obfuz.Data
     public class ModuleConstFieldAllocator : IGroupByModuleEntity
     {
         private ModuleDef _module;
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly IEncryptor _encryptor;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
@@ -29,17 +30,40 @@ namespace Obfuz.Data
             public FieldDef field;
             public object value;
         }
-        private readonly Dictionary<object, ConstFieldInfo> _allocatedFields = new Dictionary<object, ConstFieldInfo>();
+
+        class AnyComparer : IEqualityComparer<object>
+        {
+            public new bool Equals(object x, object y)
+            {
+                if (x is byte[] xBytes && y is byte[] yBytes)
+                {
+                    return StructuralComparisons.StructuralEqualityComparer.Equals(xBytes, yBytes);
+                }
+                return x.Equals(y);
+            }
+
+            public static int ComputeHashCode(object obj)
+            {
+                return HashUtil.ComputePrimitiveOrStringOrBytesHashCode(obj);
+            }
+
+            public int GetHashCode(object obj)
+            {
+                return ComputeHashCode(obj);
+            }
+        }
+
+        private readonly Dictionary<object, ConstFieldInfo> _allocatedFields = new Dictionary<object, ConstFieldInfo>(new AnyComparer());
         private readonly Dictionary<FieldDef, ConstFieldInfo> _field2Fields = new Dictionary<FieldDef, ConstFieldInfo>();
 
         private readonly List<TypeDef> _holderTypeDefs = new List<TypeDef>();
         private bool _done;
 
 
-        public ModuleConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
+        public ModuleConstFieldAllocator(IEncryptor encryptor, RandomCreator randomCreator, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
             _encryptor = encryptor;
-            _random = random;
+            _randomCreator = randomCreator;
             _rvaDataAllocator = rvaDataAllocator;
             _moduleEntityManager = moduleEntityManager;
         }
@@ -135,16 +159,6 @@ namespace Obfuz.Data
             return AllocateAny(value);
         }
 
-        private int GenerateEncryptionOperations()
-        {
-            return _random.NextInt();
-        }
-
-        public int GenerateSalt()
-        {
-            return _random.NextInt();
-        }
-
         private DefaultMetadataImporter GetModuleMetadataImporter()
         {
             return _moduleEntityManager.GetDefaultModuleMetadataImporter(_module);
@@ -171,8 +185,9 @@ namespace Obfuz.Data
             foreach (var field in type.Fields)
             {
                 ConstFieldInfo constInfo = _field2Fields[field];
-                int ops = GenerateEncryptionOperations();
-                int salt = GenerateSalt();
+                IRandom localRandom = _randomCreator(HashUtil.ComputePrimitiveOrStringOrBytesHashCode(constInfo.value));
+                int ops = EncryptionUtil.GenerateEncryptionOpCodes(localRandom, _encryptor, 4);
+                int salt = localRandom.NextInt();
                 switch (constInfo.value)
                 {
                     case int i:
@@ -221,13 +236,12 @@ namespace Obfuz.Data
                     }
                     case string s:
                     {
-                        int stringByteLength = Encoding.UTF8.GetByteCount(s);
                         byte[] encryptedValue = _encryptor.Encrypt(s, ops, salt);
                         RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
                         ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                         ins.Add(Instruction.CreateLdcI4(rvaData.offset));
-                        //// should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
-                        ins.Add(Instruction.CreateLdcI4(stringByteLength));
+                        Assert.AreEqual(encryptedValue.Length, rvaData.size);
+                        ins.Add(Instruction.CreateLdcI4(encryptedValue.Length));
                         ins.Add(Instruction.CreateLdcI4(ops));
                         ins.Add(Instruction.CreateLdcI4(salt));
                         ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaString));
@@ -236,10 +250,10 @@ namespace Obfuz.Data
                     case byte[] bs:
                     {
                         byte[] encryptedValue = _encryptor.Encrypt(bs, 0, bs.Length, ops, salt);
+                        Assert.AreEqual(encryptedValue.Length, bs.Length);
                         RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
                         ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                         ins.Add(Instruction.CreateLdcI4(rvaData.offset));
-                        //// should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
                         ins.Add(Instruction.CreateLdcI4(bs.Length));
                         ins.Add(Instruction.CreateLdcI4(ops));
                         ins.Add(Instruction.CreateLdcI4(salt));
@@ -270,21 +284,21 @@ namespace Obfuz.Data
     public class ConstFieldAllocator
     {
         private readonly IEncryptor _encryptor;
-        private readonly IRandom _random;
+        private readonly RandomCreator _randomCreator;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public ConstFieldAllocator(IEncryptor encryptor, IRandom random, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
+        public ConstFieldAllocator(IEncryptor encryptor, RandomCreator randomCreator, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
             _encryptor = encryptor;
-            _random = random;
+            _randomCreator = randomCreator;
             _rvaDataAllocator = rvaDataAllocator;
             _moduleEntityManager = moduleEntityManager;
         }
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _random, _rvaDataAllocator, _moduleEntityManager));
+            return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _randomCreator, _rvaDataAllocator, _moduleEntityManager));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)
