@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Obfuz.Settings
@@ -15,5 +16,12 @@ namespace Obfuz.Settings
 
         [Tooltip("extra assembly search dirs")]
         public string[] extraAssemblySearchDirs;
+
+        public string[] GetObfuscationRelativeAssemblyNames()
+        {
+            return toObfuscatedAssemblyNames
+                .Concat(notObfuscatedAssemblyNamesReferencingObfuscated)
+                .ToArray();
+        }
     }
 }

@@ -144,8 +144,11 @@ namespace Obfuz
                 };
         }
 
-        public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target)
+        public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation)
         {
+            List<string> searchPaths = searchPathIncludeUnityEditorInstallLocation ?
+                BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.extraAssemblySearchDirs).ToList()
+                : settings.assemblySettings.extraAssemblySearchDirs.ToList();
             var builder = new ObfuscatorBuilder
             {
                 _secret = settings.secretSettings.secret,
@@ -156,7 +159,7 @@ namespace Obfuz
                 _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
                 _toObfuscatedAssemblyNames = settings.assemblySettings.toObfuscatedAssemblyNames.ToList(),
                 _notObfuscatedAssemblyNamesReferencingObfuscated = settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
-                _assemblySearchDirs = BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.extraAssemblySearchDirs).ToList(),
+                _assemblySearchDirs = searchPaths,
                 _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
                 _enabledObfuscationPasses = settings.obfuscationPassSettings.enabledPasses,
                 _obfuscationPassConfigFiles = settings.obfuscationPassSettings.configFiles.ToList(),

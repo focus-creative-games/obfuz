@@ -17,57 +17,35 @@ namespace Obfuz.Unity
 {
 
 #if UNITY_2019_1_OR_NEWER
-    public class ObfuscationProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+    public class ObfuscationProcess : IPostBuildPlayerScriptDLLs
     {
-        private static bool s_obfuscated = false;
-
         public int callbackOrder => 10000;
 
         public static event Action<ObfuscationBeginEventArgs> OnObfuscationBegin;
 
         public static event Action<ObfuscationEndEventArgs> OnObfuscationEnd;
 
-        [InitializeOnLoadMethod]
-        private static void Init()
+        public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            CompilationPipeline.compilationFinished += OnCompilationFinished;
+            RunObfuscate(report.GetFiles());
         }
 
-        public void OnPreprocessBuild(BuildReport report)
+        private static void BackupOriginalDlls(string srcDir, string dstDir, HashSet<string> dllNames)
         {
-            s_obfuscated = false;
-            FileUtil.RemoveDir(GetScriptAssembliesPath());
-        }
-
-        private static string GetScriptAssembliesPath()
-        {
-#if UNITY_2022_1_OR_NEWER
-            return "Library/Bee/PlayerScriptAssemblies";
-#else
-            return "Library/PlayerScriptAssemblies";
-#endif
-        }
-
-        private static void OnCompilationFinished(object obj)
-        {
-            if (!BuildPipeline.isBuildingPlayer)
+            FileUtil.RecreateDir(dstDir);
+            foreach (string dllName in dllNames)
             {
-                return;
-            }
-            string scriptAssembliesPath = GetScriptAssembliesPath();
-            if (!s_obfuscated && Directory.Exists(scriptAssembliesPath))
-            {
-                RunObfuscate(scriptAssembliesPath);
-                s_obfuscated = true;
+                string srcFile = Path.Combine(srcDir, dllName);
+                string dstFile = Path.Combine(dstDir, dllName);
+                if (File.Exists(srcFile))
+                {
+                    File.Copy(srcFile, dstFile, true);
+                    Debug.Log($"BackupOriginalDll {srcFile} -> {dstFile}");
+                }
             }
         }
 
-        public void OnPostprocessBuild(BuildReport report)
-        {
-            s_obfuscated = false;
-        }
-
-        private static void RunObfuscate(string scriptAssembliesPath)
+        private static void RunObfuscate(BuildFile[] files)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
             if (!settings.enable)
@@ -79,23 +57,25 @@ namespace Obfuz.Unity
             Debug.Log("Obfuscation begin...");
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
 
+            var obfuscationRelativeAssemblyNames = settings.assemblySettings.GetObfuscationRelativeAssemblyNames().ToHashSet();
+            string stagingAreaTempManagedDllDir = Path.GetDirectoryName(files.First(file => file.path.EndsWith(".dll")).path);
             string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
-            FileUtil.CopyDir(scriptAssembliesPath, backupPlayerScriptAssembliesPath);
+            BackupOriginalDlls(stagingAreaTempManagedDllDir, backupPlayerScriptAssembliesPath, obfuscationRelativeAssemblyNames);
 
             string applicationContentsPath = EditorApplication.applicationContentsPath;
 
-            var obfuscatorBuilder = ObfuscatorBuilder.FromObfuzSettings(settings, buildTarget);
+            var obfuscatorBuilder = ObfuscatorBuilder.FromObfuzSettings(settings, buildTarget, false);
 
             var assemblySearchDirs = new List<string>
                 {
-                   backupPlayerScriptAssembliesPath,
+                   stagingAreaTempManagedDllDir,
                 };
             obfuscatorBuilder.InsertTopPriorityAssemblySearchDirs(assemblySearchDirs);
 
 
             OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs
             {
-                scriptAssembliesPath = scriptAssembliesPath,
+                scriptAssembliesPath = stagingAreaTempManagedDllDir,
                 obfuscatedScriptAssembliesPath = obfuscatorBuilder.ObfuscatedAssemblyOutputDir,
             });
             bool succ = false;
@@ -105,10 +85,10 @@ namespace Obfuz.Unity
                 Obfuscator obfuz = obfuscatorBuilder.Build();
                 obfuz.Run();
 
-                foreach (var dllName in settings.assemblySettings.toObfuscatedAssemblyNames.Concat(settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated))
+                foreach (var dllName in obfuscationRelativeAssemblyNames)
                 {
                     string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
-                    string dst = $"{scriptAssembliesPath}/{dllName}.dll";
+                    string dst = $"{stagingAreaTempManagedDllDir}/{dllName}.dll";
 
                     if (!File.Exists(src))
                     {
@@ -130,7 +110,7 @@ namespace Obfuz.Unity
             {
                 success = succ,
                 originalScriptAssembliesPath = backupPlayerScriptAssembliesPath,
-                obfuscatedScriptAssembliesPath = scriptAssembliesPath,
+                obfuscatedScriptAssembliesPath = stagingAreaTempManagedDllDir,
             });
 
             Debug.Log("Obfuscation end.");
