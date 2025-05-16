@@ -1,5 +1,4 @@
 ﻿using dnlib.DotNet;
-using dnlib.Protection;
 using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.EncryptionVM;
@@ -14,7 +13,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static UnityEditor.ObjectChangeEventStream;
 
 namespace Obfuz
 {

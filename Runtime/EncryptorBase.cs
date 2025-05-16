@@ -40,49 +40,49 @@ namespace Obfuz
             return ((long)decryptedHigh << 32) | (uint)decryptedLow;
         }
 
-        public virtual float Encrypt(float value, int opts, int salt)
+        public virtual unsafe float Encrypt(float value, int opts, int salt)
         {
             if (float.IsNaN(value) || float.IsInfinity(value))
             {
                 return value;
             }
-            ref int intValue = ref UnsafeUtility.As<float, int>(ref value);
+            ref int intValue = ref *(int*)&value;
             int xorValue = ((1 << 23) - 1) & Decrypt(0xABCD, opts, salt);
             intValue ^= xorValue;
             return value;
         }
 
-        public virtual float Decrypt(float value, int opts, int salt)
+        public virtual unsafe float Decrypt(float value, int opts, int salt)
         {
             if (float.IsNaN(value) || float.IsInfinity(value))
             {
                 return value;
             }
-            ref int intValue = ref UnsafeUtility.As<float, int>(ref value);
+            ref int intValue = ref *(int*)&value;
             int xorValue = ((1 << 23) - 1) & Decrypt(0xABCD, opts, salt);
             intValue ^= xorValue;
             return value;
         }
 
-        public virtual double Encrypt(double value, int opts, int salt)
+        public virtual unsafe double Encrypt(double value, int opts, int salt)
         {
             if (double.IsNaN(value) || double.IsInfinity(value))
             {
                 return value;
             }
-            ref long longValue = ref UnsafeUtility.As<double, long>(ref value);
+            ref long longValue = ref *(long*)&value;
             long xorValue = ((1L << 52) - 1) & Decrypt(0xAABBCCDDL, opts, salt);
             longValue ^= xorValue;
             return value;
         }
 
-        public virtual double Decrypt(double value, int opts, int salt)
+        public virtual unsafe double Decrypt(double value, int opts, int salt)
         {
             if (double.IsNaN(value) || double.IsInfinity(value))
             {
                 return value;
             }
-            ref long longValue = ref UnsafeUtility.As<double, long>(ref value);
+            ref long longValue = ref *(long*)&value;
             long xorValue = ((1L << 52) - 1) & Decrypt(0xAABBCCDDL, opts, salt);
             longValue ^= xorValue;
             return value;

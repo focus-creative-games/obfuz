@@ -27,7 +27,11 @@ namespace Obfuz.Unity
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
+#if UNITY_2019
+            RunObfuscate(report.files);
+#else
             RunObfuscate(report.GetFiles());
+#endif
         }
 
         private static void BackupOriginalDlls(string srcDir, string dstDir, HashSet<string> dllNames)
@@ -57,7 +61,7 @@ namespace Obfuz.Unity
             Debug.Log("Obfuscation begin...");
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
 
-            var obfuscationRelativeAssemblyNames = settings.assemblySettings.GetObfuscationRelativeAssemblyNames().ToHashSet();
+            var obfuscationRelativeAssemblyNames = new HashSet<string>(settings.assemblySettings.GetObfuscationRelativeAssemblyNames());
             string stagingAreaTempManagedDllDir = Path.GetDirectoryName(files.First(file => file.path.EndsWith(".dll")).path);
             string backupPlayerScriptAssembliesPath = settings.GetOriginalAssemblyBackupDir(buildTarget);
             BackupOriginalDlls(stagingAreaTempManagedDllDir, backupPlayerScriptAssembliesPath, obfuscationRelativeAssemblyNames);
@@ -117,4 +121,4 @@ namespace Obfuz.Unity
         }
     }
 #endif
-}
+        }

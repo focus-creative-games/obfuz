@@ -711,7 +711,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public ConfigurableRenamePolicy(List<string> obfuscationAssemblyNames, List<string> xmlFiles)
         {
-            this._obfuscationAssemblyNames = obfuscationAssemblyNames.ToHashSet();
+            _obfuscationAssemblyNames = new HashSet<string>(obfuscationAssemblyNames);
             LoadXmls(xmlFiles);
         }
 

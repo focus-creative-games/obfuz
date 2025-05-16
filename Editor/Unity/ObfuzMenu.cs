@@ -4,7 +4,6 @@ using Obfuz.Utils;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using static UnityEditor.ObjectChangeEventStream;
 using FileUtil = Obfuz.Utils.FileUtil;
 
 namespace Obfuz.Unity

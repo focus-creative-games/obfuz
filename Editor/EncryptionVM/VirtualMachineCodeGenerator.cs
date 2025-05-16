@@ -77,7 +77,7 @@ namespace Obfuz.EncryptionVM
             {");
             foreach (var opCode in _vm.opCodes)
             {
-                lines.Add(@$"            case {opCode.code}:
+                lines.Add($@"            case {opCode.code}:
             {{
                 // {opCode.function.GetType().Name}");
                 AppendEncryptCode(lines, opCode.function);
@@ -101,7 +101,7 @@ namespace Obfuz.EncryptionVM
             {");
             foreach (var opCode in _vm.opCodes)
             {
-                lines.Add(@$"            case {opCode.code}:
+                lines.Add($@"            case {opCode.code}:
             {{
                 // {opCode.function.GetType().Name}");
                 AppendDecryptCode(lines, opCode.function);
@@ -132,7 +132,7 @@ namespace Obfuz.EncryptionVM
 {
     public class GeneratedEncryptionVirtualMachine : Obfuz.EncryptorBase
     {");
-            lines.Add(@$"
+            lines.Add($@"
         private const int kOpCodeBits = {_opCodeBits};
 
         private const int kOpCodeCount = {_opCodeCount};

@@ -24,9 +24,9 @@ namespace Obfuz
         double Decrypt(double value, int opts, int salt);
 
         byte[] Encrypt(byte[] value, int offset, int length, int opts, int salt);
-        public byte[] Decrypt(byte[] value, int offset, int byteLength, int ops, int salt);
+        byte[] Decrypt(byte[] value, int offset, int byteLength, int ops, int salt);
 
-        public byte[] Encrypt(string value, int ops, int salt);
-        public string DecryptString(byte[] value, int offset, int stringBytesLength, int ops, int salt);
+        byte[] Encrypt(string value, int ops, int salt);
+        string DecryptString(byte[] value, int offset, int stringBytesLength, int ops, int salt);
     }
 }

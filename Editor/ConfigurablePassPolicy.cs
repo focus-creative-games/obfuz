@@ -189,9 +189,9 @@ namespace Obfuz
             ObfuscationPassType passType = ObfuscationPassType.None;
             foreach (var passName in obfuscationPassTypesStr.Split('|'))
             {
-                if (Enum.TryParse(typeof(ObfuscationPassType), passName, out var pass))
+                if (Enum.TryParse< ObfuscationPassType>(passName, out var pass))
                 {
-                    passType |= (ObfuscationPassType)pass;
+                    passType |= pass;
                 }
                 else
                 {

@@ -213,22 +213,22 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             {
                 case "int":
                 {
-                    notEncryptInts.AddRange(value.Split(",").Select(s => int.Parse(s.Trim())));
+                    notEncryptInts.AddRange(value.Split(',').Select(s => int.Parse(s.Trim())));
                     break;
                 }
                 case "long":
                 {
-                    notEncryptLongs.AddRange(value.Split(",").Select(s => long.Parse(s.Trim())));
+                    notEncryptLongs.AddRange(value.Split(',').Select(s => long.Parse(s.Trim())));
                     break;
                 }
                 case "string":
                 {
-                    notEncryptStrings.AddRange(value.Split(",").Select(s => s.Trim()));
+                    notEncryptStrings.AddRange(value.Split(',').Select(s => s.Trim()));
                     break;
                 }
                 case "int-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, int-range {value} is invalid");
@@ -238,7 +238,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case "long-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, long-range {value} is invalid");
@@ -248,7 +248,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case "float-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, float-range {value} is invalid");
@@ -258,7 +258,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case "double-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, double-range {value} is invalid");
@@ -268,7 +268,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case "string-length-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, string-length-range {value} is invalid");
@@ -278,7 +278,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case "array-length-range":
                 {
-                    var parts = value.Split(",");
+                    var parts = value.Split(',');
                     if (parts.Length != 2)
                     {
                         throw new Exception($"Invalid xml file, array-length-range {value} is invalid");

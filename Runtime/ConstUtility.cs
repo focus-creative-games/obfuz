@@ -55,24 +55,28 @@ namespace Obfuz
             Buffer.BlockCopy(data, offset, array, 0, length);
         }
 
-        public static int CastFloatAsInt(float value)
+        public static unsafe int CastFloatAsInt(float value)
         {
-            return UnsafeUtility.As<float, int>(ref value);
+            int* intValue = (int*)&value;
+            return *intValue;
         }
 
-        public static float CastIntAsFloat(int value)
+        public static unsafe float CastIntAsFloat(int value)
         {
-            return UnsafeUtility.As<int, float>(ref value);
+            float* floatValue = (float*)&value;
+            return *floatValue;
         }
 
-        public static long CastDoubleAsLong(double value)
+        public static unsafe long CastDoubleAsLong(double value)
         {
-            return UnsafeUtility.As<double, long>(ref value);
+            long* longValue = (long*)&value;
+            return *longValue;
         }
 
-        public static double CastLongAsDouble(long value)
+        public static unsafe double CastLongAsDouble(long value)
         {
-            return UnsafeUtility.As<long, double>(ref value);
+            double* doubleValue = (double*)&value;
+            return *doubleValue;
         }
     }
 }
