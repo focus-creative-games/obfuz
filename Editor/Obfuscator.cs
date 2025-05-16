@@ -69,6 +69,7 @@ namespace Obfuz
                 }
             }
             _pipeline1.AddPass(new CleanUpInstructionPass());
+            _pipeline2.AddPass(new RemoveObfuzAttributesPass());
         }
 
         public static void SaveKey(byte[] secret, string secretOutputPath)
