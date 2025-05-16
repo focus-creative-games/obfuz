@@ -27,7 +27,7 @@ namespace Obfuz.Unity
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-#if UNITY_2019
+#if !UNITY_2022_1_OR_NEWER
             RunObfuscate(report.files);
 #else
             RunObfuscate(report.GetFiles());

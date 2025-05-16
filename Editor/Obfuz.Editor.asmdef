@@ -1,8 +1,6 @@
 {
     "name": "Obfuz.Editor",
-    "rootNamespace": "",
     "references": [
-        "GUID:7e4de3067c2ab5c43a03ac49273dfb68",
         "GUID:370c0d0004ef2414cb803d3ffd331dce"
     ],
     "includePlatforms": [
@@ -14,12 +12,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.code-philosophy.hybridclr",
-            "expression": "",
-            "define": "USE_HYBRIDCLR"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
