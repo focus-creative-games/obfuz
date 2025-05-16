@@ -54,6 +54,11 @@ namespace Obfuz
                 return _defaultStaticScope;
             }
         }
+
+        public bool IsDynamicSecretAssembly(ModuleDef module)
+        {
+            return _dynamicSecretAssemblyNames.Contains(module.Assembly.Name);
+        }
     }
 
     public class ObfuscationPassContext

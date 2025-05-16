@@ -244,7 +244,7 @@ namespace Obfuz.Data
             cctorMethod.Body = body;
             var ins = body.Instructions;
 
-            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(mod);
+            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(mod, _encryptionScopeProvider);
             foreach (var field in _rvaFields)
             {
                 // ldc

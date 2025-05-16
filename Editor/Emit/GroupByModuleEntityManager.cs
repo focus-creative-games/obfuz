@@ -58,9 +58,9 @@ namespace Obfuz.Emit
             return managers;
         }
 
-        public DefaultMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module)
+        public DefaultMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module, EncryptionScopeProvider encryptionScopeProvider)
         {
-            return GetEntity<DefaultMetadataImporter>(module);
+            return GetEntity<DefaultMetadataImporter>(module, () => new DefaultMetadataImporter(encryptionScopeProvider));
         }
     }
 }

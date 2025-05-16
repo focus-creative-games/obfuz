@@ -29,11 +29,17 @@ namespace Obfuz.Unity
             SecretSettings settings = ObfuzSettings.Instance.secretSettings;
 
             var staticSecretBytes = KeyGenerator.GenerateKey(settings.defaultStaticSecret, VirtualMachine.SecretKeyLength);
-            Obfuscator.SaveKey(staticSecretBytes, settings.DefaultStaticSecretKeyOutputPath);
+            SaveKey(staticSecretBytes, settings.DefaultStaticSecretKeyOutputPath);
             Debug.Log($"Save static secret key to {settings.DefaultStaticSecretKeyOutputPath}");
             var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecret, VirtualMachine.SecretKeyLength);
-            Obfuscator.SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
+            SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
             Debug.Log($"Save dynamic secret key to {settings.DefaultDynamicSecretKeyOutputPath}");
+        }
+
+        private static void SaveKey(byte[] secret, string secretOutputPath)
+        {
+            FileUtil.CreateParentDir(secretOutputPath);
+            File.WriteAllBytes(secretOutputPath, secret);
         }
 
         [MenuItem("Obfuz/Documents/Quick Start")]

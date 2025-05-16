@@ -49,10 +49,8 @@ namespace Obfuz
         {
             _defaultStaticByteSecret = KeyGenerator.GenerateKey(builder.DefaultStaticSecret, VirtualMachine.SecretKeyLength);
             _defaultStaticIntSecret = KeyGenerator.ConvertToIntKey(_defaultStaticByteSecret);
-            SaveKey(_defaultStaticByteSecret, builder.DefaultStaticSecretOutputPath);
             _defaultDynamicByteSecret = KeyGenerator.GenerateKey(builder.DefaultDynamicSecret, VirtualMachine.SecretKeyLength);
             _defaultDynamicIntSecret = KeyGenerator.ConvertToIntKey(_defaultDynamicByteSecret);
-            SaveKey(_defaultDynamicByteSecret, builder.DefaultDynamicSecretOutputPath);
             _dynamicSecretAssemblyNames = new HashSet<string>(builder.DynamicSecretAssemblyNames);
 
 
@@ -81,13 +79,6 @@ namespace Obfuz
             }
             _pipeline1.AddPass(new CleanUpInstructionPass());
             _pipeline2.AddPass(new RemoveObfuzAttributesPass());
-        }
-
-        public static void SaveKey(byte[] secret, string secretOutputPath)
-        {
-            FileUtil.CreateParentDir(secretOutputPath);
-            File.WriteAllBytes(secretOutputPath, secret);
-            Debug.Log($"Save secret key to {secretOutputPath}, secret length:{secret.Length}");
         }
 
         public void Run()
@@ -263,6 +254,13 @@ namespace Obfuz
         {
             var defaultStaticScope = CreateEncryptionScope(_defaultStaticByteSecret, _defaultStaticIntSecret);
             var defaultDynamicScope = CreateEncryptionScope(_defaultDynamicByteSecret, _defaultDynamicIntSecret);
+            foreach (string dynamicAssName in _dynamicSecretAssemblyNames)
+            {
+                if (!_toObfuscatedAssemblyNames.Contains(dynamicAssName))
+                {
+                    throw new Exception($"Dynamic secret assembly `{dynamicAssName}` should be in the toObfuscatedAssemblyNames list!");
+                }
+            }
             return new EncryptionScopeProvider(defaultStaticScope, defaultDynamicScope, _dynamicSecretAssemblyNames);
         }
 

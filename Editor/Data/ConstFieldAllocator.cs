@@ -165,7 +165,7 @@ namespace Obfuz.Data
 
         private DefaultMetadataImporter GetModuleMetadataImporter()
         {
-            return _moduleEntityManager.GetDefaultModuleMetadataImporter(_module);
+            return _moduleEntityManager.GetDefaultModuleMetadataImporter(_module, _encryptionScopeProvider);
         }
 
         private void CreateCCtorOfRvaTypeDef(TypeDef type)

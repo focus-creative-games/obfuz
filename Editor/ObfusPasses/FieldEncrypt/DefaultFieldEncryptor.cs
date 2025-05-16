@@ -25,7 +25,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         private DefaultMetadataImporter GetMetadataImporter(MethodDef method)
         {
-            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module);
+            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, _encryptionScopeProvider);
         }
 
          class FieldEncryptInfo
@@ -101,6 +101,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         public override void Encrypt(MethodDef method, FieldDef field, List<Instruction> outputInstructions, Instruction currentInstruction)
         {
             DefaultMetadataImporter importer = GetMetadataImporter(method);
+            EncryptionServiceMetadataImporter encryptionServiceMetadataImporter = importer.GetEncryptionServiceMetadataImporterOfModule(field.Module);
             FieldEncryptInfo fei = GetFieldEncryptInfo(field);
             if (fei.fieldType == ElementType.I4 || fei.fieldType == ElementType.U4 || fei.fieldType == ElementType.R4)
             {
@@ -109,7 +110,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // encrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
-                outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.EncryptInt));
+                outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.EncryptInt));
                 // xor
                 outputInstructions.Add(Instruction.CreateLdcI4((int)fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
@@ -121,7 +122,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // encrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
-                outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.EncryptLong));
+                outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.EncryptLong));
                 // xor
                 outputInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
@@ -138,6 +139,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         {
             outputInstructions.Add(currentInstruction.Clone());
             DefaultMetadataImporter importer = GetMetadataImporter(method);
+            EncryptionServiceMetadataImporter encryptionServiceMetadataImporter = importer.GetEncryptionServiceMetadataImporterOfModule(field.Module);
             FieldEncryptInfo fei = GetFieldEncryptInfo(field);
             if (fei.fieldType == ElementType.I4 || fei.fieldType == ElementType.U4 || fei.fieldType == ElementType.R4)
             {
@@ -153,7 +155,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // decrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
-                outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptInt));
+                outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.DecryptInt));
             }
             else if (fei.fieldType == ElementType.I8 || fei.fieldType == ElementType.U8 || fei.fieldType == ElementType.R8)
             {
@@ -169,7 +171,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // decrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
-                outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptLong));
+                outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.DecryptLong));
             }
             else
             {
