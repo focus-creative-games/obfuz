@@ -274,11 +274,32 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
+        private IEnumerable<MemberRef> WalkMemberRefs(ModuleDef mod)
+        {
+            foreach (TypeDef type in mod.GetTypes())
+            {
+                foreach (MethodDef method in type.Methods)
+                {
+                    if (!method.HasBody)
+                    {
+                        continue;
+                    }
+                    foreach (var instr in method.Body.Instructions)
+                    {
+                        if (instr.Operand is MemberRef memberRef)
+                        {
+                            yield return memberRef;
+                        }
+                    }
+                }
+            }
+        }
+
         private void BuildRefFieldMetasMap(Dictionary<FieldDef, RefFieldMetas> refFieldMetasMap)
         {
             foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
-                foreach (MemberRef memberRef in mod.GetMemberRefs())
+                foreach (MemberRef memberRef in WalkMemberRefs(mod))
                 {
                     if (!memberRef.IsFieldRef)
                     {
@@ -370,7 +391,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
-                foreach (MemberRef memberRef in mod.GetMemberRefs())
+                foreach (MemberRef memberRef in WalkMemberRefs(mod))
                 {
                     if (!memberRef.IsMethodRef)
                     {

@@ -25,7 +25,7 @@ namespace Obfuz.Emit
             _initializeArray = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
             Assert.IsNotNull(_initializeArray);
 
-            Type encryptionService = typeof(EncryptionService);
+            Type encryptionService = typeof(EncryptionService<DefaultStaticEncryptionScope>);
             _encryptBlock = mod.Import(encryptionService.GetMethod("EncryptBlock", new[] { typeof(byte[]), typeof(int), typeof(int) }));
             Assert.IsNotNull(_encryptBlock);
             _decryptBlock = mod.Import(encryptionService.GetMethod("DecryptBlock", new[] { typeof(byte[]), typeof(int), typeof(int) }));

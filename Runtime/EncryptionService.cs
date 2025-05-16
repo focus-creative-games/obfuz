@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Obfuz
 {
-    public static class EncryptionService
+
+    public static class EncryptionService<T> where T : IEncryptionScope
     {
         private static IEncryptor _encryptor;
 
