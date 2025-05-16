@@ -31,9 +31,11 @@ namespace Obfuz.Data
         const int maxRvaDataSize = 0x1000;
 
         private ModuleDef _module;
-        private readonly IRandom _random;
-        private readonly IEncryptor _encryptor;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
+
+        private EncryptionScopeInfo _encryptionScope;
+        private IRandom _random;
 
         class RvaField
         {
@@ -71,16 +73,17 @@ namespace Obfuz.Data
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
         private bool _done;
 
-        public ModuleRvaDataAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager)
+        public ModuleRvaDataAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager)
         {
-            _random = random;
-            _encryptor = encryptor;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
         }
 
         public override void Init(ModuleDef mod)
         {
             _module = mod;
+            _encryptionScope = _encryptionScopeProvider.GetScope(mod);
+            _random = _encryptionScope.localRandomCreator(HashUtil.ComputeHash(mod.Name));
         }
 
         private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
@@ -277,7 +280,7 @@ namespace Obfuz.Data
                     field.FillPaddingToEnd();
                 }
                 byte[] data = field.bytes.ToArray();
-                _encryptor.EncryptBlock(data, field.encryptionOps, field.salt);
+                _encryptionScope.encryptor.EncryptBlock(data, field.encryptionOps, field.salt);
                 field.holderDataField.InitialValue = data;
             }
         }
@@ -296,21 +299,18 @@ namespace Obfuz.Data
 
     public class RvaDataAllocator
     {
-
-        private readonly IRandom _random;
-        private readonly IEncryptor _encryptor;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public RvaDataAllocator(IRandom random, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager)
+        public RvaDataAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager)
         {
-            _random = random;
-            _encryptor = encryptor;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
         }
 
         private ModuleRvaDataAllocator GetModuleRvaDataAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_random, _encryptor, _moduleEntityManager));
+            return _moduleEntityManager.GetEntity<ModuleRvaDataAllocator>(mod, () => new ModuleRvaDataAllocator(_encryptionScopeProvider, _moduleEntityManager));
         }
 
         public RvaData Allocate(ModuleDef mod, int value)

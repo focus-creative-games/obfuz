@@ -17,7 +17,6 @@ namespace Obfuz.ObfusPasses.CallObfus
     {
         private readonly List<string> _configFiles;
         private readonly int _obfuscationLevel;
-        private IEncryptor _encryptor;
         private IObfuscator _dynamicProxyObfuscator;
         private IObfuscationPolicy _dynamicProxyPolicy;
 
@@ -37,8 +36,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _encryptor = ctx.encryptor;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.localRandomCreator, _encryptor, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
         }
 

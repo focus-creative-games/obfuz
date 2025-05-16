@@ -15,8 +15,12 @@ namespace Obfuz
 {
     public class ObfuscatorBuilder
     {
-        private string _secret;
-        private string _secretOutputPath;
+        private string _defaultStaticSecret;
+        private string _defaultStaticSecretOutputPath;
+        private string _defaultDynamicSecret;
+        private string _defaultDynamicSecretOutputPath;
+        private List<string> _dynamicSecretAssemblyNames = new List<string>();
+
         private int _randomSeed;
         private string _encryptionVmGenerationSecretKey;
         private int _encryptionVmOpCodeCount;
@@ -32,16 +36,34 @@ namespace Obfuz
         private ObfuscationPassType _enabledObfuscationPasses;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
 
-        public string Secret
+        public string DefaultStaticSecret
         {
-            get => _secret;
-            set => _secret = value;
+            get => _defaultStaticSecret;
+            set => _defaultStaticSecret = value;
         }
 
-        public string SecretOutputPath
+        public string DefaultStaticSecretOutputPath
         {
-            get => _secretOutputPath;
-            set => _secretOutputPath = value;
+            get => _defaultStaticSecretOutputPath;
+            set => _defaultStaticSecretOutputPath = value;
+        }
+
+        public string DefaultDynamicSecret
+        {
+            get => _defaultDynamicSecret;
+            set => _defaultDynamicSecret = value;
+        }
+
+        public string DefaultDynamicSecretOutputPath
+        {
+            get => _defaultDynamicSecretOutputPath;
+            set => _defaultDynamicSecretOutputPath = value;
+        }
+
+        public List<string> DynamicSecretAssemblyNames
+        {
+            get => _dynamicSecretAssemblyNames;
+            set => _dynamicSecretAssemblyNames = value;
         }
 
         public int RandomSeed
@@ -151,8 +173,11 @@ namespace Obfuz
                 : settings.assemblySettings.extraAssemblySearchDirs.ToList();
             var builder = new ObfuscatorBuilder
             {
-                _secret = settings.secretSettings.secret,
-                _secretOutputPath = settings.secretSettings.secretOutputPath,
+                _defaultStaticSecret = settings.secretSettings.defaultStaticSecret,
+                _defaultStaticSecretOutputPath = settings.secretSettings.DefaultStaticSecretKeyOutputPath,
+                _defaultDynamicSecret = settings.secretSettings.defaultDynamicSecret,
+                _defaultDynamicSecretOutputPath = settings.secretSettings.DefaultDynamicSecretKeyOutputPath,
+                _dynamicSecretAssemblyNames = settings.secretSettings.dynamicSecretAssemblyNames.ToList(),
                 _randomSeed = settings.secretSettings.randomSeed,
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecret,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,

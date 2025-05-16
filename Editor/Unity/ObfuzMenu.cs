@@ -28,8 +28,12 @@ namespace Obfuz.Unity
         {
             SecretSettings settings = ObfuzSettings.Instance.secretSettings;
 
-            var secretBytes = KeyGenerator.GenerateKey(settings.secret, VirtualMachine.SecretKeyLength);
-            Obfuscator.SaveKey(secretBytes, settings.secretOutputPath);
+            var staticSecretBytes = KeyGenerator.GenerateKey(settings.defaultStaticSecret, VirtualMachine.SecretKeyLength);
+            Obfuscator.SaveKey(staticSecretBytes, settings.DefaultStaticSecretKeyOutputPath);
+            Debug.Log($"Save static secret key to {settings.DefaultStaticSecretKeyOutputPath}");
+            var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecret, VirtualMachine.SecretKeyLength);
+            Obfuscator.SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
+            Debug.Log($"Save dynamic secret key to {settings.DefaultDynamicSecretKeyOutputPath}");
         }
 
         [MenuItem("Obfuz/Documents/Quick Start")]

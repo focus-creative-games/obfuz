@@ -12,15 +12,13 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 {
     public class DefaultFieldEncryptor : FieldEncryptorBase
     {
-        private readonly RandomCreator _randomCreator;
-        private readonly IEncryptor _encryptor;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
 
-        public DefaultFieldEncryptor(RandomCreator randomCreator, IEncryptor encryptor, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultFieldEncryptor(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
-            _randomCreator = randomCreator;
-            _encryptor = encryptor;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
         }
@@ -41,32 +39,32 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         private readonly Dictionary<FieldDef, FieldEncryptInfo> _fieldEncryptInfoCache = new Dictionary<FieldDef, FieldEncryptInfo>();
 
 
-        private long CalcXorValueForZero(ElementType type, int encryptOps, int salt)
+        private long CalcXorValueForZero(IEncryptor encryptor, ElementType type, int encryptOps, int salt)
         {
             switch (type)
             {
                 case ElementType.I4:
                 case ElementType.U4:
                 case ElementType.R4:
-                    return _encryptor.Encrypt(0, encryptOps, salt);
+                    return encryptor.Encrypt(0, encryptOps, salt);
                 case ElementType.I8:
                 case ElementType.U8:
                 case ElementType.R8:
-                return _encryptor.Encrypt(0L, encryptOps, salt);
+                return encryptor.Encrypt(0L, encryptOps, salt);
                 default:
                 throw new NotSupportedException($"Unsupported field type: {type} for encryption");
             }
         }
 
 
-        private IRandom CreateRandomForField(FieldDef field)
+        private IRandom CreateRandomForField(RandomCreator randomCreator, FieldDef field)
         {
-            return _randomCreator(FieldEqualityComparer.CompareDeclaringTypes.GetHashCode(field));
+            return randomCreator(FieldEqualityComparer.CompareDeclaringTypes.GetHashCode(field));
         }
 
-        private int GenerateEncryptionOperations(IRandom random)
+        private int GenerateEncryptionOperations(IRandom random, IEncryptor encryptor)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(random, _encryptor, _encryptionLevel);
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, encryptor, _encryptionLevel);
         }
 
         public int GenerateSalt(IRandom random)
@@ -80,12 +78,14 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 return info;
             }
+            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(field.Module);
 
-            IRandom random = CreateRandomForField(field);
-            int encryptOps = GenerateEncryptionOperations(random);
+            IRandom random = CreateRandomForField(encryptionScope.localRandomCreator, field);
+            IEncryptor encryptor = encryptionScope.encryptor;
+            int encryptOps = GenerateEncryptionOperations(random, encryptor);
             int salt = GenerateSalt(random);
             ElementType fieldType = field.FieldSig.Type.RemovePinnedAndModifiers().ElementType;
-            long xorValueForZero = CalcXorValueForZero(fieldType, encryptOps, salt);
+            long xorValueForZero = CalcXorValueForZero(encryptor, fieldType, encryptOps, salt);
 
             info = new FieldEncryptInfo
             {

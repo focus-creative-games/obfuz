@@ -10,17 +10,17 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public class DefaultCallProxyObfuscator : ObfuscatorBase
     {
-        private readonly IEncryptor _encryptor;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly CallProxyAllocator _proxyCallAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public DefaultCallProxyObfuscator(RandomCreator randomCreator, IEncryptor encryptor, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultCallProxyObfuscator(EncryptionScopeProvider encryptionScopeProvider, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
         {
-            _encryptor = encryptor;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
-            _proxyCallAllocator = new CallProxyAllocator(randomCreator, _encryptor, moduleEntityManager, encryptionLevel);
+            _proxyCallAllocator = new CallProxyAllocator(encryptionScopeProvider, moduleEntityManager, encryptionLevel);
         }
 
         public override void Done()

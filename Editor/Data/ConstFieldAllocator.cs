@@ -18,10 +18,12 @@ namespace Obfuz.Data
     public class ModuleConstFieldAllocator : IGroupByModuleEntity
     {
         private ModuleDef _module;
-        private readonly RandomCreator _randomCreator;
-        private readonly IEncryptor _encryptor;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
+        private EncryptionScopeInfo _encryptionScope;
+        private RandomCreator _randomCreator;
+        private IEncryptor _encryptor;
 
         private TypeDef _holderTypeDef;
 
@@ -60,10 +62,9 @@ namespace Obfuz.Data
         private bool _done;
 
 
-        public ModuleConstFieldAllocator(IEncryptor encryptor, RandomCreator randomCreator, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
+        public ModuleConstFieldAllocator(EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
-            _encryptor = encryptor;
-            _randomCreator = randomCreator;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _rvaDataAllocator = rvaDataAllocator;
             _moduleEntityManager = moduleEntityManager;
         }
@@ -71,6 +72,9 @@ namespace Obfuz.Data
         public void Init(ModuleDef mod)
         {
             _module = mod;
+            _encryptionScope = _encryptionScopeProvider.GetScope(mod);
+            _randomCreator = _encryptionScope.localRandomCreator;
+            _encryptor = _encryptionScope.encryptor;
         }
 
         const int maxFieldCount = 1000;
@@ -283,22 +287,20 @@ namespace Obfuz.Data
 
     public class ConstFieldAllocator
     {
-        private readonly IEncryptor _encryptor;
-        private readonly RandomCreator _randomCreator;
+        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public ConstFieldAllocator(IEncryptor encryptor, RandomCreator randomCreator, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
+        public ConstFieldAllocator(EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, GroupByModuleEntityManager moduleEntityManager)
         {
-            _encryptor = encryptor;
-            _randomCreator = randomCreator;
+            _encryptionScopeProvider = encryptionScopeProvider;
             _rvaDataAllocator = rvaDataAllocator;
             _moduleEntityManager = moduleEntityManager;
         }
 
         private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptor, _randomCreator, _rvaDataAllocator, _moduleEntityManager));
+            return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptionScopeProvider, _rvaDataAllocator, _moduleEntityManager));
         }
 
         public FieldDef Allocate(ModuleDef mod, int value)

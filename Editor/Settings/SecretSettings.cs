@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEngine;
 
 namespace Obfuz.Settings
@@ -7,13 +8,22 @@ namespace Obfuz.Settings
     public class SecretSettings
     {
 
-        [Tooltip("secret key")]
-        public string secret = "Code Philosophy";
+        [Tooltip("default static secret key")]
+        public string defaultStaticSecret = "Code Philosophy-Static";
 
-        [Tooltip("secret key save path")]
-        public string secretOutputPath = $"Assets/Obfuz/secret.bytes";
+        public string defaultDynamicSecret = "Code Philosophy-Dynamic";
+
+        [Tooltip("secret key output directory")]
+        public string secretOutputDir = $"Assets/Resources/Obfuz";
 
         [Tooltip("random seed")]
         public int randomSeed = 0;
+
+        [Tooltip("name of assemblies those use dynamic secret")]
+        public string[] dynamicSecretAssemblyNames;
+
+        public string DefaultStaticSecretKeyOutputPath => Path.Combine(secretOutputDir, "defaultStaticSecret.bytes");
+
+        public string DefaultDynamicSecretKeyOutputPath => Path.Combine(secretOutputDir, "defaultDynamicSecret.bytes");
     }
 }
