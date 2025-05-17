@@ -21,6 +21,12 @@
 - **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
 - **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
 
+## Supported Unity Versions & Platforms
+
+- Unity 2019 and later versions
+- Tuanjie 1.0.0 and later versions
+- All platforms supported by Unity and Tuanjie
+
 ## Planned Features
 
 Obfuz is actively evolving. Upcoming features include:
