@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DeobfuscateStackTrace": {
+      "commandName": "Project",
+      "commandLineArgs": "-m ../../../mapping.xml -i ../../../obfuscated.log -o ../../../deobfuscated.log"
+    }
+  }
+}
