@@ -23,8 +23,8 @@ namespace Obfuz.Settings
         [Tooltip("name of assemblies those use dynamic secret key")]
         public string[] assembliesUsingDynamicSecretKeys;
 
-        public string DefaultStaticSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultStaticSecret.bytes");
+        public string DefaultStaticSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultStaticSecretKey.bytes");
 
-        public string DefaultDynamicSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultDynamicSecret.bytes");
+        public string DefaultDynamicSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultDynamicSecretKey.bytes");
     }
 }

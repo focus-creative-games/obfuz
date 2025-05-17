@@ -14,7 +14,7 @@ namespace Obfuz.Unity
         [MenuItem("Obfuz/Settings...", priority = 1)]
         public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/Obfuz");
 
-        [MenuItem("Obfuz/GenerateVM", priority = 62)]
+        [MenuItem("Obfuz/GenerateEncryptionVM", priority = 62)]
         public static void GenerateEncryptionVM()
         {
             EncryptionVMSettings settings = ObfuzSettings.Instance.encryptionVMSettings;
@@ -22,7 +22,7 @@ namespace Obfuz.Unity
             generator.Generate(settings.codeOutputPath);
         }
 
-        [MenuItem("Obfuz/SaveSecretFile", priority = 63)]
+        [MenuItem("Obfuz/GenerateSecretKeyFile", priority = 63)]
         public static void SaveSecretFile()
         {
             SecretSettings settings = ObfuzSettings.Instance.secretSettings;
@@ -33,6 +33,7 @@ namespace Obfuz.Unity
             var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecretKey, VirtualMachine.SecretKeyLength);
             SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
             Debug.Log($"Save dynamic secret key to {settings.DefaultDynamicSecretKeyOutputPath}");
+            AssetDatabase.Refresh();
         }
 
         private static void SaveKey(byte[] secret, string secretOutputPath)
