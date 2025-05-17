@@ -72,7 +72,14 @@ namespace Obfuz.Settings
             var arr = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
             //Debug.Log($"typeof arr:{arr?.GetType()} arr[0]:{(arr != null && arr.Length > 0 ? arr[0].GetType(): null)}");
 
-            s_Instance = arr != null && arr.Length > 0 ? (ObfuzSettings)arr[0] : (s_Instance ?? CreateInstance<ObfuzSettings>());
+            if (arr != null && arr.Length > 0 && arr[0] is ObfuzSettings obfuzSettings)
+            {
+                s_Instance = obfuzSettings;
+            }
+            else
+            {
+                s_Instance ??= CreateInstance<ObfuzSettings>();
+            }
             return s_Instance;
         }
 
