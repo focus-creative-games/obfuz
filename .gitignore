@@ -15,3 +15,5 @@
 
 *.vsconfig
 **/UserSettings/
+/Obfuz/*.csproj
+/Obfuz/*.sln
