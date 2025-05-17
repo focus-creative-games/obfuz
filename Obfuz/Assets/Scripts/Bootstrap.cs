@@ -12,7 +12,7 @@ public class Bootstrap : MonoBehaviour
     private static void SetUpStaticSecret()
     {
         Debug.Log("SetUpStaticSecret begin");
-        EncryptionService<DefaultStaticEncryptionScope>.Encryptor = new GeneratedEncryptionVirtualMachine(Resources.Load<TextAsset>("Obfuz/defaultStaticSecret").bytes);
+        EncryptionService<DefaultStaticEncryptionScope>.Encryptor = new GeneratedEncryptionVirtualMachine(Resources.Load<TextAsset>("Obfuz/defaultStaticSecretKey").bytes);
         Debug.Log("SetUpStaticSecret end");
     }
 
