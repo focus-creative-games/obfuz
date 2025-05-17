@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz
 {
-    public class NotObfuscatedMethodWhiteList
+    public class ObfuscationMethodWhitelist
     {
         private bool ShouldBeIgnoredByCustomAttribute(IHasCustomAttribute obj)
         {
@@ -36,7 +36,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (method.Name.StartsWith(ConstValues.ObfuzMetadataNamePrefix))
+            if (method.Name.StartsWith(ConstValues.ObfuzInternalSymbolNamePrefix))
             {
                 return true;
             }
@@ -49,7 +49,7 @@ namespace Obfuz
 
         public bool IsInWhiteList(TypeDef type)
         {
-            if (type.Name.StartsWith(ConstValues.ObfuzMetadataNamePrefix))
+            if (type.Name.StartsWith(ConstValues.ObfuzInternalSymbolNamePrefix))
             {
                 return true;
             }

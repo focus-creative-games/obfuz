@@ -16,15 +16,11 @@ namespace Obfuz
 
     public class EncryptionScopeInfo
     {
-        public readonly byte[] byteSecret;
-        public readonly int[] intSecret;
         public readonly IEncryptor encryptor;
         public readonly RandomCreator localRandomCreator;
 
-        public EncryptionScopeInfo(byte[] byteSecret, int[] intSecret, IEncryptor encryptor, RandomCreator localRandomCreator)
+        public EncryptionScopeInfo(IEncryptor encryptor, RandomCreator localRandomCreator)
         {
-            this.byteSecret = byteSecret;
-            this.intSecret = intSecret;
             this.encryptor = encryptor;
             this.localRandomCreator = localRandomCreator;
         }
@@ -70,18 +66,18 @@ namespace Obfuz
 
         public AssemblyCache assemblyCache;
 
-        public List<ModuleDef> toObfuscatedModules;
-        public List<ModuleDef> obfuscatedAndNotObfuscatedModules;
+        public List<ModuleDef> modulesToObfuscate;
+        public List<ModuleDef> allObfuscationRelativeModules;
 
-        public List<string> toObfuscatedAssemblyNames;
-        public List<string> notObfuscatedAssemblyNamesReferencingObfuscated;
+        public List<string> assembliesToObfuscate;
+        public List<string> nonObfuscatedButReferencingObfuscatedAssemblies;
 
-        public string obfuscatedAssemblyOutputDir;
+        public string obfuscatedAssemblyOutputPath;
 
         public EncryptionScopeProvider encryptionScopeProvider;
         public ConstFieldAllocator constFieldAllocator;
         public RvaDataAllocator rvaDataAllocator;
-        public NotObfuscatedMethodWhiteList whiteList;
+        public ObfuscationMethodWhitelist whiteList;
         public ConfigurablePassPolicy passPolicy;
     }
 }

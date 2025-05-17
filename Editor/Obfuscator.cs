@@ -19,25 +19,23 @@ namespace Obfuz
 
     public class Obfuscator
     {
-        private readonly string _obfuscatedAssemblyOutputDir;
+        private readonly string _obfuscatedAssemblyOutputPath;
 
-        private readonly List<string> _toObfuscatedAssemblyNames;
-        private readonly List<string> _notObfuscatedAssemblyNamesReferencingObfuscated;
-        private readonly List<string> _assemblySearchDirs;
+        private readonly List<string> _assembliesToObfuscate;
+        private readonly List<string> _nonObfuscatedButReferencingObfuscatedAssemblies;
+        private readonly List<string> _assemblySearchPaths;
 
         private readonly ConfigurablePassPolicy _passPolicy;
 
         private readonly Pipeline _pipeline1 = new Pipeline();
         private readonly Pipeline _pipeline2 = new Pipeline();
 
-        private readonly byte[] _defaultStaticByteSecret;
-        private readonly int[] _defaultStaticIntSecret;
+        private readonly byte[] _defaultStaticByteSecretKey;
         private readonly byte[] _defaultDynamicByteSecret;
-        private readonly int[] _defaultDynamicIntSecret;
-        private readonly HashSet<string> _dynamicSecretAssemblyNames;
+        private readonly HashSet<string> _assembliesUsingDynamicSecretKeys;
 
         private readonly int _randomSeed;
-        private readonly string _encryptionVmGenerationSecret;
+        private readonly string _encryptionVmGenerationSecretKey;
         private readonly int _encryptionVmOpCodeCount;
         private readonly string _encryptionVmCodeFile;
 
@@ -45,24 +43,22 @@ namespace Obfuz
 
         public Obfuscator(ObfuscatorBuilder builder)
         {
-            _defaultStaticByteSecret = KeyGenerator.GenerateKey(builder.DefaultStaticSecret, VirtualMachine.SecretKeyLength);
-            _defaultStaticIntSecret = KeyGenerator.ConvertToIntKey(_defaultStaticByteSecret);
-            _defaultDynamicByteSecret = KeyGenerator.GenerateKey(builder.DefaultDynamicSecret, VirtualMachine.SecretKeyLength);
-            _defaultDynamicIntSecret = KeyGenerator.ConvertToIntKey(_defaultDynamicByteSecret);
-            _dynamicSecretAssemblyNames = new HashSet<string>(builder.DynamicSecretAssemblyNames);
+            _defaultStaticByteSecretKey = KeyGenerator.GenerateKey(builder.DefaultStaticSecretKey, VirtualMachine.SecretKeyLength);
+            _defaultDynamicByteSecret = KeyGenerator.GenerateKey(builder.DefaultDynamicSecretKey, VirtualMachine.SecretKeyLength);
+            _assembliesUsingDynamicSecretKeys = new HashSet<string>(builder.AssembliesUsingDynamicSecretKeys);
 
 
             _randomSeed = builder.RandomSeed;
-            _encryptionVmGenerationSecret = builder.EncryptionVmGenerationSecretKey;
+            _encryptionVmGenerationSecretKey = builder.EncryptionVmGenerationSecretKey;
             _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
             _encryptionVmCodeFile = builder.EncryptionVmCodeFile;
 
-            _toObfuscatedAssemblyNames = builder.ToObfuscatedAssemblyNames;
-            _notObfuscatedAssemblyNamesReferencingObfuscated = builder.NotObfuscatedAssemblyNamesReferencingObfuscated;
-            _obfuscatedAssemblyOutputDir = builder.ObfuscatedAssemblyOutputDir;
-            _assemblySearchDirs = builder.AssemblySearchDirs;
+            _assembliesToObfuscate = builder.AssembliesToObfuscate;
+            _nonObfuscatedButReferencingObfuscatedAssemblies = builder.NonObfuscatedButReferencingObfuscatedAssemblies;
+            _obfuscatedAssemblyOutputPath = builder.ObfuscatedAssemblyOutputPath;
+            _assemblySearchPaths = builder.AssemblySearchPaths;
 
-            _passPolicy = new ConfigurablePassPolicy(_toObfuscatedAssemblyNames, builder.EnableObfuscationPasses, builder.ObfuscationPassConfigFiles);
+            _passPolicy = new ConfigurablePassPolicy(_assembliesToObfuscate, builder.EnableObfuscationPasses, builder.ObfuscationPassRuleConfigFiles);
 
             foreach (var pass in builder.ObfuscationPasses)
             {
@@ -81,9 +77,9 @@ namespace Obfuz
 
         public void Run()
         {
-            FileUtil.RecreateDir(_obfuscatedAssemblyOutputDir);
+            FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
             RunPipeline(_pipeline1);
-            _assemblySearchDirs.Insert(0, _obfuscatedAssemblyOutputDir);
+            _assemblySearchPaths.Insert(0, _obfuscatedAssemblyOutputPath);
             RunPipeline(_pipeline2);
         }
 
@@ -98,9 +94,9 @@ namespace Obfuz
             OnPostObfuscation(pipeline);
         }
 
-        private IEncryptor CreateEncryptionVirtualMachine(byte[] secret)
+        private IEncryptor CreateEncryptionVirtualMachine(byte[] secretKey)
         {
-            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecret);
+            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecretKey);
             var vm = vmCreator.CreateVirtualMachine(_encryptionVmOpCodeCount);
             var vmGenerator = new VirtualMachineCodeGenerator(vm);
 
@@ -112,7 +108,7 @@ namespace Obfuz
             {
                 throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
             }
-            var vms = new VirtualMachineSimulator(vm, secret);
+            var vms = new VirtualMachineSimulator(vm, secretKey);
 
             var generatedVmTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine"))
@@ -127,14 +123,14 @@ namespace Obfuz
                 throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine found in multiple assemblies! Please retain only one!");
             }
 
-            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { secret } );
+            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { secretKey } );
 
             VerifyVm(vm, vms, gvmInstance);
 
             return vms;
         }
 
-        private void VerifyVm(VirtualMachine vm, VirtualMachineSimulator vms, IEncryptor gvmInstance)
+        private void VerifyVm(VirtualMachine vm, VirtualMachineSimulator vms, IEncryptor gvm)
         {
             int testInt = 11223344;
             long testLong = 1122334455667788L;
@@ -154,8 +150,8 @@ namespace Obfuz
                     {
                         throw new Exception($"VirtualMachineSimulator decrypt failed! opCode:{i}, originalValue:{testInt} decryptedValue:{decryptedIntOfVms}");
                     }
-                    int encryptedValueOfGvm = gvmInstance.Encrypt(testInt, ops, salt);
-                    int decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
+                    int encryptedValueOfGvm = gvm.Encrypt(testInt, ops, salt);
+                    int decryptedValueOfGvm = gvm.Decrypt(encryptedValueOfGvm, ops, salt);
                     if (encryptedValueOfGvm != encryptedIntOfVms)
                     {
                         throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testInt} encryptedValue VirtualMachineSimulator:{encryptedIntOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
@@ -172,8 +168,8 @@ namespace Obfuz
                     {
                         throw new Exception($"VirtualMachineSimulator decrypt long failed! opCode:{i}, originalValue:{testLong} decryptedValue:{decryptedLongOfVms}");
                     }
-                    long encryptedValueOfGvm = gvmInstance.Encrypt(testLong, ops, salt);
-                    long decryptedValueOfGvm = gvmInstance.Decrypt(encryptedValueOfGvm, ops, salt);
+                    long encryptedValueOfGvm = gvm.Encrypt(testLong, ops, salt);
+                    long decryptedValueOfGvm = gvm.Decrypt(encryptedValueOfGvm, ops, salt);
                     if (encryptedValueOfGvm != encryptedLongOfVms)
                     {
                         throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testLong} encryptedValue VirtualMachineSimulator:{encryptedLongOfVms} GeneratedEncryptionVirtualMachine:{encryptedValueOfGvm}");
@@ -190,8 +186,8 @@ namespace Obfuz
                     {
                         throw new Exception("encryptedFloat not match");
                     }
-                    float encryptedValueOfGvm = gvmInstance.Encrypt(testFloat, ops, salt);
-                    float decryptedValueOfGvm = gvmInstance.Decrypt(encryptedFloatOfVms, ops, salt);
+                    float encryptedValueOfGvm = gvm.Encrypt(testFloat, ops, salt);
+                    float decryptedValueOfGvm = gvm.Decrypt(encryptedFloatOfVms, ops, salt);
                     if (encryptedFloatOfVms != encryptedValueOfGvm)
                     {
                         throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testFloat} encryptedValue");
@@ -208,8 +204,8 @@ namespace Obfuz
                     {
                         throw new Exception("encryptedFloat not match");
                     }
-                    double encryptedValueOfGvm = gvmInstance.Encrypt(testDouble, ops, salt);
-                    double decryptedValueOfGvm = gvmInstance.Decrypt(encryptedFloatOfVms, ops, salt);
+                    double encryptedValueOfGvm = gvm.Encrypt(testDouble, ops, salt);
+                    double decryptedValueOfGvm = gvm.Decrypt(encryptedFloatOfVms, ops, salt);
                     if (encryptedFloatOfVms != encryptedValueOfGvm)
                     {
                         throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testDouble} encryptedValue");
@@ -222,52 +218,53 @@ namespace Obfuz
 
                 {
                     byte[] encryptedStrOfVms = vms.Encrypt(testString, ops, salt);
-                    string descryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, salt);
-                    if (descryptedStrOfVms != testString)
+                    string decryptedStrOfVms = vms.DecryptString(encryptedStrOfVms, 0, encryptedStrOfVms.Length, ops, salt);
+                    if (decryptedStrOfVms != testString)
                     {
-                        throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfVms}");
+                        throw new Exception($"VirtualMachineSimulator decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{decryptedStrOfVms}");
                     }
-                    byte[] encryptedStrOfGvm = gvmInstance.Encrypt(testString, ops, salt);
-                    string descryptedStrOfGvm = gvmInstance.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, salt);
+                    byte[] encryptedStrOfGvm = gvm.Encrypt(testString, ops, salt);
+                    string decryptedStrOfGvm = gvm.DecryptString(encryptedStrOfGvm, 0, encryptedStrOfGvm.Length, ops, salt);
                     if (!encryptedStrOfGvm.SequenceEqual(encryptedStrOfVms))
                     {
                         throw new Exception($"encryptedValue not match! opCode:{i}, originalValue:{testString} encryptedValue VirtualMachineSimulator:{encryptedStrOfVms} GeneratedEncryptionVirtualMachine:{encryptedStrOfGvm}");
                     }
-                    if (descryptedStrOfGvm != testString)
+                    if (decryptedStrOfGvm != testString)
                     {
-                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{descryptedStrOfGvm}");
+                        throw new Exception($"GeneratedEncryptionVirtualMachine decrypt string failed! opCode:{i}, originalValue:{testString} decryptedValue:{decryptedStrOfGvm}");
                     }
                 }
             }
         }
 
-        private EncryptionScopeInfo CreateEncryptionScope(byte[] byteSecret, int[] intSecret)
+        private EncryptionScopeInfo CreateEncryptionScope(byte[] byteSecret)
         {
+            int[] intSecretKey = KeyGenerator.ConvertToIntKey(byteSecret);
             IEncryptor encryption = CreateEncryptionVirtualMachine(byteSecret);
-            RandomCreator localRandomCreator = (seed) => new RandomWithKey(intSecret, _randomSeed ^ seed);
-            return new EncryptionScopeInfo(byteSecret, intSecret, encryption, localRandomCreator);
+            RandomCreator localRandomCreator = (seed) => new RandomWithKey(intSecretKey, _randomSeed ^ seed);
+            return new EncryptionScopeInfo(encryption, localRandomCreator);
         }
 
         private EncryptionScopeProvider CreateEncryptionScopeProvider()
         {
-            var defaultStaticScope = CreateEncryptionScope(_defaultStaticByteSecret, _defaultStaticIntSecret);
-            var defaultDynamicScope = CreateEncryptionScope(_defaultDynamicByteSecret, _defaultDynamicIntSecret);
-            foreach (string dynamicAssName in _dynamicSecretAssemblyNames)
+            var defaultStaticScope = CreateEncryptionScope(_defaultStaticByteSecretKey);
+            var defaultDynamicScope = CreateEncryptionScope(_defaultDynamicByteSecret);
+            foreach (string dynamicAssName in _assembliesUsingDynamicSecretKeys)
             {
-                if (!_toObfuscatedAssemblyNames.Contains(dynamicAssName))
+                if (!_assembliesToObfuscate.Contains(dynamicAssName))
                 {
                     throw new Exception($"Dynamic secret assembly `{dynamicAssName}` should be in the toObfuscatedAssemblyNames list!");
                 }
             }
-            return new EncryptionScopeProvider(defaultStaticScope, defaultDynamicScope, _dynamicSecretAssemblyNames);
+            return new EncryptionScopeProvider(defaultStaticScope, defaultDynamicScope, _assembliesUsingDynamicSecretKeys);
         }
 
         private void OnPreObfuscation(Pipeline pipeline)
         {
-            AssemblyCache assemblyCache = new AssemblyCache(new PathAssemblyResolver(_assemblySearchDirs.ToArray()));
-            List<ModuleDef> toObfuscatedModules = new List<ModuleDef>();
-            List<ModuleDef> obfuscatedAndNotObfuscatedModules = new List<ModuleDef>();
-            LoadAssemblies(assemblyCache, toObfuscatedModules, obfuscatedAndNotObfuscatedModules);
+            AssemblyCache assemblyCache = new AssemblyCache(new PathAssemblyResolver(_assemblySearchPaths.ToArray()));
+            List<ModuleDef> modulesToObfuscate = new List<ModuleDef>();
+            List<ModuleDef> allObfuscationRelativeModules = new List<ModuleDef>();
+            LoadAssemblies(assemblyCache, modulesToObfuscate, allObfuscationRelativeModules);
 
             EncryptionScopeProvider encryptionScopeProvider = CreateEncryptionScopeProvider();
             var moduleEntityManager = new GroupByModuleEntityManager();
@@ -276,27 +273,27 @@ namespace Obfuz
             _ctx = new ObfuscationPassContext
             {
                 assemblyCache = assemblyCache,
-                toObfuscatedModules = toObfuscatedModules,
-                obfuscatedAndNotObfuscatedModules = obfuscatedAndNotObfuscatedModules,
-                toObfuscatedAssemblyNames = _toObfuscatedAssemblyNames,
-                notObfuscatedAssemblyNamesReferencingObfuscated = _notObfuscatedAssemblyNamesReferencingObfuscated,
-                obfuscatedAssemblyOutputDir = _obfuscatedAssemblyOutputDir,
+                modulesToObfuscate = modulesToObfuscate,
+                allObfuscationRelativeModules = allObfuscationRelativeModules,
+                assembliesToObfuscate = _assembliesToObfuscate,
+                nonObfuscatedButReferencingObfuscatedAssemblies = _nonObfuscatedButReferencingObfuscatedAssemblies,
+                obfuscatedAssemblyOutputPath = _obfuscatedAssemblyOutputPath,
                 moduleEntityManager = moduleEntityManager,
 
                 encryptionScopeProvider = encryptionScopeProvider,
 
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,
-                whiteList = new NotObfuscatedMethodWhiteList(),
+                whiteList = new ObfuscationMethodWhitelist(),
                 passPolicy = _passPolicy,
             };
             ObfuscationPassContext.Current = _ctx;
             pipeline.Start();
         }
 
-        private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> toObfuscatedModules, List<ModuleDef> obfuscatedAndNotObfuscatedModules)
+        private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> modulesToObfuscate, List<ModuleDef> allObfuscationRelativeModules)
         {
-            foreach (string assName in _toObfuscatedAssemblyNames.Concat(_notObfuscatedAssemblyNamesReferencingObfuscated))
+            foreach (string assName in _assembliesToObfuscate.Concat(_nonObfuscatedButReferencingObfuscatedAssemblies))
             {
                 ModuleDefMD mod = assemblyCache.TryLoadModule(assName);
                 if (mod == null)
@@ -304,20 +301,20 @@ namespace Obfuz
                     Debug.Log($"assembly: {assName} not found! ignore.");
                     continue;
                 }
-                if (_toObfuscatedAssemblyNames.Contains(assName))
+                if (_assembliesToObfuscate.Contains(assName))
                 {
-                    toObfuscatedModules.Add(mod);
+                    modulesToObfuscate.Add(mod);
                 }
-                obfuscatedAndNotObfuscatedModules.Add(mod);
+                allObfuscationRelativeModules.Add(mod);
             }
         }
 
         private void WriteAssemblies()
         {
-            foreach (ModuleDef mod in _ctx.obfuscatedAndNotObfuscatedModules)
+            foreach (ModuleDef mod in _ctx.allObfuscationRelativeModules)
             {
                 string assNameWithExt = mod.Name;
-                string outputFile = $"{_obfuscatedAssemblyOutputDir}/{assNameWithExt}";
+                string outputFile = $"{_obfuscatedAssemblyOutputPath}/{assNameWithExt}";
                 mod.Write(outputFile);
                 Debug.Log($"save module. name:{mod.Assembly.Name} output:{outputFile}");
             }

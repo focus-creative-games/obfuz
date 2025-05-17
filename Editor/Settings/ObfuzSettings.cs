@@ -27,20 +27,20 @@ namespace Obfuz.Settings
         public EncryptionVMSettings encryptionVMSettings;
 
         [Tooltip("symbol obfuscation settings")]
-        public SymbolObfusSettings symbolObfusSettings;
+        public SymbolObfuscationSettings symbolObfusSettings;
 
         [Tooltip("const encryption settings")]
-        public ConstEncryptSettings constEncryptSettings;
+        public ConstEncryptionSettings constEncryptSettings;
 
         [Tooltip("field encryption settings")]
-        public FieldEncryptSettings fieldEncryptSettings;
+        public FieldEncryptionSettings fieldEncryptSettings;
 
         [Tooltip("call obfuscation settings")]
-        public CallObfusSettings callObfusSettings;
+        public CallObfuscationSettings callObfusSettings;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 
-        public string GetObfuscatedAssemblyOutputDir(BuildTarget target)
+        public string GetObfuscatedAssemblyOutputPath(BuildTarget target)
         {
             return $"{ObfuzRootDir}/{target}/ObfuscatedAssemblies";
         }
@@ -72,7 +72,7 @@ namespace Obfuz.Settings
             var arr = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
             //Debug.Log($"typeof arr:{arr?.GetType()} arr[0]:{(arr != null && arr.Length > 0 ? arr[0].GetType(): null)}");
 
-            s_Instance = arr != null && arr.Length > 0 ? (ObfuzSettings)arr[0] : CreateInstance<ObfuzSettings>();
+            s_Instance = arr != null && arr.Length > 0 ? (ObfuzSettings)arr[0] : (s_Instance ?? CreateInstance<ObfuzSettings>());
             return s_Instance;
         }
 

@@ -74,13 +74,13 @@ namespace Obfuz.Unity
                 {
                    stagingAreaTempManagedDllDir,
                 };
-            obfuscatorBuilder.InsertTopPriorityAssemblySearchDirs(assemblySearchDirs);
+            obfuscatorBuilder.InsertTopPriorityAssemblySearchPaths(assemblySearchDirs);
 
 
             OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs
             {
                 scriptAssembliesPath = stagingAreaTempManagedDllDir,
-                obfuscatedScriptAssembliesPath = obfuscatorBuilder.ObfuscatedAssemblyOutputDir,
+                obfuscatedScriptAssembliesPath = obfuscatorBuilder.ObfuscatedAssemblyOutputPath,
             });
             bool succ = false;
 
@@ -91,7 +91,7 @@ namespace Obfuz.Unity
 
                 foreach (var dllName in obfuscationRelativeAssemblyNames)
                 {
-                    string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputDir}/{dllName}.dll";
+                    string src = $"{obfuscatorBuilder.ObfuscatedAssemblyOutputPath}/{dllName}.dll";
                     string dst = $"{stagingAreaTempManagedDllDir}/{dllName}.dll";
 
                     if (!File.Exists(src))

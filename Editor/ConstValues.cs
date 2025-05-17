@@ -8,6 +8,6 @@ namespace Obfuz.Editor
 {
     public static class ConstValues
     {
-        public const string ObfuzMetadataNamePrefix = "$Obfuz$";
+        public const string ObfuzInternalSymbolNamePrefix = "$Obfuz$";
     }
 }

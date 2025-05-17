@@ -13,7 +13,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public override ObfuscationPassType Type => ObfuscationPassType.SymbolObfus;
 
-        public SymbolObfusPass(SymbolObfusSettings settings)
+        public SymbolObfusPass(SymbolObfuscationSettings settings)
         {
             _symbolRename = new SymbolRename(settings);
         }

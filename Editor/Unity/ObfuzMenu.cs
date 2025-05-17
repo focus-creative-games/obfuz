@@ -18,7 +18,7 @@ namespace Obfuz.Unity
         public static void GenerateEncryptionVM()
         {
             EncryptionVMSettings settings = ObfuzSettings.Instance.encryptionVMSettings;
-            var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecret, settings.encryptionOpCodeCount);
+            var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecretKey, settings.encryptionOpCodeCount);
             generator.Generate(settings.codeOutputPath);
         }
 
@@ -27,10 +27,10 @@ namespace Obfuz.Unity
         {
             SecretSettings settings = ObfuzSettings.Instance.secretSettings;
 
-            var staticSecretBytes = KeyGenerator.GenerateKey(settings.defaultStaticSecret, VirtualMachine.SecretKeyLength);
+            var staticSecretBytes = KeyGenerator.GenerateKey(settings.defaultStaticSecretKey, VirtualMachine.SecretKeyLength);
             SaveKey(staticSecretBytes, settings.DefaultStaticSecretKeyOutputPath);
             Debug.Log($"Save static secret key to {settings.DefaultStaticSecretKeyOutputPath}");
-            var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecret, VirtualMachine.SecretKeyLength);
+            var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecretKey, VirtualMachine.SecretKeyLength);
             SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
             Debug.Log($"Save dynamic secret key to {settings.DefaultDynamicSecretKeyOutputPath}");
         }
@@ -55,9 +55,6 @@ namespace Obfuz.Unity
 
         [MenuItem("Obfuz/Documents/GitHub")]
         public static void OpenGitHub() => Application.OpenURL("https://github.com/focus-creative-games/obfuz");
-
-        [MenuItem("Obfuz/Documents/Gitee")]
-        public static void OpenGitee() => Application.OpenURL("https://gitee.com/focus-creative-games/obfuz");
 
         [MenuItem("Obfuz/Documents/About")]
         public static void OpenAbout() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/intro");

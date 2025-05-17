@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 
 namespace Obfuz.Emit
 {
-    public static class LoopDetector
-    {
-       
-    }
-
     public class BasicBlock
     {
         public readonly List<Instruction> instructions = new List<Instruction>();

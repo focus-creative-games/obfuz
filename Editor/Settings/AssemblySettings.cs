@@ -8,19 +8,19 @@ namespace Obfuz.Settings
     public class AssemblySettings
     {
 
-        [Tooltip("name of assemblies to obfuscated")]
-        public string[] toObfuscatedAssemblyNames;
+        [Tooltip("name of assemblies to obfuscate")]
+        public string[] assembliesToObfuscate;
 
         [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
-        public string[] notObfuscatedAssemblyNamesReferencingObfuscated;
+        public string[] nonObfuscatedButReferencingObfuscatedAssemblies;
 
-        [Tooltip("extra assembly search dirs")]
-        public string[] extraAssemblySearchDirs;
+        [Tooltip("additional assembly search paths")]
+        public string[] additionalAssemblySearchPaths;
 
         public string[] GetObfuscationRelativeAssemblyNames()
         {
-            return toObfuscatedAssemblyNames
-                .Concat(notObfuscatedAssemblyNamesReferencingObfuscated)
+            return assembliesToObfuscate
+                .Concat(nonObfuscatedButReferencingObfuscatedAssemblies)
                 .ToArray();
         }
     }

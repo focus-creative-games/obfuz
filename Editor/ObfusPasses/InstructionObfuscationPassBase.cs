@@ -14,8 +14,8 @@ namespace Obfuz.ObfusPasses
         public override void Process()
         {
             var ctx = ObfuscationPassContext.Current;
-            var modules = ForceProcessAllAssembliesAndIgnoreAllPolicy ? ctx.obfuscatedAndNotObfuscatedModules : ctx.toObfuscatedModules;
-            NotObfuscatedMethodWhiteList whiteList = ctx.whiteList;
+            var modules = ForceProcessAllAssembliesAndIgnoreAllPolicy ? ctx.allObfuscationRelativeModules : ctx.modulesToObfuscate;
+            ObfuscationMethodWhitelist whiteList = ctx.whiteList;
             ConfigurablePassPolicy passPolicy = ctx.passPolicy;
             foreach (ModuleDef mod in modules)
             {

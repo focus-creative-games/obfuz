@@ -53,12 +53,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public List<CANamedArgument> namedArguments;
         }
 
-        public SymbolRename(SymbolObfusSettings settings)
+        public SymbolRename(SymbolObfuscationSettings settings)
         {
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
-            _mappingXmlPath = settings.mappingFile;
+            _mappingXmlPath = settings.symbolMappingFile;
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
-            _renameRecordMap = new RenameRecordMap(settings.debug ? null : settings.mappingFile);
+            _renameRecordMap = new RenameRecordMap(settings.debug ? null : settings.symbolMappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
             _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
         }
@@ -67,10 +67,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             var ctx = ObfuscationPassContext.Current;
             _assemblyCache = ctx.assemblyCache;
-            _toObfuscatedModules = ctx.toObfuscatedModules;
-            _obfuscatedAndNotObfuscatedModules = ctx.obfuscatedAndNotObfuscatedModules;
-            _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.toObfuscatedModules);
-            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.toObfuscatedAssemblyNames, _obfuscationRuleFiles);
+            _toObfuscatedModules = ctx.modulesToObfuscate;
+            _obfuscatedAndNotObfuscatedModules = ctx.allObfuscationRelativeModules;
+            _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
+            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.assembliesToObfuscate, _obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SupportPassPolicy(ctx.passPolicy), new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
         }

@@ -110,7 +110,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef CreateProxyTypeDef()
         {
-            var typeDef = new TypeDefUser($"{ConstValues.ObfuzMetadataNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
+            var typeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
             typeDef.Attributes = TypeAttributes.NotPublic | TypeAttributes.Sealed;
             _module.EnableTypeDefFindCache = false;
             _module.Types.Add(typeDef);
@@ -124,7 +124,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 _proxyTypeDef = CreateProxyTypeDef();
             }
-            MethodDef methodDef = new MethodDefUser($"{ConstValues.ObfuzMetadataNamePrefix}ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
+            MethodDef methodDef = new MethodDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
                 MethodAttributes.Static | MethodAttributes.Private);
             methodDef.DeclaringType = _proxyTypeDef;

@@ -24,7 +24,7 @@ namespace Obfuz.ObfusPasses.CleanUp
         public override void Process()
         {
             var ctx = ObfuscationPassContext.Current;
-            foreach (ModuleDef mod in ctx.toObfuscatedModules)
+            foreach (ModuleDef mod in ctx.modulesToObfuscate)
             {
                 foreach (TypeDef type in mod.GetTypes())
                 {

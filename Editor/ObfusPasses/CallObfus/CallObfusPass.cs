@@ -22,10 +22,10 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public override ObfuscationPassType Type => ObfuscationPassType.CallObfus;
 
-        public CallObfusPass(CallObfusSettings settings)
+        public CallObfusPass(CallObfuscationSettings settings)
         {
-            _configFiles = settings.configFiles.ToList();
-            _obfuscationLevel = settings.callObfuscationLevel;
+            _configFiles = settings.ruleFiles.ToList();
+            _obfuscationLevel = settings.obfuscationLevel;
         }
 
         public override void Stop()
@@ -37,7 +37,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             var ctx = ObfuscationPassContext.Current;
             _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
-            _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
+            _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.assembliesToObfuscate, _configFiles);
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Obfuz.Settings
 {
     [Serializable]
-    public class SymbolObfusSettings
+    public class SymbolObfuscationSettings
     {
         public bool debug;
 
@@ -18,10 +18,10 @@ namespace Obfuz.Settings
         [Tooltip("obfuscate same namespace to one name")]
         public bool useConsistentNamespaceObfuscation = true;
 
-        [Tooltip("path of mapping.xml")]
-        public string mappingFile = "Assets/Obfuz/SymbolObfus/mapping.xml";
+        [Tooltip("symbol mapping file path")]
+        public string symbolMappingFile = "Assets/Obfuz/SymbolObfus/symbol-mapping.xml";
 
-        [Tooltip("obfuscation rule files for assemblies")]
+        [Tooltip("rule files")]
         public string[] ruleFiles;
     }
 }

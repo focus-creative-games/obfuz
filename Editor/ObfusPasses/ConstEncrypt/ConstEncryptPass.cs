@@ -21,16 +21,16 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private IConstEncryptor _dataObfuscator;
         public override ObfuscationPassType Type => ObfuscationPassType.ConstEncrypt;
 
-        public ConstEncryptPass(ConstEncryptSettings settings)
+        public ConstEncryptPass(ConstEncryptionSettings settings)
         {
-            _configFiles = settings.configFiles.ToList();
+            _configFiles = settings.ruleFiles.ToList();
             _encryptionLevel = settings.encryptionLevel;
         }
 
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.toObfuscatedAssemblyNames, _configFiles);
+            _dataObfuscatorPolicy = new ConfigurableEncryptPolicy(ctx.assembliesToObfuscate, _configFiles);
             _dataObfuscator = new DefaultConstEncryptor(ctx.encryptionScopeProvider, ctx.rvaDataAllocator, ctx.constFieldAllocator, ctx.moduleEntityManager, _encryptionLevel);
         }
 

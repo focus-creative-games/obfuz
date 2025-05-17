@@ -9,21 +9,22 @@ namespace Obfuz.Settings
     {
 
         [Tooltip("default static secret key")]
-        public string defaultStaticSecret = "Code Philosophy-Static";
+        public string defaultStaticSecretKey = "Code Philosophy-Static";
 
-        public string defaultDynamicSecret = "Code Philosophy-Dynamic";
+        [Tooltip("default dynamic secret key")]
+        public string defaultDynamicSecretKey = "Code Philosophy-Dynamic";
 
-        [Tooltip("secret key output directory")]
-        public string secretOutputDir = $"Assets/Resources/Obfuz";
+        [Tooltip("secret key output path")]
+        public string secretKeyOutputPath = $"Assets/Resources/Obfuz";
 
         [Tooltip("random seed")]
         public int randomSeed = 0;
 
-        [Tooltip("name of assemblies those use dynamic secret")]
-        public string[] dynamicSecretAssemblyNames;
+        [Tooltip("name of assemblies those use dynamic secret key")]
+        public string[] assembliesUsingDynamicSecretKeys;
 
-        public string DefaultStaticSecretKeyOutputPath => Path.Combine(secretOutputDir, "defaultStaticSecret.bytes");
+        public string DefaultStaticSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultStaticSecret.bytes");
 
-        public string DefaultDynamicSecretKeyOutputPath => Path.Combine(secretOutputDir, "defaultDynamicSecret.bytes");
+        public string DefaultDynamicSecretKeyOutputPath => Path.Combine(secretKeyOutputPath, "defaultDynamicSecret.bytes");
     }
 }

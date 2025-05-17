@@ -15,55 +15,55 @@ namespace Obfuz
 {
     public class ObfuscatorBuilder
     {
-        private string _defaultStaticSecret;
-        private string _defaultStaticSecretOutputPath;
-        private string _defaultDynamicSecret;
-        private string _defaultDynamicSecretOutputPath;
-        private List<string> _dynamicSecretAssemblyNames = new List<string>();
+        private string _defaultStaticSecretKey;
+        private string _defaultStaticSecretKeyOutputPath;
+        private string _defaultDynamicSecretKey;
+        private string _defaultDynamicSecretKeyOutputPath;
+        private List<string> _assembliesUsingDynamicSecretKeys = new List<string>();
 
         private int _randomSeed;
         private string _encryptionVmGenerationSecretKey;
         private int _encryptionVmOpCodeCount;
         private string _encryptionVmCodeFile;
 
-        private List<string> _toObfuscatedAssemblyNames = new List<string>();
-        private List<string> _notObfuscatedAssemblyNamesReferencingObfuscated = new List<string>();
-        private List<string> _assemblySearchDirs = new List<string>();
+        private List<string> _assembliesToObfuscate = new List<string>();
+        private List<string> _nonObfuscatedButReferencingObfuscatedAssemblies = new List<string>();
+        private List<string> _assemblySearchPaths = new List<string>();
 
-        private string _obfuscatedAssemblyOutputDir;
-        private List<string> _obfuscationPassConfigFiles;
+        private string _obfuscatedAssemblyOutputPath;
+        private List<string> _obfuscationPassRuleConfigFiles;
 
         private ObfuscationPassType _enabledObfuscationPasses;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
 
-        public string DefaultStaticSecret
+        public string DefaultStaticSecretKey
         {
-            get => _defaultStaticSecret;
-            set => _defaultStaticSecret = value;
+            get => _defaultStaticSecretKey;
+            set => _defaultStaticSecretKey = value;
         }
 
-        public string DefaultStaticSecretOutputPath
+        public string DefaultStaticSecretKeyOutputPath
         {
-            get => _defaultStaticSecretOutputPath;
-            set => _defaultStaticSecretOutputPath = value;
+            get => _defaultStaticSecretKeyOutputPath;
+            set => _defaultStaticSecretKeyOutputPath = value;
         }
 
-        public string DefaultDynamicSecret
+        public string DefaultDynamicSecretKey
         {
-            get => _defaultDynamicSecret;
-            set => _defaultDynamicSecret = value;
+            get => _defaultDynamicSecretKey;
+            set => _defaultDynamicSecretKey = value;
         }
 
-        public string DefaultDynamicSecretOutputPath
+        public string DefaultDynamicSecretKeyOutputPath
         {
-            get => _defaultDynamicSecretOutputPath;
-            set => _defaultDynamicSecretOutputPath = value;
+            get => _defaultDynamicSecretKeyOutputPath;
+            set => _defaultDynamicSecretKeyOutputPath = value;
         }
 
-        public List<string> DynamicSecretAssemblyNames
+        public List<string> AssembliesUsingDynamicSecretKeys
         {
-            get => _dynamicSecretAssemblyNames;
-            set => _dynamicSecretAssemblyNames = value;
+            get => _assembliesUsingDynamicSecretKeys;
+            set => _assembliesUsingDynamicSecretKeys = value;
         }
 
         public int RandomSeed
@@ -90,28 +90,28 @@ namespace Obfuz
             set => _encryptionVmCodeFile = value;
         }
 
-        public List<string> ToObfuscatedAssemblyNames
+        public List<string> AssembliesToObfuscate
         {
-            get => _toObfuscatedAssemblyNames;
-            set => _toObfuscatedAssemblyNames = value;
+            get => _assembliesToObfuscate;
+            set => _assembliesToObfuscate = value;
         }
 
-        public List<string> NotObfuscatedAssemblyNamesReferencingObfuscated
+        public List<string> NonObfuscatedButReferencingObfuscatedAssemblies
         {
-            get => _notObfuscatedAssemblyNamesReferencingObfuscated;
-            set => _notObfuscatedAssemblyNamesReferencingObfuscated = value;
+            get => _nonObfuscatedButReferencingObfuscatedAssemblies;
+            set => _nonObfuscatedButReferencingObfuscatedAssemblies = value;
         }
 
-        public List<string> AssemblySearchDirs
+        public List<string> AssemblySearchPaths
         {
-            get => _assemblySearchDirs;
-            set => _assemblySearchDirs = value;
+            get => _assemblySearchPaths;
+            set => _assemblySearchPaths = value;
         }
 
-        public string ObfuscatedAssemblyOutputDir
+        public string ObfuscatedAssemblyOutputPath
         {
-            get => _obfuscatedAssemblyOutputDir;
-            set => _obfuscatedAssemblyOutputDir = value;
+            get => _obfuscatedAssemblyOutputPath;
+            set => _obfuscatedAssemblyOutputPath = value;
         }
 
         public ObfuscationPassType EnableObfuscationPasses
@@ -120,10 +120,10 @@ namespace Obfuz
             set => _enabledObfuscationPasses = value;
         }
 
-        public List<string> ObfuscationPassConfigFiles
+        public List<string> ObfuscationPassRuleConfigFiles
         {
-            get => _obfuscationPassConfigFiles;
-            set => _obfuscationPassConfigFiles = value;
+            get => _obfuscationPassRuleConfigFiles;
+            set => _obfuscationPassRuleConfigFiles = value;
         }
 
         public List<IObfuscationPass> ObfuscationPasses
@@ -132,9 +132,9 @@ namespace Obfuz
             set => _obfuscationPasses = value;
         }
 
-        public void InsertTopPriorityAssemblySearchDirs(List<string> assemblySearchDirs)
+        public void InsertTopPriorityAssemblySearchPaths(List<string> assemblySearchPaths)
         {
-            _assemblySearchDirs.InsertRange(0, assemblySearchDirs);
+            _assemblySearchPaths.InsertRange(0, assemblySearchPaths);
         }
 
         public ObfuscatorBuilder AddPass(IObfuscationPass pass)
@@ -169,25 +169,25 @@ namespace Obfuz
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation)
         {
             List<string> searchPaths = searchPathIncludeUnityEditorInstallLocation ?
-                BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.extraAssemblySearchDirs).ToList()
-                : settings.assemblySettings.extraAssemblySearchDirs.ToList();
+                BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.additionalAssemblySearchPaths).ToList()
+                : settings.assemblySettings.additionalAssemblySearchPaths.ToList();
             var builder = new ObfuscatorBuilder
             {
-                _defaultStaticSecret = settings.secretSettings.defaultStaticSecret,
-                _defaultStaticSecretOutputPath = settings.secretSettings.DefaultStaticSecretKeyOutputPath,
-                _defaultDynamicSecret = settings.secretSettings.defaultDynamicSecret,
-                _defaultDynamicSecretOutputPath = settings.secretSettings.DefaultDynamicSecretKeyOutputPath,
-                _dynamicSecretAssemblyNames = settings.secretSettings.dynamicSecretAssemblyNames.ToList(),
+                _defaultStaticSecretKey = settings.secretSettings.defaultStaticSecretKey,
+                _defaultStaticSecretKeyOutputPath = settings.secretSettings.DefaultStaticSecretKeyOutputPath,
+                _defaultDynamicSecretKey = settings.secretSettings.defaultDynamicSecretKey,
+                _defaultDynamicSecretKeyOutputPath = settings.secretSettings.DefaultDynamicSecretKeyOutputPath,
+                _assembliesUsingDynamicSecretKeys = settings.secretSettings.assembliesUsingDynamicSecretKeys.ToList(),
                 _randomSeed = settings.secretSettings.randomSeed,
-                _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecret,
+                _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
                 _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
-                _toObfuscatedAssemblyNames = settings.assemblySettings.toObfuscatedAssemblyNames.ToList(),
-                _notObfuscatedAssemblyNamesReferencingObfuscated = settings.assemblySettings.notObfuscatedAssemblyNamesReferencingObfuscated.ToList(),
-                _assemblySearchDirs = searchPaths,
-                _obfuscatedAssemblyOutputDir = settings.GetObfuscatedAssemblyOutputDir(target),
+                _assembliesToObfuscate = settings.assemblySettings.assembliesToObfuscate.ToList(),
+                _nonObfuscatedButReferencingObfuscatedAssemblies = settings.assemblySettings.nonObfuscatedButReferencingObfuscatedAssemblies.ToList(),
+                _assemblySearchPaths = searchPaths,
+                _obfuscatedAssemblyOutputPath = settings.GetObfuscatedAssemblyOutputPath(target),
                 _enabledObfuscationPasses = settings.obfuscationPassSettings.enabledPasses,
-                _obfuscationPassConfigFiles = settings.obfuscationPassSettings.configFiles.ToList(),
+                _obfuscationPassRuleConfigFiles = settings.obfuscationPassSettings.ruleFiles.ToList(),
             };
             ObfuscationPassType obfuscationPasses = settings.obfuscationPassSettings.enabledPasses;
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))

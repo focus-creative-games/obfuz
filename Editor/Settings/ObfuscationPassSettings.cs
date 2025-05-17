@@ -10,7 +10,7 @@ namespace Obfuz.Settings
         [Tooltip("enable obfuscation pass")]
         public ObfuscationPassType enabledPasses = ObfuscationPassType.All;
 
-        [Tooltip("config xml files")]
-        public string[] configFiles;
+        [Tooltip("rule config xml files")]
+        public string[] ruleFiles;
     }
 }

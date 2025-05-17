@@ -12,7 +12,7 @@ namespace Obfuz.Settings
     public class EncryptionVMSettings
     {
         [Tooltip("secret key for generating encryption virtual machine source code")]
-        public string codeGenerationSecret = "Obfuz";
+        public string codeGenerationSecretKey = "Obfuz";
 
         [Tooltip("encryption OpCode count, should be power of 2 and >= 64")]
         public int encryptionOpCodeCount = 256;

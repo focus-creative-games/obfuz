@@ -8,13 +8,13 @@ using UnityEngine;
 namespace Obfuz.Settings
 {
     [Serializable]
-    public class CallObfusSettings
+    public class CallObfuscationSettings
     {
         [Tooltip("The obfuscation level for the obfuscation. Higher levels provide more security but may impact performance.")]
         [Range(1, 4)]
-        public int callObfuscationLevel = 1;
+        public int obfuscationLevel = 1;
 
-        [Tooltip("config xml files")]
-        public string[] configFiles;
+        [Tooltip("rule config xml files")]
+        public string[] ruleFiles;
     }
 }
