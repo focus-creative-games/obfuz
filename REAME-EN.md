@@ -1,4 +1,4 @@
-# Obfuz - Unity Code Obfuscation Tool
+# A Powerful Open-Source Unity Code Obfuscation Plugin​
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
@@ -9,6 +9,13 @@
 [English](./README-EN.md) | [中文](./README.md)
 
 ---
+
+## Why Choose Obfuz?
+
+- **Open Source & Free**: Licensed under MIT, Obfuz is free to use and modify.
+- **Enterprise-Grade Protection**: Offers robust obfuscation features comparable to commercial tools.
+- **Unity-Centric Design**: Seamlessly integrates with Unity’s ecosystem, streamlining your workflow.
+- **Hot Update Ready**: Optimized for modern Unity projects using hot update frameworks.
 
 ## Features
 
@@ -38,16 +45,10 @@ Obfuz is actively evolving. Upcoming features include:
 - **DLL Structure Encryption**: Secure DLL file structures against tampering.
 - **Code Virtualization**: Transform code into virtualized instructions for maximum security.
 
-## Why Choose Obfuz?
-
-- **Open Source & Free**: Licensed under MIT, Obfuz is free to use and modify.
-- **Enterprise-Grade Protection**: Offers robust obfuscation features comparable to commercial tools.
-- **Unity-Centric Design**: Seamlessly integrates with Unity’s ecosystem, streamlining your workflow.
-- **Hot Update Ready**: Optimized for modern Unity projects using hot update frameworks.
-
 ## Documentation
 
-[Coming soon] Full documentation will be available in the docs/ folder or on our Wiki.
+- [Document](https://www.obfuz.com/)
+- [Quick Start](https://www.obfuz.com/docs/beginner/quick-start)
 
 ## Contributing
 

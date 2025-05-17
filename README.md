@@ -1,14 +1,20 @@
-# Obfuz - Unity 代码混淆工具
+# Obfuz - 功能强大的开源 Unity 代码混淆插件
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/your-repo/obfuz/pulls)
 
 Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者提供强大、安全且易用的代码保护解决方案。Obfuz 基于 MIT 协议，功能媲美商业混淆工具，与 Unity 工作流深度集成，并完美支持 HybridCLR、xLua、Puerts 等热更新方案。
 
 [English](./README-EN.md) | [中文](./README.md)
 
 ---
+
+## 为什么选择 Obfuz？
+
+- **开源免费**：基于 MIT 协议，免费使用和修改。
+- **企业级保护**：提供媲美商业工具的强大混淆功能。
+- **专为 Unity 设计**：深度集成 Unity 生态，简化开发流程。
+- **热更新优化**：为现代 Unity 项目中的热更新方案提供优异支持。
 
 ## 功能特性
 
@@ -25,7 +31,7 @@ Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者
 
 - 支持Unity 2019+
 - 支持团结引擎
-- 支持Unity支持的所有平台
+- 支持Unity和团结引擎支持的所有平台
 
 ## 未来计划
 
@@ -38,16 +44,10 @@ Obfuz 正在持续开发中，即将推出的功能包括：
 - **DLL 文件结构加密**：保护 DLL 文件结构免受篡改。
 - **代码虚拟化**：将代码转化为虚拟化指令，提供最高级别安全。
 
-## 为什么选择 Obfuz？
-
-- **开源免费**：基于 MIT 协议，免费使用和修改。
-- **企业级保护**：提供媲美商业工具的强大混淆功能。
-- **专为 Unity 设计**：深度集成 Unity 生态，简化开发流程。
-- **热更新优化**：为现代 Unity 项目中的热更新方案提供优异支持。
-
 ## 文档
 
-[即将推出] 完整文档将位于 docs/ 文件夹或我们的 Wiki 中。
+- [文档](https://www.obfuz.com/)
+- [快速上手](https://www.obfuz.com/docs/beginner/quick-start)
 
 ## 贡献
 
