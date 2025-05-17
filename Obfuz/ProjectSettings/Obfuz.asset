@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enable: 1
   assemblySettings:
-    assembliesToObfuscate: []
+    assembliesToObfuscate:
+    - Assembly-CSharp
+    - Obfuz.Runtime
     nonObfuscatedButReferencingObfuscatedAssemblies: []
     additionalAssemblySearchPaths: []
   obfuscationPassSettings:

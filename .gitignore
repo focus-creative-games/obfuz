@@ -6,6 +6,7 @@
 **/Library/
 **/Logs/
 **/Temp/
+**/Build-*/
 
 **/.vs/
 **/bin/
