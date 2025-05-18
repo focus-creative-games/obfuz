@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Obfuz.Utils
 {
@@ -29,13 +30,17 @@ namespace Obfuz.Utils
             long ops = 0;
             for (int i = 0; i < encryptionLevel; i++)
             {
-                ops *= vmOpCodeCount;
+                long newOps = ops * vmOpCodeCount;
                 // don't use 0
                 int op = random.NextInt(1, vmOpCodeCount);
-                ops |= (uint)op;
-                if (ops > uint.MaxValue)
+                newOps |= (uint)op;
+                if (newOps > uint.MaxValue)
                 {
-                    throw new Exception($"OpCode overflow. encryptionLevel:{encryptionLevel}, vmOpCodeCount:{vmOpCodeCount}");
+                    Debug.LogWarning($"OpCode overflow. encryptionLevel:{encryptionLevel}, vmOpCodeCount:{vmOpCodeCount}");
+                }
+                else
+                {
+                    ops = newOps;
                 }
             }
             return (int)ops;
