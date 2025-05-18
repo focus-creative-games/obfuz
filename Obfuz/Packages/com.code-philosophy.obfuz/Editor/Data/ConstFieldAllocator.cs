@@ -109,7 +109,7 @@ namespace Obfuz.Data
                 _module.EnableTypeDefFindCache = true;
             }
 
-            var field = new FieldDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}RVA_Value{_holderTypeDef.Fields.Count}", new FieldSig(GetTypeSigOfValue(value)), FieldAttributes.Static | FieldAttributes.Private | FieldAttributes.InitOnly);
+            var field = new FieldDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}RVA_Value{_holderTypeDef.Fields.Count}", new FieldSig(GetTypeSigOfValue(value)), FieldAttributes.Static | FieldAttributes.Public | FieldAttributes.InitOnly);
             field.DeclaringType = _holderTypeDef;
             return new ConstFieldInfo
             {

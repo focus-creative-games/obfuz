@@ -126,7 +126,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
             MethodDef methodDef = new MethodDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
-                MethodAttributes.Static | MethodAttributes.Private);
+                MethodAttributes.Static | MethodAttributes.Public);
             methodDef.DeclaringType = _proxyTypeDef;
             return methodDef;
         }

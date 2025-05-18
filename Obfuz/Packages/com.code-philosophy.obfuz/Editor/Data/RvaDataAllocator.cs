@@ -106,7 +106,7 @@ namespace Obfuz.Data
             var holderField = new FieldDefUser($"$RVA_Data{_rvaFields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
             holderField.DeclaringType = _rvaTypeDef;
 
-            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaFields.Count}", new FieldSig(new SZArraySig(_module.CorLibTypes.Byte)), FieldAttributes.Static);
+            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaFields.Count}", new FieldSig(new SZArraySig(_module.CorLibTypes.Byte)), FieldAttributes.Static | FieldAttributes.Public);
             runtimeValueField.DeclaringType = _rvaTypeDef;
             return (holderField, runtimeValueField);
         }
@@ -117,6 +117,7 @@ namespace Obfuz.Data
             if (_dataHolderTypeBySizes.TryGetValue(size, out var type))
                 return type;
             var dataHolderType = new TypeDefUser($"$ObfuzRVA$DataHolder{size}", _module.Import(typeof(ValueType)));
+            dataHolderType.Attributes = TypeAttributes.Public | TypeAttributes.Sealed;
             dataHolderType.Layout = TypeAttributes.ExplicitLayout;
             dataHolderType.PackingSize = 1;
             dataHolderType.ClassSize = (uint)size;

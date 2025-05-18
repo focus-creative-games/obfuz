@@ -9,7 +9,8 @@ namespace Obfuz
 
     public static class EncryptionService<T> where T : IEncryptionScope
     {
-        private static IEncryptor _encryptor;
+        // for compatibility with Mono because Mono will raise FieldAccessException when try access private field
+        public static IEncryptor _encryptor;
 
         public static IEncryptor Encryptor
         {
