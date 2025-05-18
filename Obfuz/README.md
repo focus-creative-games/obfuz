@@ -24,27 +24,32 @@ using $a;
 using $A;
 using UnityEngine;
 
-// Token: 0x02000003 RID: 3
+// Token: 0x02000002 RID: 2
 public class Bootstrap : MonoBehaviour
 {
-  // Token: 0x06000004 RID: 4 RVA: 0x0000313D File Offset: 0x0000133D
+  // Token: 0x06000001 RID: 1 RVA: 0x000030F0 File Offset: 0x000012F0
   [RuntimeInitializeOnLoadMethod(2)]
   private static void SetUpStaticSecret()
   {
     Debug.Log("SetUpStaticSecret begin");
-    global::$A.$C<$c>.$L = new global::$a.$A(Resources.Load<TextAsset>("Obfuz/defaultStaticSecret").bytes);
+    global::$A.$C<$c>.$L = new $a.$A(Resources.Load<TextAsset>("Obfuz/defaultStaticSecretKey").bytes);
     Debug.Log("SetUpStaticSecret end");
   }
 
-  // Token: 0x06000005 RID: 5 RVA: 0x000032E0 File Offset: 0x000014E0
+  // Token: 0x06000002 RID: 2 RVA: 0x0000311F File Offset: 0x0000131F
+  public int $a(int 1, int 1)
+  {
+    return 1 + 1;
+  }
+
+  // Token: 0x06000003 RID: 3 RVA: 0x00003204 File Offset: 0x00001404
   private void Start()
   {
-    global::$a $a = new global::$a();
-    int num = global::$e.$A($a, global::$e.$a(global::$d.$A, 8, 117, -2060908889, global::$A.$C<$c>.$d(-1139589574, 85, -452785586)), global::$e.$a(global::$d.$A, 12, 138, -1222258517, global::$A.$C<$c>.$d(-1139589574, 85, -452785586)), global::$A.$C<$c>.$d(-595938299, 185, 132898840));
+    int num = global::$e.$A(this, global::$e.$a(global::$d.$A, 0, 117, -2060908889, global::$A.$C<$c>.$d(-1139589574, 85, -452785586)), global::$e.$a(global::$d.$A, 4, 138, -1222258517, global::$A.$C<$c>.$d(-1139589574, 85, -452785586)), global::$A.$C<$c>.$d(1757957431, 242, 760404455));
     global::$e.$b(string.Format(global::$D.$a, num), global::$A.$C<$c>.$d(1718597184, 154, 2114032877));
-    int num2 = global::$e.$B($a, num, global::$A.$C<$c>.$d(368894728, 171, -1414000938));
-    global::$e.$b(string.Format(global::$D.$A, num2), global::$A.$C<$c>.$d(1718597184, 154, 2114032877));
   }
 }
+
+
 
 ```

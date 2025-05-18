@@ -1,12 +1,9 @@
 <mapping>
   <assembly name="Assembly-CSharp">
-    <type fullName="Algorithm" newFullName="$a" status="Renamed">
-      <method signature="int Algorithm::Add([Assembly-CSharp]Algorithm, int, int)" newName="$a" oldStackTraceSignature="Algorithm:Add(Int32, Int32)" newStackTraceSignature="$a:$a(Int32, Int32)">
+    <type fullName="Bootstrap" newFullName="" status="NotRenamed">
+      <method signature="int Bootstrap::Add([Assembly-CSharp]Bootstrap, int, int)" newName="$a" oldStackTraceSignature="Bootstrap:Add(Int32, Int32)" newStackTraceSignature="Bootstrap:$a(Int32, Int32)">
         <param index="1" newName="1" />
         <param index="2" newName="1" />
-      </method>
-      <method signature="int Algorithm::ComputeHashCode([Assembly-CSharp]Algorithm, int)" newName="$A" oldStackTraceSignature="Algorithm:ComputeHashCode(Int32)" newStackTraceSignature="$a:$A(Int32)">
-        <param index="1" newName="1" />
       </method>
     </type>
     <type fullName="Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine" newFullName="$a.$A" status="Renamed">
@@ -38,11 +35,11 @@
       </method>
     </type>
     <type fullName="&lt;PrivateImplementationDetails&gt;" newFullName="$b" status="Renamed">
-      <field signature="[Assembly-CSharp]&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=87 331CA39465764E7DCBE9D86F4330ECCF01BEA2C515D12E3C85AD65689CF5D169" newName="$a" />
-      <field signature="[Assembly-CSharp]&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=130 E80BB66678F959843570A18381C8FF647BDCE6DF9D5AD8477C3F03A04DFFE3B7" newName="$A" />
+      <field signature="[Assembly-CSharp]&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=86 230748DE32A7B14F2A36EEA88E8693F9862DC7AC35B0BA73ACB9E47C6A6EC891" newName="$a" />
+      <field signature="[Assembly-CSharp]&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=72 A9CE10ECCCBCA424528AF2C7F835672596125B19DA54C2D7FBBFA1840795ACE2" newName="$A" />
     </type>
-    <type fullName="&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=87" newFullName="$b/$B" status="Renamed" />
-    <type fullName="&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=130" newFullName="$b/$c" status="Renamed" />
+    <type fullName="&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=72" newFullName="$b/$a" status="Renamed" />
+    <type fullName="&lt;PrivateImplementationDetails&gt;/__StaticArrayInitTypeSize=86" newFullName="$b/$B" status="Renamed" />
     <type fullName="$ObfuzRVA$DataHolder4096" newFullName="$C" status="Renamed" />
     <type fullName="$Obfuz$RVA$" newFullName="$d" status="Renamed">
       <field signature="[Assembly-CSharp]$ObfuzRVA$DataHolder4096 $RVA_Data0" newName="$a" />
@@ -50,13 +47,11 @@
     </type>
     <type fullName="$Obfuz$ConstFieldHolder$0" newFullName="$D" status="Renamed">
       <field signature="string $Obfuz$RVA_Value0" newName="$a" />
-      <field signature="string $Obfuz$RVA_Value1" newName="$A" />
     </type>
     <type fullName="$Obfuz$ProxyCall" newFullName="$e" status="Renamed">
       <method signature="int $Obfuz$ProxyCall::$Obfuz$ProxyCall$Dispatch$0(object, int, int, int, int)" newName="$a" oldStackTraceSignature="$Obfuz$ProxyCall:$Obfuz$ProxyCall$Dispatch$0(Object, Int32, Int32, Int32, Int32)" newStackTraceSignature="$e:$a(Object, Int32, Int32, Int32, Int32)" />
       <method signature="int $Obfuz$ProxyCall::$Obfuz$ProxyCall$Dispatch$1(object, int, int, int)" newName="$A" oldStackTraceSignature="$Obfuz$ProxyCall:$Obfuz$ProxyCall$Dispatch$1(Object, Int32, Int32, Int32)" newStackTraceSignature="$e:$A(Object, Int32, Int32, Int32)" />
       <method signature="void $Obfuz$ProxyCall::$Obfuz$ProxyCall$Dispatch$2(object, int)" newName="$b" oldStackTraceSignature="$Obfuz$ProxyCall:$Obfuz$ProxyCall$Dispatch$2(Object, Int32)" newStackTraceSignature="$e:$b(Object, Int32)" />
-      <method signature="int $Obfuz$ProxyCall::$Obfuz$ProxyCall$Dispatch$3(object, int, int)" newName="$B" oldStackTraceSignature="$Obfuz$ProxyCall:$Obfuz$ProxyCall$Dispatch$3(Object, Int32, Int32)" newStackTraceSignature="$e:$B(Object, Int32, Int32)" />
     </type>
   </assembly>
   <assembly name="Obfuz.Runtime">

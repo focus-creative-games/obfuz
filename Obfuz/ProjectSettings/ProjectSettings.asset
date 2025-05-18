@@ -877,6 +877,7 @@ PlayerSettings:
     Standalone: 1
   il2cppCompilerConfiguration:
     Android: 0
+    Standalone: 0
   il2cppCodeGeneration: {}
   managedStrippingLevel:
     EmbeddedLinux: 1

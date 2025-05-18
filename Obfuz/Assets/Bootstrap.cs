@@ -16,14 +16,14 @@ public class Bootstrap : MonoBehaviour
         Debug.Log("SetUpStaticSecret end");
     }
 
-    // Start is called before the first frame update
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+
     void Start()
     {
-        var c = new Algorithm();
-        int a = c.Add(100, 200);
+        int a = Add(100, 200);
         Debug.Log($"a = {a}");
-
-        int b = c.ComputeHashCode(a);
-        Debug.Log($"b = {b}");
     }
 }
