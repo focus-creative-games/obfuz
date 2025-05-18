@@ -7,13 +7,16 @@
 **/Logs/
 **/Temp/
 **/Build-*/
+**/Release-*/
+**/Debug-*/
 
 **/.vs/
 **/bin/
 **/obj/
 
 
-*.vsconfig
+.vsconfig
 **/UserSettings/
-/Obfuz/*.csproj
-/Obfuz/*.sln
+*.csproj
+*.sln
+packages-lock.json
