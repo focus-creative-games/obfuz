@@ -2,11 +2,12 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/your-repo/obfuz/pulls)
 
-**Obfuz**  is an open-source Unity code obfuscation tool designed to provide Unity developers with a powerful, secure, and user-friendly code protection solution. Licensed under MIT, Obfuz delivers commercial-grade obfuscation capabilities that seamlessly integrate with Unity workflows while offering exceptional support for hot-reload solutions like HybridCLR, xLua, and Puerts.
+**Obfuz**  is an open-source Unity code obfuscation tool designed to provide Unity developers with a powerful, secure, and user-friendly code protection solution.
 
 [English](./README-EN.md) | [中文](./README.md)
+
+[Github](https://github.com/focus-creative-games/obfuz) | [Gitee](https://gitee.com/focus-creative-games/obfuz)
 
 ---
 

@@ -3,9 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
 
-Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者提供强大、安全且易用的代码保护解决方案。Obfuz 基于 MIT 协议，功能媲美商业混淆工具，与 Unity 工作流深度集成，并完美支持 HybridCLR、xLua、Puerts 等热更新方案。
+Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者提供强大、安全且易用的代码保护解决方案。
 
 [English](./README-EN.md) | [中文](./README.md)
+
+[Github](https://github.com/focus-creative-games/obfuz) | [Gitee](https://gitee.com/focus-creative-games/obfuz)
 
 ---
 
