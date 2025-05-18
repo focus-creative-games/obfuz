@@ -61,6 +61,10 @@ namespace Obfuz
             {
                 return true;
             }
+            if (type.DeclaringType != null && IsInWhiteList(type.DeclaringType))
+            {
+                return true;
+            }
             if (type.FullName == "Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine")
             {
                 return true;
