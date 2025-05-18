@@ -22,6 +22,10 @@ namespace Obfuz.Utils
             result.Append(method.DeclaringType.FullName);
             result.Append("::");
             result.Append(method.Name);
+            if (method.HasGenericParameters)
+            {
+                result.Append($"`{method.GenericParameters.Count}");
+            }
             result.Append("(");
             for (int i = 0; i < method.Parameters.Count; i++)
             {
