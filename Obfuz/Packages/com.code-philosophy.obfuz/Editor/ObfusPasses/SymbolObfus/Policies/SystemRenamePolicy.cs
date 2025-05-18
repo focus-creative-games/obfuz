@@ -16,6 +16,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
+            if (typeDef.DeclaringType != null && MetaUtil.HasObfuzIgnoreAttribute(typeDef.DeclaringType))
+            {
+                return false;
+            }
             return true;
         }
 
