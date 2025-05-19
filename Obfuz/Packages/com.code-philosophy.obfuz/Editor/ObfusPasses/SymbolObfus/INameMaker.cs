@@ -10,8 +10,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         void AddPreservedName(MethodDef methodDef, string name);
 
-        void AddPreservedName(ParamDef paramDef, string name);
-
         void AddPreservedName(FieldDef fieldDef, string name);
 
         void AddPreservedName(PropertyDef propertyDef, string name);

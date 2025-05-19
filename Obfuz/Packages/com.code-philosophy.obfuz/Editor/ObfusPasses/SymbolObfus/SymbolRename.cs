@@ -717,7 +717,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private void Rename(ParamDef param)
         {
             string newName = _nameMaker.GetNewName(param, param.Name);
-            _renameRecordMap.AddRename(param, newName);
             param.Name = newName;
         }
 

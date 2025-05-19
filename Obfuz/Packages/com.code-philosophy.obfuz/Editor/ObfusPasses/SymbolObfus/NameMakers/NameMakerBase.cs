@@ -36,11 +36,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
             GetNameScope(methodDef.DeclaringType).AddPreservedName(name);
         }
 
-        public void AddPreservedName(ParamDef paramDef, string name)
-        {
-
-        }
-
         public void AddPreservedName(FieldDef fieldDef, string name)
         {
             GetNameScope(fieldDef.DeclaringType).AddPreservedName(name);

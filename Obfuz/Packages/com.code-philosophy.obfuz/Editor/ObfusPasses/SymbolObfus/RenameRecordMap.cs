@@ -42,8 +42,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public RenameStatus status;
             public string signature;
             public string newName;
-
-            public List<RenameMappingMethodParam> parameters = new List<RenameMappingMethodParam>();
         }
 
         private class RenameMappingMethodParam
@@ -320,32 +318,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 newName = newName,
                 status = RenameStatus.Renamed,
             };
-            foreach (XmlNode node in ele.ChildNodes)
-            {
-                if (!(node is XmlElement c))
-                {
-                    continue;
-                }
-                switch (node.Name)
-                {
-                    case "param": LoadMethodParamMapping(c, rmm); break;
-                    default: throw new System.Exception($"unknown node name:{node.Name}, expect 'param'");
-                }
-            }
             type.methods.Add(signature, rmm);
-        }
-
-        private void LoadMethodParamMapping(XmlElement ele, RenameMappingMethod method)
-        {
-            string index = ele.Attributes["index"].Value;
-            string newName = ele.Attributes["newName"].Value;
-            var rmp = new RenameMappingMethodParam
-            {
-                index = int.Parse(index),
-                newName = newName,
-                status = RenameStatus.Renamed,
-            };
-            method.parameters.Add(rmp);
         }
 
         private void LoadFieldMapping(XmlElement ele, RenameMappingType type)
@@ -577,11 +550,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var methodNode = typeEle.OwnerDocument.CreateElement("method");
             methodNode.SetAttribute("signature", signature);
             methodNode.SetAttribute("newName", method.newName);
-            //methodNode.SetAttribute("status", record != null ? record.status.ToString() : RenameStatus.NotRenamed.ToString());
-            foreach (RenameMappingMethodParam param in method.parameters)
-            {
-                WriteMethodParamMapping(methodNode, param);
-            }
             typeEle.AppendChild(methodNode);
         }
 
@@ -594,15 +562,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var paramNode = methodEle.OwnerDocument.CreateElement("param");
             paramNode.SetAttribute("index", param.Sequence.ToString());
             paramNode.SetAttribute("newName", record.newName);
-            //paramNode.SetAttribute("status", record.status.ToString());
-            methodEle.AppendChild(paramNode);
-        }
-
-        private void WriteMethodParamMapping(XmlElement methodEle, RenameMappingMethodParam param)
-        {
-            var paramNode = methodEle.OwnerDocument.CreateElement("param");
-            paramNode.SetAttribute("index", param.index.ToString());
-            paramNode.SetAttribute("newName", param.newName);
             //paramNode.SetAttribute("status", record.status.ToString());
             methodEle.AppendChild(paramNode);
         }
@@ -624,13 +583,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         public void AddRename(MethodDef method, string newName)
         {
             RenameRecord record = _methodRenames[method];
-            record.status = RenameStatus.Renamed;
-            record.newName = newName;
-        }
-
-        public void AddRename(ParamDef paramDef, string newName)
-        {
-            RenameRecord record = _paramRenames[paramDef];
             record.status = RenameStatus.Renamed;
             record.newName = newName;
         }
