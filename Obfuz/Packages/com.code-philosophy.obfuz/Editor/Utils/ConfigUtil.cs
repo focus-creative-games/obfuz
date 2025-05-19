@@ -21,6 +21,22 @@ namespace Obfuz.Utils
             }
         }
 
+        public static bool? ParseNullableBool(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+            switch (str.ToLowerInvariant())
+            {
+                case "1":
+                case "true": return true;
+                case "0":
+                case "false": return false;
+                default: throw new Exception($"Invalid bool value {str}");
+            }
+        }
+
         public static int? ParseNullableInt(string str)
         {
             if (string.IsNullOrEmpty(str))
