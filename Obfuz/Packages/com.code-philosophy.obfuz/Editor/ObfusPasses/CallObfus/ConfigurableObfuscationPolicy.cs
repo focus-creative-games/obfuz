@@ -271,6 +271,11 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 return true;
             }
+
+            if (typeDef.Name == "EncryptionService`1")
+            {
+                return true;
+            }
             // special handle
             // don't proxy call for List<T>.Enumerator GetEnumerator()
             if (methodName == "GetEnumerator")
