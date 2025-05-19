@@ -184,7 +184,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             int salt = GenerateSalt(random);
             int stringByteLength = Encoding.UTF8.GetByteCount(value);
             byte[] encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
-            Assert.IsTrue(encryptedValue.Length % 4 == 0);
+            Assert.AreEqual(stringByteLength, encryptedValue.Length);
             RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
 
             DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
