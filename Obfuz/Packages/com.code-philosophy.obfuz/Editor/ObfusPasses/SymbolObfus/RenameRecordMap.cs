@@ -1,5 +1,6 @@
 using dnlib.DotNet;
 using Obfuz.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -360,6 +361,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             type.events.Add(signature, rme);
         }
 
+        private List<V> GetSortedValueList<K, V>(Dictionary<K, V> dic, Comparison<V> comparer)
+        {
+            var list = dic.Values.ToList();
+            list.Sort(comparer);
+            return list;
+        }
+
         public void WriteXmlMappingFile()
         {
             if (string.IsNullOrEmpty(_mappingFile))
@@ -369,7 +377,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var doc = new XmlDocument();
             var root = doc.CreateElement("mapping");
             doc.AppendChild(root);
-            foreach (var kvp in _modRenames)
+
+            var sortedModRenames = _modRenames.ToList();
+            sortedModRenames.Sort((a, b) => a.Value.oldName.CompareTo(b.Value.oldName));
+            foreach (var kvp in sortedModRenames)
             {
                 ModuleDef mod = kvp.Key;
                 RenameRecord record = kvp.Value;
@@ -381,7 +392,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
                 root.AppendChild(assemblyNode);
             }
-            foreach (RenameMappingAssembly ass in _assemblies.Values)
+
+            var sortedAsses = GetSortedValueList(_assemblies, (a, b) => a.assName.CompareTo(b.assName));
+            foreach (RenameMappingAssembly ass in sortedAsses)
             {
                 if (_modRenames.Keys.Any(m => m.Assembly.Name == ass.assName))
                 {
@@ -389,9 +402,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
                 var assemblyNode = doc.CreateElement("assembly");
                 assemblyNode.SetAttribute("name", ass.assName);
-                foreach (var e in ass.types)
+
+                var sortedTypes = GetSortedValueList(ass.types, (a, b) => a.oldFullName.CompareTo(b.oldFullName));
+                foreach (var type in sortedTypes)
                 {
-                    WriteTypeMapping(assemblyNode, e.Key, e.Value);
+                    WriteTypeMapping(assemblyNode, type.oldFullName, type);
                 }
                 root.AppendChild(assemblyNode);
             }
