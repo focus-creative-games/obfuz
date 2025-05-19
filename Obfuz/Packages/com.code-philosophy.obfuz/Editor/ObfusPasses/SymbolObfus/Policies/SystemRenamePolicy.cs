@@ -25,6 +25,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(MethodDef methodDef)
         {
+            if (methodDef.DeclaringType.IsDelegate)
+            {
+                return false;
+            }
             if (methodDef.Name == ".ctor" || methodDef.Name == ".cctor")
             {
                 return false;
@@ -39,6 +43,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(FieldDef fieldDef)
         {
+            if (fieldDef.DeclaringType.IsDelegate)
+            {
+                return false;
+            }
             if (MetaUtil.HasObfuzIgnoreAttribute(fieldDef) || MetaUtil.HasObfuzIgnoreAttribute(fieldDef.DeclaringType))
             {
                 return false;
@@ -52,6 +60,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(PropertyDef propertyDef)
         {
+            if (propertyDef.DeclaringType.IsDelegate)
+            {
+                return false;
+            }
             if (MetaUtil.HasObfuzIgnoreAttribute(propertyDef) || MetaUtil.HasObfuzIgnoreAttribute(propertyDef.DeclaringType))
             {
                 return false;
@@ -61,6 +73,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(EventDef eventDef)
         {
+            if (eventDef.DeclaringType.IsDelegate)
+            {
+                return false;
+            }
             if (MetaUtil.HasObfuzIgnoreAttribute(eventDef) || MetaUtil.HasObfuzIgnoreAttribute(eventDef.DeclaringType))
             {
                 return false;
