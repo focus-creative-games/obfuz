@@ -360,11 +360,31 @@ namespace Obfuz.ObfusPasses.CallObfus
             return isWhiteList;
         }
 
+        private bool IsTypeSelfAndParentPublic(TypeDef type)
+        {
+            if (type.DeclaringType != null && !IsTypeSelfAndParentPublic(type.DeclaringType))
+            {
+                return false;
+            }
+
+            return type.IsPublic;
+        }
+
         public override bool NeedObfuscateCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop)
         {
             if (IsInWhiteList(calledMethod))
             {
                 return false;
+            }
+
+            // mono has more strict access control, calls non-public method will raise exception.
+            if (PlatformUtil.IsMonoBackend())
+            {
+                MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
+                if (calledMethodDef != null && (!calledMethodDef.IsPublic || !IsTypeSelfAndParentPublic(calledMethodDef.DeclaringType)))
+                {
+                    return false;
+                }
             }
             ObfuscationRule rule = GetMethodObfuscationRule(callerMethod);
             if (currentInLoop && rule.obfuscateCallInLoop == false)
