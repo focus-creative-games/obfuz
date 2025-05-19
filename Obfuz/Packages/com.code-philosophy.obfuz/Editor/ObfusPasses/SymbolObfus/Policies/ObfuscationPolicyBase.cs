@@ -29,10 +29,5 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         {
             return true;
         }
-
-        public virtual bool NeedRename(ParamDef paramDef)
-        {
-            return true;
-        }
     }
 }

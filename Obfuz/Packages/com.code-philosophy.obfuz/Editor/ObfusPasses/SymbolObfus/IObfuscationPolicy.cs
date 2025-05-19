@@ -13,7 +13,5 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         bool NeedRename(PropertyDef propertyDef);
 
         bool NeedRename(EventDef eventDef);
-
-        bool NeedRename(ParamDef paramDef);
     }
 }

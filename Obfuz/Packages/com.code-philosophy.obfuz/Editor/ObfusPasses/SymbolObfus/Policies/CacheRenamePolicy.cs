@@ -64,15 +64,5 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             }
             return value;
         }
-
-        public override bool NeedRename(ParamDef paramDef)
-        {
-            if (!_computeCache.TryGetValue(paramDef, out var value))
-            {
-                value = _underlyingPolicy.NeedRename(paramDef);
-                _computeCache[paramDef] = value;
-            }
-            return value;
-        }
     }
 }

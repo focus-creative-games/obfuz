@@ -65,8 +65,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         {
             public string ruleName;
             public bool obfuscateName;
-            public bool obfuscateParam;
-            public bool obfuscateBody;
         }
 
         class FieldRuleSpec
@@ -166,8 +164,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         {
             ruleName = "none",
             obfuscateName = false,
-            obfuscateParam = false,
-            obfuscateBody = false,
         };
 
         private static readonly EventRule s_noneEventRule = new EventRule
@@ -401,8 +397,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             var rule = new MethodRule();
             rule.ruleName = ruleName;
             rule.obfuscateName = ParseBoolNoneOrFalse(element.GetAttribute("ob-name"));
-            rule.obfuscateParam = ParseBoolNoneOrFalse(element.GetAttribute("ob-param"));
-            rule.obfuscateBody = ParseBoolNoneOrFalse(element.GetAttribute("ob-body"));
             return rule;
         }
 
@@ -818,8 +812,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                         }
                         MethodRule methodRule = e.Item2.rule;
                         methodCache.obfuscateName &= methodRule.obfuscateName;
-                        methodCache.obfuscateParam &= methodRule.obfuscateParam;
-                        methodCache.obfuscateBody &= methodRule.obfuscateBody;
                     }
                     foreach (MethodRuleSpec methodSpec in totalMethodSpecs)
                     {
@@ -834,8 +826,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                         }
                         MethodRule methodRule = methodSpec.rule;
                         methodCache.obfuscateName &= methodRule.obfuscateName;
-                        methodCache.obfuscateParam &= methodRule.obfuscateParam;
-                        methodCache.obfuscateBody &= methodRule.obfuscateBody;
                     }
                 }
             }
@@ -878,18 +868,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             TypeDef typeDef = eventDef.DeclaringType;
             TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
             return !cache.notObfuscatedEvents.Contains(eventDef);
-        }
-
-        public override bool NeedRename(ParamDef paramDef)
-        {
-            MethodDef methodDef = paramDef.DeclaringMethod;
-            TypeDef typeDef = methodDef.DeclaringType;
-            TypeDefComputeCache cache = GetOrCreateTypeDefRenameComputeCache(typeDef);
-            if (!cache.methods.TryGetValue(methodDef, out var methodCache))
-            {
-                return true;
-            }
-            return methodCache.obfuscateParam;
         }
     }
 }

@@ -36,10 +36,5 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         {
             return _policies.All(policy => policy.NeedRename(eventDef));
         }
-
-        public bool NeedRename(ParamDef paramDef)
-        {
-            return _policies.All(policy => policy.NeedRename(paramDef));
-        }
     }
 }
