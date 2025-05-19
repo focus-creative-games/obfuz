@@ -39,8 +39,8 @@ namespace Obfuz.Unity
             FileUtil.RecreateDir(dstDir);
             foreach (string dllName in dllNames)
             {
-                string srcFile = Path.Combine(srcDir, dllName);
-                string dstFile = Path.Combine(dstDir, dllName);
+                string srcFile = Path.Combine(srcDir, dllName + ".dll");
+                string dstFile = Path.Combine(dstDir, dllName + ".dll");
                 if (File.Exists(srcFile))
                 {
                     File.Copy(srcFile, dstFile, true);
