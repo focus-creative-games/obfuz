@@ -77,7 +77,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public string GetNewName(MethodDef methodDef, string originalName)
         {
-            return GetDefaultNewName(methodDef.DeclaringType, originalName);
+            return (methodDef.IsVirtual ? ">" : "") + GetDefaultNewName(methodDef.DeclaringType, originalName);
         }
 
         public virtual string GetNewName(ParamDef param, string originalName)
