@@ -19,17 +19,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public class SymbolRename
     {
-        class AssemblyReferenceInfo
-        {
-            public string name;
-
-            public bool needObfuscated;
-
-            public ModuleDef module;
-
-            public List<AssemblyReferenceInfo> referenceMeAssemblies;
-        }
-
         private readonly bool _useConsistentNamespaceObfuscation;
         private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
