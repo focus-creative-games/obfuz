@@ -419,6 +419,19 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             typeRule.obfuscateName = assemblyRuleSpec.obfuscateName ?? true;
             typeRule.obfuscateNamespace = assemblyRuleSpec.obfuscateName ?? true;
 
+            if (typeDef.DeclaringType != null)
+            {
+                TypeRuleSpec declaringTypeSpec = GetOrCreateTypeDefRenameComputeCache(typeDef.DeclaringType);
+                if (declaringTypeSpec.obfuscateName != null)
+                {
+                    typeRule.obfuscateName = declaringTypeSpec.obfuscateName;
+                }
+                if (declaringTypeSpec.obfuscateNamespace != null)
+                {
+                    typeRule.obfuscateNamespace = declaringTypeSpec.obfuscateNamespace;
+                }
+            }
+
             string typeName = typeDef.FullName;
             bool findMatch = false;
             foreach (var typeSpec in assemblyRuleSpec.types)
