@@ -582,7 +582,7 @@ namespace Obfuz.Utils
 
         public static MethodSig ToSharedMethodSig(ICorLibTypes corTypes, MethodSig methodSig)
         {
-            var newReturnType = ToShareTypeSig(corTypes, methodSig.RetType);
+            var newReturnType = methodSig.RetType;
             var newParams = new List<TypeSig>();
             foreach (var param in methodSig.Params)
             {
@@ -625,8 +625,8 @@ namespace Obfuz.Utils
                 case ElementType.Sentinel: return typeSig;
                 case ElementType.Ptr: return corTypes.UIntPtr;
                 case ElementType.ByRef: return corTypes.UIntPtr;
-                case ElementType.SZArray: return corTypes.Object;
-                case ElementType.Array: return corTypes.Object;
+                case ElementType.SZArray: return typeSig;
+                case ElementType.Array: return typeSig;
                 case ElementType.ValueType:
                 {
                     TypeDef typeDef = a.ToTypeDefOrRef().ResolveTypeDef();
