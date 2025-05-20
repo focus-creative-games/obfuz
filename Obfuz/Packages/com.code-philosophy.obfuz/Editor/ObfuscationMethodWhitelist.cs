@@ -57,7 +57,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (ShouldBeIgnoredByCustomAttribute(type))
+            if (MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(type))
             {
                 return true;
             }

@@ -12,11 +12,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(typeDef))
-            {
-                return false;
-            }
-            if (typeDef.DeclaringType != null && MetaUtil.HasObfuzIgnoreAttribute(typeDef.DeclaringType))
+            if (MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(typeDef))
             {
                 return false;
             }
@@ -34,7 +30,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (MetaUtil.HasObfuzIgnoreAttribute(methodDef) || MetaUtil.HasObfuzIgnoreAttribute(methodDef.DeclaringType))
+            if (MetaUtil.HasObfuzIgnoreAttribute(methodDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(methodDef.DeclaringType))
             {
                 return false;
             }
@@ -47,7 +43,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(fieldDef) || MetaUtil.HasObfuzIgnoreAttribute(fieldDef.DeclaringType))
+            if (MetaUtil.HasObfuzIgnoreAttribute(fieldDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(fieldDef.DeclaringType))
             {
                 return false;
             }
@@ -64,7 +60,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(propertyDef) || MetaUtil.HasObfuzIgnoreAttribute(propertyDef.DeclaringType))
+            if (MetaUtil.HasObfuzIgnoreAttribute(propertyDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(propertyDef.DeclaringType))
             {
                 return false;
             }
@@ -77,7 +73,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(eventDef) || MetaUtil.HasObfuzIgnoreAttribute(eventDef.DeclaringType))
+            if (MetaUtil.HasObfuzIgnoreAttribute(eventDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(eventDef.DeclaringType))
             {
                 return false;
             }

@@ -793,5 +793,21 @@ namespace Obfuz.Utils
         {
             return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
         }
+
+        public static bool HasObfuzIgnoreAttributeInSelfOrParent(TypeDef typeDef)
+        {
+            while (true)
+            {
+                if (HasObfuzIgnoreAttribute(typeDef))
+                {
+                    return true;
+                }
+                typeDef = typeDef.DeclaringType;
+                if (typeDef == null)
+                {
+                    return false;
+                }
+            }
+        }
     }
 }
