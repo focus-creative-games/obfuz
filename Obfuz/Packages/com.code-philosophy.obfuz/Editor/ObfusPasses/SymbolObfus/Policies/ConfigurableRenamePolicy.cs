@@ -446,14 +446,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
-            if (!typeDef.IsValueType && (classType & ClassType.Class) != 0)
-            {
-                return true;
-            }
-            if (typeDef.IsValueType && (classType & ClassType.Struct) != 0)
-            {
-                return true;
-            }
             if (typeDef.IsInterface && (classType & ClassType.Interface) != 0)
             {
                 return true;
@@ -463,6 +455,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return true;
             }
             if (typeDef.IsDelegate && (classType & ClassType.Delegate) != 0)
+            {
+                return true;
+            }
+            if (typeDef.IsValueType && !typeDef.IsEnum && (classType & ClassType.Struct) != 0)
+            {
+                return true;
+            }
+            if (!typeDef.IsValueType && !typeDef.IsInterface && !typeDef.IsDelegate && (classType & ClassType.Class) != 0)
             {
                 return true;
             }
