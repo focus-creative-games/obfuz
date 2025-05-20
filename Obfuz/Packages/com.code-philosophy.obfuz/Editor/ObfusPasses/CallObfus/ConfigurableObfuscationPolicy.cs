@@ -17,7 +17,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             public string name;
             public NameMatcher nameMatcher;
-            public bool? obfuscateNone;
+            public bool? obfuscate;
             public List<WhiteListType> types = new List<WhiteListType>();
         }
 
@@ -25,7 +25,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             public string name;
             public NameMatcher nameMatcher;
-            public bool? obfuscateNone;
+            public bool? obfuscate;
             public List<WhiteListMethod> methods = new List<WhiteListMethod>();
         }
 
@@ -33,6 +33,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             public string name;
             public NameMatcher nameMatcher;
+            public bool? obfuscate;
         }
 
         class ObfuscationRule : IRule<ObfuscationRule>
@@ -112,6 +113,28 @@ namespace Obfuz.ObfusPasses.CallObfus
                 _global.InheritParent(s_default);
             }
             _configParser.InheritParentRules(_global);
+            InheritWhitelistRules();
+        }
+
+        private void InheritWhitelistRules()
+        {
+            foreach (var ass in _whiteListAssemblies)
+            {
+                foreach (var type in ass.types)
+                {
+                    if (type.obfuscate == null)
+                    {
+                        type.obfuscate = ass.obfuscate;
+                    }
+                    foreach (var method in type.methods)
+                    {
+                        if (method.obfuscate == null)
+                        {
+                            method.obfuscate = type.obfuscate;
+                        }
+                    }
+                }
+            }
         }
 
         private void ParseGlobalElement(string configFile, XmlElement ele)
@@ -172,10 +195,9 @@ namespace Obfuz.ObfusPasses.CallObfus
             var ass = new WhiteListAssembly();
             ass.name = element.GetAttribute("name");
             ass.nameMatcher = new NameMatcher(ass.name);
-            if (element.HasAttribute("obfuscateNone"))
-            {
-                ass.obfuscateNone = ConfigUtil.ParseBool(element.GetAttribute("obfuscateNone"));
-            }
+
+            ass.obfuscate = ConfigUtil.ParseNullableBool(element.GetAttribute("obfuscate")) ?? false;
+
             foreach (XmlNode node in element.ChildNodes)
             {
                 if (!(node is XmlElement ele))
@@ -199,10 +221,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             var type = new WhiteListType();
             type.name = element.GetAttribute("name");
             type.nameMatcher = new NameMatcher(type.name);
-            if (element.HasAttribute("obfuscateNone"))
-            {
-                type.obfuscateNone = ConfigUtil.ParseBool(element.GetAttribute("obfuscateNone"));
-            }
+            type.obfuscate = ConfigUtil.ParseNullableBool(element.GetAttribute("obfuscate"));
 
             foreach (XmlNode node in element.ChildNodes)
             {
@@ -229,6 +248,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             var method = new WhiteListMethod();
             method.name = element.GetAttribute("name");
             method.nameMatcher = new NameMatcher(method.name);
+            method.obfuscate = ConfigUtil.ParseNullableBool(element.GetAttribute("obfuscate"));
             return method;
         }
 
@@ -324,28 +344,22 @@ namespace Obfuz.ObfusPasses.CallObfus
                 {
                     continue;
                 }
-                if (ass.obfuscateNone == true)
-                {
-                    return true;
-                }
                 foreach (var type in ass.types)
                 {
                     if (!type.nameMatcher.IsMatch(typeFullName))
                     {
                         continue;
                     }
-                    if (type.obfuscateNone == true)
-                    {
-                        return true;
-                    }
                     foreach (var method in type.methods)
                     {
                         if (method.nameMatcher.IsMatch(methodName))
                         {
-                            return true;
+                            return !method.obfuscate.Value;
                         }
                     }
+                    return !type.obfuscate.Value;
                 }
+                return !ass.obfuscate.Value;
             }
             return false;
         }
