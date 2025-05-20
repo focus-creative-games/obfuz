@@ -27,29 +27,30 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         enum ModifierType
         {
-            Private = 0,
-            Protected = 1,
-            Public = 2,
+            None = 0x0,
+            Private = 0x1,
+            Protected = 0x2,
+            Public = 0x3,
         }
 
         class MethodRuleSpec
         {
             public NameMatcher nameMatcher;
-            public ModifierType modifierType;
+            public ModifierType? modifierType;
             public bool? obfuscateName;
         }
 
         class FieldRuleSpec
         {
             public NameMatcher nameMatcher;
-            public ModifierType modifierType;
+            public ModifierType? modifierType;
             public bool? obfuscateName;
         }
 
         class PropertyRuleSpec
         {
             public NameMatcher nameMatcher;
-            public ModifierType modifierType;
+            public ModifierType? modifierType;
             public bool? obfuscateName;
             public bool? obfuscateGetter;
             public bool? obfuscateSetter;
@@ -58,7 +59,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         class EventRuleSpec
         {
             public NameMatcher nameMatcher;
-            public ModifierType modifierType;
+            public ModifierType? modifierType;
             public bool? obfuscateName;
             public bool? obfuscateAdd;
             public bool? obfuscateRemove;
@@ -68,7 +69,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         class TypeRuleSpec
         {
             public NameMatcher nameMatcher;
-            public ModifierType modifierType;
+            public ModifierType? modifierType;
+            public ClassType? classType;
             public bool? obfuscateName;
             public bool? obfuscateNamespace;
             public List<FieldRuleSpec> fields;
@@ -124,19 +126,57 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             return rule;
         }
 
-        private ModifierType ParseModifierType(string modifierType)
+        private enum ClassType
+        {
+            None = 0x0,
+            Class = 0x1,
+            Struct = 0x2,
+            Interface = 0x4,
+            Enum = 0x8,
+            Delegate = 0x10,
+        }
+
+        private ClassType? ParseClassType(string classType)
+        {
+            if (string.IsNullOrEmpty(classType))
+            {
+                return null;
+            }
+            
+            ClassType type = ClassType.None;
+            foreach (var s in classType.Split('|'))
+            {
+                switch (s)
+                {
+                    case "class": type |= ClassType.Class; break;
+                    case "struct": type |= ClassType.Struct; break;
+                    case "interface": type |= ClassType.Interface; break;
+                    case "enum": type |= ClassType.Enum; break;
+                    case "delegate": type |= ClassType.Delegate; break;
+                    default: throw new Exception($"Invalid class type {s}");
+                }
+            }
+            return type;
+        }
+
+        private ModifierType? ParseModifierType(string modifierType)
         {
             if (string.IsNullOrEmpty(modifierType))
             {
-                return ModifierType.Private;
+                return null;
             }
-            switch (modifierType)
+            ModifierType type = ModifierType.None;
+            foreach (var s in modifierType.Split('|'))
             {
-                case "public": return ModifierType.Public;
-                case "protected": return ModifierType.Protected;
-                case "private": return ModifierType.Private;
-                default: throw new Exception($"Invalid modifier type {modifierType}");
+                switch (s)
+                {
+                    case "public": type |= ModifierType.Public; break;
+                    case "protected": type |= ModifierType.Protected; break;
+                    case "private": type |= ModifierType.Private; break;
+                    default: throw new Exception($"Invalid modifier type {s}");
+                }
             }
+            return type;
         }
 
         private TypeRuleSpec ParseType(XmlElement element)
@@ -147,6 +187,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             rule.obfuscateName = ConfigUtil.ParseNullableBool(element.GetAttribute("obName"));
             rule.obfuscateNamespace = ConfigUtil.ParseNullableBool(element.GetAttribute("obNamespace"));
             rule.modifierType = ParseModifierType(element.GetAttribute("modifier"));
+            rule.classType = ParseClassType(element.GetAttribute("classType"));
 
             //rule.nestTypeRuleSpecs = new List<TypeRuleSpec>();
             rule.fields = new List<FieldRuleSpec>();
@@ -297,29 +338,29 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         //    return ModifierType.Protected;
         //}
 
-        private bool MatchModifier(ModifierType modifierType, TypeDef typeDef)
+        private bool MatchModifier(ModifierType? modifierType, TypeDef typeDef)
         {
-            return modifierType <= ComputeModifierType(typeDef.Visibility);
+            return modifierType == null || (modifierType & ComputeModifierType(typeDef.Visibility)) != 0;
         }
 
-        private bool MatchModifier(ModifierType modifierType, FieldDef fieldDef)
+        private bool MatchModifier(ModifierType? modifierType, FieldDef fieldDef)
         {
-            return modifierType <= ComputeModifierType(fieldDef.Access);
+            return modifierType == null || (modifierType & ComputeModifierType(fieldDef.Access)) != 0;
         }
 
-        private bool MatchModifier(ModifierType modifierType, MethodDef methodDef)
+        private bool MatchModifier(ModifierType? modifierType, MethodDef methodDef)
         {
-            return modifierType <= ComputeModifierType((FieldAttributes)methodDef.Access);
+            return modifierType == null || (modifierType & ComputeModifierType((FieldAttributes)methodDef.Access)) != 0;
         }
 
-        private bool MatchModifier(ModifierType modifierType, PropertyDef propertyDef)
+        private bool MatchModifier(ModifierType? modifierType, PropertyDef propertyDef)
         {
-            return modifierType <= ComputeModifierType((FieldAttributes)propertyDef.Attributes);
+            return modifierType == null || (modifierType & ComputeModifierType((FieldAttributes)propertyDef.Attributes)) != 0;
         }
 
-        private bool MatchModifier(ModifierType modifierType, EventDef eventDef)
+        private bool MatchModifier(ModifierType? modifierType, EventDef eventDef)
         {
-            return modifierType <= ComputeModifierType((FieldAttributes)eventDef.Attributes);
+            return modifierType == null || (modifierType & ComputeModifierType((FieldAttributes)eventDef.Attributes)) != 0;
         }
 
         private class MethodComputeCache
@@ -399,6 +440,35 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             }
         }
 
+        private bool MatchClassType(ClassType? classType, TypeDef typeDef)
+        {
+            if (classType == null)
+            {
+                return true;
+            }
+            if (!typeDef.IsValueType && (classType & ClassType.Class) != 0)
+            {
+                return true;
+            }
+            if (typeDef.IsValueType && (classType & ClassType.Struct) != 0)
+            {
+                return true;
+            }
+            if (typeDef.IsInterface && (classType & ClassType.Interface) != 0)
+            {
+                return true;
+            }
+            if (typeDef.IsEnum && (classType & ClassType.Enum) != 0)
+            {
+                return true;
+            }
+            if (typeDef.IsDelegate && (classType & ClassType.Delegate) != 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
         private TypeRuleSpec GetOrCreateTypeDefRenameComputeCache(TypeDef typeDef)
         {
             if (_typeSpecCache.TryGetValue(typeDef, out var typeRule))
@@ -436,7 +506,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             bool findMatch = false;
             foreach (var typeSpec in assemblyRuleSpec.types)
             {
-                if (!typeSpec.nameMatcher.IsMatch(typeName) || !MatchModifier(typeSpec.modifierType, typeDef))
+                if (!typeSpec.nameMatcher.IsMatch(typeName) || !MatchModifier(typeSpec.modifierType, typeDef) || !MatchClassType(typeSpec.classType, typeDef))
                 {
                     continue;
                 }
