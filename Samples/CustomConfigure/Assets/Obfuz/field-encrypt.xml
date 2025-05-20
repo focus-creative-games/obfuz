@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<obfuz>
+    <assembly name="Assembly-CSharp">
+        <type name="FieldEncrypt.Test1">
+            <field name="a" encrypt="1"/>
+        </type>
+    </assembly>
+</obfuz>
