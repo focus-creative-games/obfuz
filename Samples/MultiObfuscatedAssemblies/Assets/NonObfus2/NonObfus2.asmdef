@@ -1,0 +1,18 @@
+{
+    "name": "NonObfus2",
+    "rootNamespace": "",
+    "references": [
+        "GUID:032745b58591a6848ac5b94edf7fadcd",
+        "GUID:ff7e209e16508864cbd502e4edc1c90a",
+        "GUID:37d7c9b2cec623742a53dd64dd33519c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Obfus1",
+    "rootNamespace": "",
+    "references": [
+        "GUID:032745b58591a6848ac5b94edf7fadcd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
