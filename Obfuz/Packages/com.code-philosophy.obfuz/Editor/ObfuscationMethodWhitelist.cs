@@ -13,7 +13,7 @@ namespace Obfuz
     {
         private bool ShouldBeIgnoredByCustomAttribute(IHasCustomAttribute obj)
         {
-            return MetaUtil.HasObfuzIgnoreAttribute(obj) || MetaUtil.HasCompilerGeneratedAttribute(obj);
+            return MetaUtil.HasObfuzIgnoreAttribute(obj);
         }
 
         public bool IsInWhiteList(ModuleDef module)
