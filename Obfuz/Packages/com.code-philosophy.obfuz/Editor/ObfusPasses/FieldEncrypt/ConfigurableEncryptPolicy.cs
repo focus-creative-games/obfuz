@@ -29,6 +29,14 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         public override bool NeedEncrypt(FieldDef field)
         {
+            if (MetaUtil.HasEncryptFieldAttribute(field))
+            {
+                return true;
+            }
+            if (MetaUtil.HasObfuzIgnoreAttribute(field) || MetaUtil.HasObfuzIgnoreAttribute(field.DeclaringType))
+            {
+                return false;
+            }
             var rule = _configParser.GetFieldRule(field);
             return rule != null;
         }

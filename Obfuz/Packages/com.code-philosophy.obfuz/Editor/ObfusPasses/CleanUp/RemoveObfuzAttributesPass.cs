@@ -29,6 +29,7 @@ namespace Obfuz.ObfusPasses.CleanUp
                 return;
             var toRemove = new List<CustomAttribute>();
             customAttributes.RemoveAll("Obfuz.ObfuzIgnoreAttribute");
+            customAttributes.RemoveAll("Obfuz.EncryptFieldAttribute");
         }
 
         public override void Process()

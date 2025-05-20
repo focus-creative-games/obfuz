@@ -788,5 +788,10 @@ namespace Obfuz.Utils
         {
             return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
         }
+
+        public static bool HasEncryptFieldAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
+        }
     }
 }
