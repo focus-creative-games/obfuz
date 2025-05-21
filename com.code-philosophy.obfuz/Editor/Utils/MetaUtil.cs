@@ -730,6 +730,18 @@ namespace Obfuz.Utils
                     sb.Append("[]");
                     break;
                 }
+                case ElementType.Array:
+                {
+                    var arraySig = (ArraySig)typeSig;
+                    AppendIl2CppStackTraceNameOfTypeSig(sb, arraySig.Next);
+                    sb.Append("[");
+                    for (int i = 0; i < arraySig.Rank - 1; i++)
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append("]");
+                    break;
+                }
                 default:
                 throw new NotSupportedException(typeSig.ToString());
             }
