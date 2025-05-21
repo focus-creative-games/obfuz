@@ -5,6 +5,7 @@ using Obfuz.EncryptionVM;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CleanUp;
 using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.Unity;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using IAssemblyResolver = Obfuz.Utils.IAssemblyResolver;
 
 namespace Obfuz
 {
@@ -23,7 +25,7 @@ namespace Obfuz
 
         private readonly List<string> _assembliesToObfuscate;
         private readonly List<string> _nonObfuscatedButReferencingObfuscatedAssemblies;
-        private readonly List<string> _assemblySearchPaths;
+        private readonly CombinedAssemblyResolver _assemblyResolver;
 
         private readonly ConfigurablePassPolicy _passPolicy;
 
@@ -56,7 +58,7 @@ namespace Obfuz
             _assembliesToObfuscate = builder.AssembliesToObfuscate;
             _nonObfuscatedButReferencingObfuscatedAssemblies = builder.NonObfuscatedButReferencingObfuscatedAssemblies;
             _obfuscatedAssemblyOutputPath = builder.ObfuscatedAssemblyOutputPath;
-            _assemblySearchPaths = builder.AssemblySearchPaths;
+            _assemblyResolver = new CombinedAssemblyResolver(new PathAssemblyResolver(builder.AssemblySearchPaths.ToArray()), new UnityProjectManagedAssemblyResolver(builder.BuildTarget));
 
             _passPolicy = new ConfigurablePassPolicy(_assembliesToObfuscate, builder.EnableObfuscationPasses, builder.ObfuscationPassRuleConfigFiles);
 
@@ -80,7 +82,7 @@ namespace Obfuz
             Debug.Log($"Obfuscator Run. begin");
             FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
             RunPipeline(_pipeline1);
-            _assemblySearchPaths.Insert(0, _obfuscatedAssemblyOutputPath);
+            _assemblyResolver.InsertFirst(new PathAssemblyResolver(_obfuscatedAssemblyOutputPath));
             RunPipeline(_pipeline2);
             Debug.Log($"Obfuscator Run. end");
         }
@@ -263,7 +265,7 @@ namespace Obfuz
 
         private void OnPreObfuscation(Pipeline pipeline)
         {
-            AssemblyCache assemblyCache = new AssemblyCache(new PathAssemblyResolver(_assemblySearchPaths.ToArray()));
+            AssemblyCache assemblyCache = new AssemblyCache(_assemblyResolver);
             List<ModuleDef> modulesToObfuscate = new List<ModuleDef>();
             List<ModuleDef> allObfuscationRelativeModules = new List<ModuleDef>();
             LoadAssemblies(assemblyCache, modulesToObfuscate, allObfuscationRelativeModules);

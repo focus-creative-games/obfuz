@@ -15,6 +15,8 @@ namespace Obfuz
 {
     public class ObfuscatorBuilder
     {
+        private BuildTarget _buildTarget;
+
         private string _defaultStaticSecretKey;
         private string _defaultStaticSecretKeyOutputPath;
         private string _defaultDynamicSecretKey;
@@ -35,6 +37,12 @@ namespace Obfuz
 
         private ObfuscationPassType _enabledObfuscationPasses;
         private List<IObfuscationPass> _obfuscationPasses = new List<IObfuscationPass>();
+
+        public BuildTarget BuildTarget
+        {
+            get => _buildTarget;
+            set => _buildTarget = value;
+        }
 
         public string DefaultStaticSecretKey
         {
@@ -173,6 +181,7 @@ namespace Obfuz
                 : settings.assemblySettings.additionalAssemblySearchPaths.ToList();
             var builder = new ObfuscatorBuilder
             {
+                _buildTarget = target,
                 _defaultStaticSecretKey = settings.secretSettings.defaultStaticSecretKey,
                 _defaultStaticSecretKeyOutputPath = settings.secretSettings.DefaultStaticSecretKeyOutputPath,
                 _defaultDynamicSecretKey = settings.secretSettings.defaultDynamicSecretKey,
