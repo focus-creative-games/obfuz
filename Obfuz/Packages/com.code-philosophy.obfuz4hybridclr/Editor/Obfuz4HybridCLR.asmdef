@@ -1,5 +1,5 @@
 {
-    "name": "ObfuzExtension4HybridCLR",
+    "name": "Obfuz4HybridCLR.Editor",
     "rootNamespace": "",
     "references": [
         "GUID:2373f786d14518f44b0f475db77ba4de",

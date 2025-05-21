@@ -13,7 +13,7 @@ using System.IO;
 using HybridCLR.Editor.ABI;
 using UnityEngine;
 
-namespace ObfuzExtension4HybridCLR
+namespace Obfuz4HybridCLR
 {
     public static class ObfuscateUtil
     {
