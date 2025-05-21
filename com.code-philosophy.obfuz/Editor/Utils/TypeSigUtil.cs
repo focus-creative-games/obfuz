@@ -51,9 +51,28 @@ namespace Obfuz.Utils
         public static string ComputePropertyDefSignature(PropertyDef property)
         {
             var result = new StringBuilder();
-            ComputeTypeSigName(property.PropertySig.RetType, result);
+
+            PropertySig propertySig = property.PropertySig;
+            ComputeTypeSigName(propertySig.RetType, result);
             result.Append(" ");
             result.Append(property.Name);
+
+            IList<TypeSig> parameters = propertySig.Params;
+            if (parameters.Count > 0)
+            {
+                result.Append("(");
+
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        result.Append(", ");
+                    }
+                    ComputeTypeSigName(parameters[i], result);
+                }
+                result.Append(")");
+            }
+            
             return result.ToString();
         }
 
