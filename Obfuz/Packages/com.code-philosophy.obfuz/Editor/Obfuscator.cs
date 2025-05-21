@@ -77,10 +77,12 @@ namespace Obfuz
 
         public void Run()
         {
+            Debug.Log($"Obfuscator Run. begin");
             FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
             RunPipeline(_pipeline1);
             _assemblySearchPaths.Insert(0, _obfuscatedAssemblyOutputPath);
             RunPipeline(_pipeline2);
+            Debug.Log($"Obfuscator Run. end");
         }
 
         private void RunPipeline(Pipeline pipeline)
