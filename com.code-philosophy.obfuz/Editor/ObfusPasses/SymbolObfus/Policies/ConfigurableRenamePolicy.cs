@@ -519,7 +519,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 {
                     typeRule.obfuscateNamespace = typeSpec.obfuscateNamespace;
                 }
-
+                else
+                {
+                    // obfuscateNamespace inherits from typeSpec.obfuscateName
+                    typeRule.obfuscateNamespace = typeRule.obfuscateName;
+                }
 
                 foreach (var fieldDef in typeDef.Fields)
                 {
