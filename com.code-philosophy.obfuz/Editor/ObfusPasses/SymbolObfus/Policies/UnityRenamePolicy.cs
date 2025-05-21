@@ -12,6 +12,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     public class UnityRenamePolicy : ObfuscationPolicyBase
     {
         private static HashSet<string> s_monoBehaviourEvents = new HashSet<string> {
+
+            // MonoBehaviour events
     "Awake",
     "FixedUpdate",
     "LateUpdate",
@@ -90,6 +92,37 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     "Reset",
     "Start",
     "Update",
+
+    // Animator/StateMachineBehaviour
+    "OnStateEnter",
+    "OnStateExit",
+    "OnStateMove",
+    "OnStateUpdate",
+    "OnStateIK",
+    "OnStateMachineEnter",
+    "OnStateMachineExit",
+
+    // ParticleSystem
+    "OnParticleTrigger",
+    "OnParticleCollision",
+    "OnParticleSystemStopped",
+
+    // UGUI/EventSystems
+    "OnPointerClick",
+    "OnPointerDown",
+    "OnPointerUp",
+    "OnPointerEnter",
+    "OnPointerExit",
+    "OnDrag",
+    "OnBeginDrag",
+    "OnEndDrag",
+    "OnDrop",
+    "OnScroll",
+    "OnSelect",
+    "OnDeselect",
+    "OnMove",
+    "OnSubmit",
+    "OnCancel",
 };
         public override bool NeedRename(TypeDef typeDef)
         {
