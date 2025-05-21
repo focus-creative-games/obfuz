@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Obfuz
 {
+    [Flags]
     public enum ObfuzScope
     {
         None = 0x0,
