@@ -85,6 +85,10 @@ namespace Obfuz.Utils
             if (type.IsTypeSpec)
             {
                 GenericInstSig gis = type.TryGetGenericInstSig();
+                if (gis == null)
+                {
+                    return null;
+                }
                 return gis.GenericType.ToTypeDefOrRef().ResolveTypeDefThrow();
             }
             return null;
@@ -102,8 +106,12 @@ namespace Obfuz.Utils
             }
             if (parent is TypeSpec typeSpec)
             {
-                GenericInstSig genericIns = typeSpec.TypeSig.ToGenericInstSig();
-                return genericIns.GenericType.TypeDefOrRef.ResolveTypeDefThrow();
+                GenericInstSig gis = typeSpec.TryGetGenericInstSig();
+                if (gis == null)
+                {
+                    return null;
+                }
+                return gis.GenericType.TypeDefOrRef.ResolveTypeDefThrow();
             }
             return null;
         }
