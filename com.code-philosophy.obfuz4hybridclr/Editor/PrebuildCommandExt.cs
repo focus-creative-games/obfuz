@@ -34,5 +34,11 @@ namespace Obfuz4HybridCLR
             MethodBridgeGeneratorCommand.GenerateMethodBridgeAndReversePInvokeWrapper(target);
             AOTReferenceGeneratorCommand.GenerateAOTGenericReference(target);
         }
+
+        [MenuItem("HybridCLR/ObfuzExtension/CompileAndObfuscateDll")]
+        public static void CompileAndObfuscateDll()
+        {
+            ObfuscateUtil.CompileAndObfuscateHotUpdateAssemblies(EditorUserBuildSettings.activeBuildTarget);
+        }
     }
 }
