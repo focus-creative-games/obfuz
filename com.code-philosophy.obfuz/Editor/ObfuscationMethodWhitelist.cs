@@ -11,9 +11,14 @@ namespace Obfuz
 {
     public class ObfuscationMethodWhitelist
     {
-        private bool ShouldBeIgnoredByCustomAttribute(IHasCustomAttribute obj)
+        private bool HasObfuzIgnoreScope(IHasCustomAttribute obj, ObfuzScope targetScope)
         {
-            return MetaUtil.HasObfuzIgnoreAttribute(obj);
+            ObfuzScope? objScope = MetaUtil.GetObfuzIgnoreScope(obj);
+            if (objScope == null)
+            {
+                return false;
+            }
+            return (objScope & targetScope) != 0;   
         }
 
         public bool IsInWhiteList(ModuleDef module)
@@ -23,7 +28,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (ShouldBeIgnoredByCustomAttribute(module))
+            if (HasObfuzIgnoreScope(module, ObfuzScope.Self))
             {
                 return true;
             }
@@ -40,7 +45,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (ShouldBeIgnoredByCustomAttribute(method))
+            if (HasObfuzIgnoreScope(method, ObfuzScope.Self))
             {
                 return true;
             }

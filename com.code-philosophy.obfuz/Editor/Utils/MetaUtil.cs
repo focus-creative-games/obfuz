@@ -779,10 +779,39 @@ namespace Obfuz.Utils
             return result.ToString();
         }
 
-        public static bool HasObfuzIgnoreAttribute(IHasCustomAttribute obj)
+        public static ObfuzScope? GetObfuzIgnoreScope(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+            var ca = obj.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+            if (ca == null)
+            {
+                return null;
+            }
+            var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
+            return scope;
         }
+
+        public static ObfuzScope? GetObfuzIgnoreScopeOfSelfOrDeclaringType(TypeDef typeDef)
+        {
+            TypeDef cur = typeDef;
+            while (true)
+            {
+                ObfuzScope? scope = GetObfuzIgnoreScope(cur);
+                if (scope != null)
+                {
+                    return scope;
+                }
+                cur = cur.DeclaringType;
+                if (cur == null)
+                {
+                    return null;
+                }
+            }
+        }
+
+        //public static bool HasObfuzIgnoreAttribute(IHasCustomAttribute obj)
+        //{
+        //    return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+        //}
 
         public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
@@ -794,20 +823,20 @@ namespace Obfuz.Utils
             return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
         }
 
-        public static bool HasObfuzIgnoreAttributeInSelfOrParent(TypeDef typeDef)
-        {
-            while (true)
-            {
-                if (HasObfuzIgnoreAttribute(typeDef))
-                {
-                    return true;
-                }
-                typeDef = typeDef.DeclaringType;
-                if (typeDef == null)
-                {
-                    return false;
-                }
-            }
-        }
+        //public static bool HasObfuzIgnoreAttributeInSelfOrParent(TypeDef typeDef)
+        //{
+        //    while (true)
+        //    {
+        //        if (HasObfuzIgnoreAttribute(typeDef))
+        //        {
+        //            return true;
+        //        }
+        //        typeDef = typeDef.DeclaringType;
+        //        if (typeDef == null)
+        //        {
+        //            return false;
+        //        }
+        //    }
+        //}
     }
 }
