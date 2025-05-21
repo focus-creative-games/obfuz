@@ -182,7 +182,7 @@ namespace Obfuz
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,
                 _encryptionVmOpCodeCount = settings.encryptionVMSettings.encryptionOpCodeCount,
                 _encryptionVmCodeFile = settings.encryptionVMSettings.codeOutputPath,
-                _assembliesToObfuscate = settings.assemblySettings.assembliesToObfuscate.ToList(),
+                _assembliesToObfuscate = settings.assemblySettings.GetAssembliesToObfuscate(),
                 _nonObfuscatedButReferencingObfuscatedAssemblies = settings.assemblySettings.nonObfuscatedButReferencingObfuscatedAssemblies.ToList(),
                 _assemblySearchPaths = searchPaths,
                 _obfuscatedAssemblyOutputPath = settings.GetObfuscatedAssemblyOutputPath(target),

@@ -9,5 +9,7 @@ namespace Obfuz.Editor
     public static class ConstValues
     {
         public const string ObfuzInternalSymbolNamePrefix = "$Obfuz$";
+
+        public const string ObfuzRuntimeAssemblyName = "Obfuz.Runtime";
     }
 }
