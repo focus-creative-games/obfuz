@@ -9,7 +9,7 @@ namespace Obfuz
     public enum ObfuzScope
     {
         None = 0x0,
-        Self = 0x1,
+        TypeName = 0x1,
         Field = 0x2,
         MethodName = 0x4,
         MethodParameter = 0x8,
@@ -24,26 +24,16 @@ namespace Obfuz
         EventRemove = 0x400,
         EventFire = 0x800,
         Event = EventName | EventAdd | EventRemove,
-
-        NestedTypeSelf = 0x1000,
-        NestedTypeField = 0x2000,
-        NestedTypeMethod = 0x4000,
-        NestedTypeProperty = 0x8000,
-        NestedTypeEvent = 0x10000,
-
-        NestedTypeAll = NestedTypeSelf | NestedTypeField | NestedTypeMethod | NestedTypeProperty | NestedTypeEvent,
-
-        Member = Field | Method | Property | Event,
-        MemberAndNestedTypeSelf = Member | NestedTypeSelf,
-        MemberAndNestedTypeAll = Member | NestedTypeAll,
-        SelfAndNestedTypeSelf = Self | NestedTypeSelf,
-        All = Self | MemberAndNestedTypeAll,
+        Module = 0x1000,
+        All = TypeName | Field | Method | Property | Event,
     }
 
     [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
     public class ObfuzIgnoreAttribute : Attribute
     {
         public ObfuzScope Scope { get; set; }
+
+        public bool InheritByNestedTypes { get; set; } = true;
 
         public ObfuzIgnoreAttribute(ObfuzScope scope = ObfuzScope.All)
         {

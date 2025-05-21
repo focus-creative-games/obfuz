@@ -11,15 +11,6 @@ namespace Obfuz
 {
     public class ObfuscationMethodWhitelist
     {
-        private bool HasObfuzIgnoreScope(IHasCustomAttribute obj, ObfuzScope targetScope)
-        {
-            ObfuzScope? objScope = MetaUtil.GetObfuzIgnoreScope(obj);
-            if (objScope == null)
-            {
-                return false;
-            }
-            return (objScope & targetScope) != 0;   
-        }
 
         public bool IsInWhiteList(ModuleDef module)
         {
@@ -28,10 +19,10 @@ namespace Obfuz
             {
                 return true;
             }
-            if (HasObfuzIgnoreScope(module, ObfuzScope.Self))
-            {
-                return true;
-            }
+            //if (MetaUtil.HasObfuzIgnoreScope(module))
+            //{
+            //    return true;
+            //}
             return false;
         }
 
@@ -45,7 +36,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (HasObfuzIgnoreScope(method, ObfuzScope.Self))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(method, method.DeclaringType, ObfuzScope.MethodBody))
             {
                 return true;
             }
@@ -62,14 +53,14 @@ namespace Obfuz
             {
                 return true;
             }
-            if (MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(type))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(type, type.DeclaringType, ObfuzScope.TypeName))
             {
                 return true;
             }
-            if (type.DeclaringType != null && IsInWhiteList(type.DeclaringType))
-            {
-                return true;
-            }
+            //if (type.DeclaringType != null && IsInWhiteList(type.DeclaringType))
+            //{
+            //    return true;
+            //}
             if (type.FullName == "Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine")
             {
                 return true;

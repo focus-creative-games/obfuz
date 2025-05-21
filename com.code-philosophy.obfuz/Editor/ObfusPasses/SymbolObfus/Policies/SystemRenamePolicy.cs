@@ -12,7 +12,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(typeDef))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(typeDef, typeDef.DeclaringType, ObfuzScope.TypeName))
             {
                 return false;
             }
@@ -30,7 +30,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (MetaUtil.HasObfuzIgnoreAttribute(methodDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(methodDef.DeclaringType))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(methodDef, methodDef.DeclaringType, ObfuzScope.MethodName))
             {
                 return false;
             }
@@ -43,7 +43,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(fieldDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(fieldDef.DeclaringType))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(fieldDef, fieldDef.DeclaringType, ObfuzScope.Field))
             {
                 return false;
             }
@@ -60,7 +60,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(propertyDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(propertyDef.DeclaringType))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(propertyDef, propertyDef.DeclaringType, ObfuzScope.PropertyName))
             {
                 return false;
             }
@@ -73,7 +73,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasObfuzIgnoreAttribute(eventDef) || MetaUtil.HasObfuzIgnoreAttributeInSelfOrParent(eventDef.DeclaringType))
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(eventDef, eventDef.DeclaringType, ObfuzScope.EventName))
             {
                 return false;
             }

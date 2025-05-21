@@ -790,28 +790,46 @@ namespace Obfuz.Utils
             return scope;
         }
 
-        public static ObfuzScope? GetObfuzIgnoreScopeOfSelfOrDeclaringType(TypeDef typeDef)
+        public static ObfuzScope? GetSelfOrInheritObfuzIgnoreScope(TypeDef typeDef)
         {
             TypeDef cur = typeDef;
-            while (true)
+            while (cur != null)
             {
-                ObfuzScope? scope = GetObfuzIgnoreScope(cur);
-                if (scope != null)
+                var ca = cur.CustomAttributes?.FirstOrDefault(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+                if (ca != null)
                 {
-                    return scope;
+                    var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
+                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("InheritByNestedTypes", false);
+                    bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
+                    return cur == typeDef || inheritByNestedTypes ? scope : null;
                 }
                 cur = cur.DeclaringType;
-                if (cur == null)
-                {
-                    return null;
-                }
             }
+            return null;
         }
 
-        //public static bool HasObfuzIgnoreAttribute(IHasCustomAttribute obj)
-        //{
-        //    return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
-        //}
+
+        public static bool HasObfuzIgnoreScope(IHasCustomAttribute obj, ObfuzScope targetScope)
+        {
+            ObfuzScope? objScope = GetObfuzIgnoreScope(obj);
+            if (objScope == null)
+            {
+                return false;
+            }
+            return objScope != null && (objScope & targetScope) != 0;
+        }
+
+        public static bool HasSelfOrInheritObfuzIgnoreScope(IHasCustomAttribute obj, TypeDef declaringType, ObfuzScope targetScope)
+        {
+            ObfuzScope? objScope = GetObfuzIgnoreScope(obj);
+            if (objScope != null)
+            {
+                return (objScope & targetScope) != 0;
+            }
+
+            ObfuzScope? parentScope = GetSelfOrInheritObfuzIgnoreScope(declaringType);
+            return parentScope != null && (parentScope & targetScope) != 0;
+        }
 
         public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
@@ -822,21 +840,5 @@ namespace Obfuz.Utils
         {
             return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
         }
-
-        //public static bool HasObfuzIgnoreAttributeInSelfOrParent(TypeDef typeDef)
-        //{
-        //    while (true)
-        //    {
-        //        if (HasObfuzIgnoreAttribute(typeDef))
-        //        {
-        //            return true;
-        //        }
-        //        typeDef = typeDef.DeclaringType;
-        //        if (typeDef == null)
-        //        {
-        //            return false;
-        //        }
-        //    }
-        //}
     }
 }
