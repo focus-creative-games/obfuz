@@ -1,7 +1,20 @@
 {
   "dependencies": {
+    "com.code-philosophy.hybridclr": {
+      "version": "https://github.com/focus-creative-games/hybridclr_unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "7a0032934b438ad20a4a691f8093ce1865824c42"
+    },
     "com.code-philosophy.obfuz": {
       "version": "file:com.code-philosophy.obfuz",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.code-philosophy.obfuz4hybridclr": {
+      "version": "file:com.code-philosophy.obfuz4hybridclr",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
