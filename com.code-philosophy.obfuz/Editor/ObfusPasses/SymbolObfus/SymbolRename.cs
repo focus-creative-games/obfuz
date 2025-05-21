@@ -263,7 +263,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
-        private IEnumerable<MemberRef> WalkMemberRefs(ModuleDef mod)
+        private IEnumerable<T> WalkAllMethodInstructionOperand<T>(ModuleDef mod)
         {
             foreach (TypeDef type in mod.GetTypes())
             {
@@ -275,7 +275,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     }
                     foreach (var instr in method.Body.Instructions)
                     {
-                        if (instr.Operand is MemberRef memberRef)
+                        if (instr.Operand is T memberRef)
                         {
                             yield return memberRef;
                         }
@@ -288,13 +288,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
-                foreach (MemberRef memberRef in WalkMemberRefs(mod))
+                foreach (MemberRef memberRef in WalkAllMethodInstructionOperand<MemberRef>(mod))
                 {
-                    if (!memberRef.IsFieldRef)
-                    {
-                        continue;
-                    }
-                     
                     IMemberRefParent parent = memberRef.Class;
                     TypeDef parentTypeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(parent);
                     if (parentTypeDef == null)
@@ -376,34 +371,49 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public readonly List<MemberRef> memberRefs = new List<MemberRef>();
         }
 
+        private void RenameMethodRef(MemberRef memberRef, Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
+        {
+            if (!memberRef.IsMethodRef)
+            {
+                return;
+            }
+
+            IMemberRefParent parent = memberRef.Class;
+            TypeDef parentTypeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(parent);
+            if (parentTypeDef == null)
+            {
+                return;
+            }
+            foreach (MethodDef methodDef in parentTypeDef.Methods)
+            {
+                if (methodDef.Name == memberRef.Name && new SigComparer(default).Equals(methodDef.MethodSig, memberRef.MethodSig))
+                {
+                    if (!refMethodMetasMap.TryGetValue(methodDef, out var refMethodMetas))
+                    {
+                        refMethodMetas = new RefMethodMetas();
+                        refMethodMetasMap.Add(methodDef, refMethodMetas);
+                    }
+                    refMethodMetas.memberRefs.Add(memberRef);
+                    break;
+                }
+            }
+        }
+
         private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
             foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
             {
-                foreach (MemberRef memberRef in WalkMemberRefs(mod))
+                foreach (IMethod method in WalkAllMethodInstructionOperand<IMethod>(mod))
                 {
-                    if (!memberRef.IsMethodRef)
+                    if (method is MemberRef memberRef)
                     {
-                        continue;
+                        RenameMethodRef(memberRef, refMethodMetasMap);
                     }
-
-                    IMemberRefParent parent = memberRef.Class;
-                    TypeDef parentTypeDef = MetaUtil.GetMemberRefTypeDefParentOrNull(parent);
-                    if (parentTypeDef == null)
+                    else if (method is MethodSpec methodSpec)
                     {
-                        continue;
-                    }
-                    foreach (MethodDef method in parentTypeDef.Methods)
-                    {
-                        if (method.Name == memberRef.Name && new SigComparer(default).Equals(method.MethodSig, memberRef.MethodSig))
+                        if (methodSpec.Method is MemberRef memberRef2)
                         {
-                            if (!refMethodMetasMap.TryGetValue(method, out var refMethodMetas))
-                            {
-                                refMethodMetas = new RefMethodMetas();
-                                refMethodMetasMap.Add(method, refMethodMetas);
-                            }
-                            refMethodMetas.memberRefs.Add(memberRef);
-                            break;
+                            RenameMethodRef(memberRef2, refMethodMetasMap);
                         }
                     }
                 }
