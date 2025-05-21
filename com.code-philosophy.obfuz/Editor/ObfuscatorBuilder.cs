@@ -32,6 +32,7 @@ namespace Obfuz
         private List<string> _nonObfuscatedButReferencingObfuscatedAssemblies = new List<string>();
         private List<string> _assemblySearchPaths = new List<string>();
 
+        private string _obfuscatedAssemblyTempOutputPath;
         private string _obfuscatedAssemblyOutputPath;
         private List<string> _obfuscationPassRuleConfigFiles;
 
@@ -122,6 +123,12 @@ namespace Obfuz
             set => _obfuscatedAssemblyOutputPath = value;
         }
 
+        public string ObfuscatedAssemblyTempOutputPath
+        {
+            get => _obfuscatedAssemblyTempOutputPath;
+            set => _obfuscatedAssemblyTempOutputPath = value;
+        }
+
         public ObfuscationPassType EnableObfuscationPasses
         {
             get => _enabledObfuscationPasses;
@@ -195,6 +202,7 @@ namespace Obfuz
                 _nonObfuscatedButReferencingObfuscatedAssemblies = settings.assemblySettings.nonObfuscatedButReferencingObfuscatedAssemblies.ToList(),
                 _assemblySearchPaths = searchPaths,
                 _obfuscatedAssemblyOutputPath = settings.GetObfuscatedAssemblyOutputPath(target),
+                _obfuscatedAssemblyTempOutputPath = settings.GetObfuscatedAssemblyTempOutputPath(target),
                 _enabledObfuscationPasses = settings.obfuscationPassSettings.enabledPasses,
                 _obfuscationPassRuleConfigFiles = settings.obfuscationPassSettings.ruleFiles.ToList(),
             };

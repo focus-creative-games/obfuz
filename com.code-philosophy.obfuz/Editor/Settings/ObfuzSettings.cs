@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
@@ -48,6 +49,11 @@ namespace Obfuz.Settings
         public string GetOriginalAssemblyBackupDir(BuildTarget target)
         {
             return $"{ObfuzRootDir}/{target}/OriginalAssemblies";
+        }
+
+        public string GetObfuscatedAssemblyTempOutputPath(BuildTarget target)
+        {
+            return $"{ObfuzRootDir}/{target}/TempObfuscatedAssemblies";
         }
 
         private static ObfuzSettings s_Instance;

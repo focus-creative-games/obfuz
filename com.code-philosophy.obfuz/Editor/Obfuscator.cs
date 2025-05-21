@@ -21,6 +21,7 @@ namespace Obfuz
 
     public class Obfuscator
     {
+        private readonly string _obfuscatedAssemblyTempOutputPath;
         private readonly string _obfuscatedAssemblyOutputPath;
 
         private readonly List<string> _assembliesToObfuscate;
@@ -58,6 +59,7 @@ namespace Obfuz
             _assembliesToObfuscate = builder.AssembliesToObfuscate;
             _nonObfuscatedButReferencingObfuscatedAssemblies = builder.NonObfuscatedButReferencingObfuscatedAssemblies;
             _obfuscatedAssemblyOutputPath = builder.ObfuscatedAssemblyOutputPath;
+            _obfuscatedAssemblyTempOutputPath = builder.ObfuscatedAssemblyTempOutputPath;
             _assemblyResolver = new CombinedAssemblyResolver(new PathAssemblyResolver(builder.AssemblySearchPaths.ToArray()), new UnityProjectManagedAssemblyResolver(builder.BuildTarget));
 
             _passPolicy = new ConfigurablePassPolicy(_assembliesToObfuscate, builder.EnableObfuscationPasses, builder.ObfuscationPassRuleConfigFiles);
@@ -81,9 +83,11 @@ namespace Obfuz
         {
             Debug.Log($"Obfuscator Run. begin");
             FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
+            FileUtil.RecreateDir(_obfuscatedAssemblyTempOutputPath);
             RunPipeline(_pipeline1);
             _assemblyResolver.InsertFirst(new PathAssemblyResolver(_obfuscatedAssemblyOutputPath));
             RunPipeline(_pipeline2);
+            FileUtil.CopyDir(_obfuscatedAssemblyTempOutputPath, _obfuscatedAssemblyOutputPath, true);
             Debug.Log($"Obfuscator Run. end");
         }
 
@@ -318,7 +322,7 @@ namespace Obfuz
             foreach (ModuleDef mod in _ctx.allObfuscationRelativeModules)
             {
                 string assNameWithExt = mod.Name;
-                string outputFile = $"{_obfuscatedAssemblyOutputPath}/{assNameWithExt}";
+                string outputFile = $"{_obfuscatedAssemblyTempOutputPath}/{assNameWithExt}";
                 mod.Write(outputFile);
                 Debug.Log($"save module. name:{mod.Assembly.Name} output:{outputFile}");
             }

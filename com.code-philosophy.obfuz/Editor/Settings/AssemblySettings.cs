@@ -11,7 +11,7 @@ namespace Obfuz.Settings
     public class AssemblySettings
     {
 
-        [Tooltip("name of assemblies to obfuscate")]
+        [Tooltip("name of assemblies to obfuscate, please don't add 'Obfuz.Runtime'")]
         public string[] assembliesToObfuscate;
 
         [Tooltip("name of assemblies not obfuscated but reference assemblies to obfuscated ")]
@@ -22,7 +22,6 @@ namespace Obfuz.Settings
 
         [Tooltip("obfuscate Obfuz.Runtime")]
         public bool obfuscateObfuzRuntime = true;
-
 
         public List<string> GetAssembliesToObfuscate()
         {
