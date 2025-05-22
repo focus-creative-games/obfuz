@@ -12,6 +12,7 @@ using UnityEditor.Compilation;
 using Obfuz.Utils;
 using FileUtil = Obfuz.Utils.FileUtil;
 using Obfuz.Settings;
+using dnlib.DotNet;
 
 namespace Obfuz.Unity
 {
@@ -49,6 +50,27 @@ namespace Obfuz.Unity
             }
         }
 
+        public static void ValidateReferences(string stagingAreaTempManagedDllDir, HashSet<string> assembliesToObfuscated, HashSet<string> obfuscationRelativeAssemblyNames)
+        {
+            var modCtx = ModuleDef.CreateModuleContext();
+            var asmResolver = (AssemblyResolver)modCtx.AssemblyResolver;
+
+            foreach (string assFile in Directory.GetFiles(stagingAreaTempManagedDllDir, "*.dll", SearchOption.AllDirectories))
+            {
+                ModuleDefMD mod = ModuleDefMD.Load(File.ReadAllBytes(assFile), modCtx);
+                string modName = mod.Assembly.Name;
+                foreach (AssemblyRef assRef in mod.GetAssemblyRefs())
+                {
+                    string refAssName = assRef.Name;
+                    if (assembliesToObfuscated.Contains(refAssName) && !obfuscationRelativeAssemblyNames.Contains(modName))
+                    {
+                        throw new BuildFailedException($"assembly:{modName} references to obfuscated assembly:{refAssName}, but it's not been added to ObfuzSettings.AssemblySettings.NonObfuscatedButReferencingObfuscatedAssemblies.");
+                    }
+                }
+                mod.Dispose();
+            }
+        }
+
         private static void RunObfuscate(BuildFile[] files)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
@@ -75,6 +97,8 @@ namespace Obfuz.Unity
                    stagingAreaTempManagedDllDir,
                 };
             obfuscatorBuilder.InsertTopPriorityAssemblySearchPaths(assemblySearchDirs);
+
+            ValidateReferences(stagingAreaTempManagedDllDir, new HashSet<string>(obfuscatorBuilder.AssembliesToObfuscate), obfuscationRelativeAssemblyNames);
 
 
             OnObfuscationBegin?.Invoke(new ObfuscationBeginEventArgs

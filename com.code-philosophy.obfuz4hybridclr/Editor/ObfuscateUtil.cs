@@ -12,6 +12,7 @@ using HybridCLR.Editor.Installer;
 using System.IO;
 using HybridCLR.Editor.ABI;
 using UnityEngine;
+using Obfuz.Unity;
 
 namespace Obfuz4HybridCLR
 {
@@ -38,9 +39,12 @@ namespace Obfuz4HybridCLR
             string hotUpdateDllPath = SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target);
             BashUtil.RemoveDir(hotUpdateDllPath);
             CompileDllCommand.CompileDll(target);
+
+            AssemblySettings assemblySettings = ObfuzSettings.Instance.assemblySettings;
+            ObfuscationProcess.ValidateReferences(hotUpdateDllPath, new HashSet<string>(assemblySettings.GetAssembliesToObfuscate()), new HashSet<string>(assemblySettings.GetObfuscationRelativeAssemblyNames()));
             var assemblySearchPaths = new List<string>
             {
-                SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target),
+                hotUpdateDllPath,
             };
             Obfuscate(target, assemblySearchPaths, hotUpdateDllPath);
         }
