@@ -85,7 +85,7 @@ namespace Obfuz
             FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
             FileUtil.RecreateDir(_obfuscatedAssemblyTempOutputPath);
             RunPipeline(_pipeline1);
-            _assemblyResolver.InsertFirst(new PathAssemblyResolver(_obfuscatedAssemblyOutputPath));
+            _assemblyResolver.InsertFirst(new PathAssemblyResolver(_obfuscatedAssemblyTempOutputPath));
             RunPipeline(_pipeline2);
             FileUtil.CopyDir(_obfuscatedAssemblyTempOutputPath, _obfuscatedAssemblyOutputPath, true);
             Debug.Log($"Obfuscator Run. end");
