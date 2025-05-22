@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 
 namespace Obfuz.Utils
 {
-    /// <summary>
-    /// Replaces generic type/method var with its generic argument
-    /// </summary>
     public sealed class GenericArgumentContext
     {
         List<TypeSig> typeArgsStack;
@@ -21,16 +18,6 @@ namespace Obfuz.Utils
             this.methodArgsStack = methodArgsStack?.ToList();
         }
 
-
-
-        /// <summary>
-        /// Replaces a generic type/method var with its generic argument (if any). If
-        /// <paramref name="typeSig"/> isn't a generic type/method var or if it can't
-        /// be resolved, it itself is returned. Else the resolved type is returned.
-        /// </summary>
-        /// <param name="typeSig">Type signature</param>
-        /// <returns>New <see cref="TypeSig"/> which is never <c>null</c> unless
-        /// <paramref name="typeSig"/> is <c>null</c></returns>
         public TypeSig Resolve(TypeSig typeSig)
         {
 			if (!typeSig.ContainsGenericParameter)
