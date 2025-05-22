@@ -19,6 +19,7 @@ MonoBehaviour:
     - HotUpdate
     nonObfuscatedButReferencingObfuscatedAssemblies: []
     additionalAssemblySearchPaths: []
+    obfuscateObfuzRuntime: 1
   obfuscationPassSettings:
     enabledPasses: -1
     ruleFiles: []

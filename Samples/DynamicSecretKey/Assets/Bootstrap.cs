@@ -1,19 +1,10 @@
 using Obfuz;
 using Obfuz.EncryptionVM;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 
 public class Bootstrap : MonoBehaviour
 {
-    // [ObfuzIgnore]指示Obfuz不要混淆这个函数
-    // 初始化EncryptionService后被混淆的代码才能正常运行，
-    // 因此尽可能地早地初始化它。
     [ObfuzIgnore]
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void SetUpStaticSecretKey()
@@ -25,23 +16,18 @@ public class Bootstrap : MonoBehaviour
 
     private static void SetUpDynamicSecret()
     {
+        Debug.Log("SetUpDynamicSecret begin");
         EncryptionService<DefaultDynamicEncryptionScope>.Encryptor = new GeneratedEncryptionVirtualMachine(Resources.Load<TextAsset>("Obfuz/defaultDynamicSecretKey").bytes);
-        // 设置其他动态EncryptionScope的Encryptor
-        // ...
+        Debug.Log("SetUpDynamicSecret end");
     }
 
 
-    // Start is called before the first frame update
     void Start()
     {
-        // 在完成热更之后，加载热更DLL之前，加载Obfuz的动态密钥
+        // 延迟加载，在使用HotUpdate程序集代码前才加载动态密钥。
+        // 如果项目用到了热更新，一般来说在热更新完成后，加载
+        // 热更新代码前才加载动态密钥。
         SetUpDynamicSecret();
-#if UNITY_EDITOR
-        Assembly ass = AppDomain.CurrentDomain.GetAssemblies().First(ass => ass.GetName().Name == "HotUpdate");
-#else
-        Assembly ass = Assembly.Load(File.ReadAllBytes($"{Application.streamingAssetsPath}/HotUpdate.dll.bytes"));
-#endif
-        Type entry = ass.GetType("Entry");
-        this.gameObject.AddComponent(entry);
+        this.gameObject.AddComponent<Entry>();
     }
 }
