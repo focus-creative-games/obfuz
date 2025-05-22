@@ -1,13 +1,14 @@
 {
   "name": "com.code-philosophy.obfuz4hybridclr",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0",
   "displayName": "Obfuz4HybridCLR",
-  "description": "Obfuz Extension for HybridCLR",
+  "description": "Obfuz4HybridCLR is a obfuz extension for HybridCLR",
   "category": "Editor",
   "documentationUrl": "https://www.obfuz.com",
   "changelogUrl": "https://github.com/focus-creative-games/obfuz/commits/main/",
-  "licensesUrl": "https://github.com/focus-creative-games/obfuz/blob/main/LICENSE",
+  "licensesUrl": "https://github.com/focus-creative-games/obfuz/blob/main/com.code-philosophy.obfuz4hybridclr/LICENSE",
   "keywords": [
+    "obfuz",
     "obfuscation",
     "obfuscator",
     "confuser",

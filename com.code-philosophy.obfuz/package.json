@@ -1,13 +1,14 @@
 {
   "name": "com.code-philosophy.obfuz",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-beta",
   "displayName": "Obfuz",
   "description": "Obfuz is an open-source Unity code obfuscation tool designed to provide Unity developers with a powerful, secure, and user-friendly code protection solution.",
   "category": "Editor",
   "documentationUrl": "https://www.obfuz.com",
   "changelogUrl": "https://github.com/focus-creative-games/obfuz/commits/main/",
-  "licensesUrl": "https://github.com/focus-creative-games/obfuz/blob/main/LICENSE",
+  "licensesUrl": "https://github.com/focus-creative-games/obfuz/blob/main/com.code-philosophy.obfuz/LICENSE",
   "keywords": [
+    "obfuz",
     "obfuscation",
     "obfuscator",
     "confuser",
