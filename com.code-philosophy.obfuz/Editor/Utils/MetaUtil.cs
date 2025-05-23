@@ -750,6 +750,7 @@ namespace Obfuz.Utils
                     sb.Append("]");
                     break;
                 }
+                case ElementType.TypedByRef: sb.Append("TypedReference"); break;
                 default:
                 throw new NotSupportedException(typeSig.ToString());
             }
