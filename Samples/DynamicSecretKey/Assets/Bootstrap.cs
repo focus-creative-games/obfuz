@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class Bootstrap : MonoBehaviour
 {
-    [ObfuzIgnore]
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void SetUpStaticSecretKey()
     {
