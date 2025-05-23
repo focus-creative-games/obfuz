@@ -92,7 +92,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<ModuleDef, RenameRecord> _modRenames = new Dictionary<ModuleDef, RenameRecord>();
         private readonly Dictionary<TypeDef, RenameRecord> _typeRenames = new Dictionary<TypeDef, RenameRecord>();
         private readonly Dictionary<MethodDef, RenameRecord> _methodRenames = new Dictionary<MethodDef, RenameRecord>();
-        private readonly Dictionary<ParamDef, RenameRecord> _paramRenames = new Dictionary<ParamDef, RenameRecord>();
         private readonly Dictionary<FieldDef, RenameRecord> _fieldRenames = new Dictionary<FieldDef, RenameRecord>();
         private readonly Dictionary<PropertyDef, RenameRecord> _propertyRenames = new Dictionary<PropertyDef, RenameRecord>();
         private readonly Dictionary<EventDef, RenameRecord> _eventRenames = new Dictionary<EventDef, RenameRecord>();
@@ -147,7 +146,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     {
                         nameMaker.AddPreservedName(method, method.Name);
                         string methodSig = TypeSigUtil.ComputeMethodDefSignature(method);
-                        nameMaker.AddPreservedName(method, method.Name);
 
                         RenameMappingMethod rmm = rmt?.methods.GetValueOrDefault(methodSig);
                         if (rmm != null)
@@ -163,19 +161,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                             renameMappingData = rmm,
                             oldStackTraceSignature = MetaUtil.CreateMethodDefIl2CppStackTraceSignature(method),
                         });
-                        foreach (Parameter param in method.Parameters)
-                        {
-                            if (param.ParamDef != null)
-                            {
-                                _paramRenames.Add(param.ParamDef, new RenameRecord
-                                {
-                                    status = RenameStatus.NotRenamed,
-                                    signature = param.Name,
-                                    oldName = param.Name,
-                                    newName = null,
-                                });
-                            }
-                        }
                     }
                     foreach (FieldDef field in type.Fields)
                     {
@@ -550,13 +535,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             methodNode.SetAttribute("oldStackTraceSignature", record.oldStackTraceSignature);
             methodNode.SetAttribute("newStackTraceSignature", MetaUtil.CreateMethodDefIl2CppStackTraceSignature(method));
             //methodNode.SetAttribute("status", record != null ? record.status.ToString() : RenameStatus.NotRenamed.ToString());
-            foreach (Parameter param in method.Parameters)
-            {
-                if (param.ParamDef != null)
-                {
-                    WriteMethodParamMapping(methodNode, param.ParamDef);
-                }
-            }
             typeEle.AppendChild(methodNode);
         }
 
@@ -566,19 +544,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             methodNode.SetAttribute("signature", signature);
             methodNode.SetAttribute("newName", method.newName);
             typeEle.AppendChild(methodNode);
-        }
-
-        private void WriteMethodParamMapping(XmlElement methodEle, ParamDef param)
-        {
-            if (!_paramRenames.TryGetValue(param, out var record) || record.status == RenameStatus.NotRenamed)
-            {
-                return;
-            }
-            var paramNode = methodEle.OwnerDocument.CreateElement("param");
-            paramNode.SetAttribute("index", param.Sequence.ToString());
-            paramNode.SetAttribute("newName", record.newName);
-            //paramNode.SetAttribute("status", record.status.ToString());
-            methodEle.AppendChild(paramNode);
         }
 
         public void AddRename(ModuleDef mod, string newName)
@@ -597,9 +562,25 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public void AddRename(MethodDef method, string newName)
         {
-            RenameRecord record = _methodRenames[method];
-            record.status = RenameStatus.Renamed;
-            record.newName = newName;
+            if (_methodRenames.TryGetValue(method, out RenameRecord record))
+            {
+                record.status = RenameStatus.Renamed;
+                record.newName = newName;
+                return;
+            }
+            else
+            {
+                string methodSig = TypeSigUtil.ComputeMethodDefSignature(method);
+                _methodRenames.Add(method, new RenameRecord
+                {
+                    status = RenameStatus.Renamed,
+                    signature = methodSig,
+                    oldName = method.Name,
+                    newName = newName,
+                    renameMappingData = null,
+                    oldStackTraceSignature = MetaUtil.CreateMethodDefIl2CppStackTraceSignature(method),
+                });
+            }
         }
 
         public void InitAndAddRename(VirtualMethodGroup methodGroup, string newName)

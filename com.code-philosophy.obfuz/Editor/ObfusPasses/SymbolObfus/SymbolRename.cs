@@ -475,7 +475,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 VirtualMethodGroup group = _virtualMethodGroupCalculator.GetMethodGroup(method);
                 if (!groupNeedRenames.TryGetValue(group, out var needRename))
                 {
-                    needRename = group.methods.All(m => _toObfuscatedModuleSet.Contains(m.DeclaringType.Module) && _renamePolicy.NeedRename(m));
+                    needRename = group.methods.All(m => _obfuscatedAndNotObfuscatedModules.Contains(m.Module) && (!_toObfuscatedModuleSet.Contains(m.DeclaringType.Module) || _renamePolicy.NeedRename(m)));
                     groupNeedRenames.Add(group, needRename);
                     if (needRename)
                     {
