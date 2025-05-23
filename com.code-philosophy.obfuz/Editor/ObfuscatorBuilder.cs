@@ -166,19 +166,53 @@ namespace Obfuz
         public static List<string> BuildUnityAssemblySearchPaths()
         {
             string applicationContentsPath = EditorApplication.applicationContentsPath;
-            return new List<string>
+            var searchPaths = new List<string>
                 {
 #if UNITY_2021_1_OR_NEWER
-                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api/Facades"),
-                    Path.Combine(applicationContentsPath, "UnityReferenceAssemblies/unity-4.8-api"),
-#elif UNITY_2020 || UNITY_2019
-                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api/Facades"),
-                    Path.Combine(applicationContentsPath, "MonoBleedingEdge/lib/mono/4.7.1-api"),
+#if UNITY_STANDALONE_WIN || (UNITY_EDITOR_WIN && UNITY_SERVER) || UNITY_WSA || UNITY_LUMIN
+                "MonoBleedingEdge/lib/mono/unityaot-win32",
+                "MonoBleedingEdge/lib/mono/unityaot-win32/Facades",
+#elif UNITY_STANDALONE_OSX || (UNITY_EDITOR_OSX && UNITY_SERVER) || UNITY_IOS || UNITY_TVOS
+                "MonoBleedingEdge/lib/mono/unityaot-macos",
+                "MonoBleedingEdge/lib/mono/unityaot-macos/Facades",
 #else
-#error "Unsupported Unity version"
+                "MonoBleedingEdge/lib/mono/unityaot-linux",
+                "MonoBleedingEdge/lib/mono/unityaot-linux/Facades",
 #endif
-                    Path.Combine(applicationContentsPath, "Managed/UnityEngine"),
+#else
+                "MonoBleedingEdge/lib/mono/unityaot",
+                "MonoBleedingEdge/lib/mono/unityaot/Facades",
+#endif
+
+#if UNITY_STANDALONE_WIN || (UNITY_EDITOR_WIN && UNITY_SERVER)
+                "PlaybackEngines\\windowsstandalonesupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_STANDALONE_OSX || (UNITY_EDITOR_OSX && UNITY_SERVER)
+                "PlaybackEngines\\MacStandaloneSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_STANDALONE_LINUX || (UNITY_EDITOR_LINUX && UNITY_SERVER)
+                "PlaybackEngines\\LinuxStandaloneSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_ANDROID
+                "PlaybackEngines\\AndroidPlayer\\Variations\\il2cpp\\Managed",
+#elif UNITY_IOS
+                "PlaybackEngines\\iOSSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_WEBGL
+                "PlaybackEngines\\WebGLSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_MINIGAME || UNITY_WEIXINMINIGAME
+                "PlaybackEngines\\WeixinMiniGameSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_OPENHARMONY
+                "PlaybackEngines\\OpenHarmonyPlayer\\Variations\\il2cpp\\Managed",
+#elif UNITY_TVOS
+                "PlaybackEngines\AppleTVSupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_WSA
+                "PlaybackEngines\\WSASupport\\Variations\\il2cpp\\Managed",
+#elif UNITY_LUMIN
+                "PlaybackEngines\\LuminSupport\\Variations\\il2cpp\\Managed",
+#else
+#error "Unsupported platform, please report to us"
+#endif
+
+                "Managed/UnityEngine",
                 };
+            return searchPaths.Select(path => Path.Combine(applicationContentsPath, path)).ToList();
         }
 
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation)
