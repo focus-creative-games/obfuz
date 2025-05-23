@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Obfuz
 {
@@ -15,7 +16,7 @@ namespace Obfuz
         public bool IsInWhiteList(ModuleDef module)
         {
             string modName = module.Assembly.Name;
-            if (modName == "Obfuz.Runtime")
+            if (modName == ConstValues.ObfuzRuntimeAssemblyName)
             {
                 return true;
             }
@@ -39,6 +40,15 @@ namespace Obfuz
             if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(method, method.DeclaringType, ObfuzScope.MethodBody))
             {
                 return true;
+            }
+            CustomAttribute ca = method.CustomAttributes.Find("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
+            if (ca != null && ca.ConstructorArguments.Count > 0)
+            {
+                RuntimeInitializeLoadType loadType = (RuntimeInitializeLoadType)ca.ConstructorArguments[0].Value;
+                if (loadType >= RuntimeInitializeLoadType.AfterAssembliesLoaded)
+                {
+                    return true;
+                }
             }
             return false;
         }
