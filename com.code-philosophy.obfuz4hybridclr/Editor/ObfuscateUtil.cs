@@ -62,7 +62,7 @@ namespace Obfuz4HybridCLR
             {
                 throw new Exception($"outputPath:{outputPath} can't be same to ObfuscatedAssemblyOutputPath:{obfuscatedAssemblyOutputPath}");
             }
-            foreach (var assemblySearchDir in builder.AssemblySearchPaths)
+            foreach (var assemblySearchDir in builder.CoreSettingsFacade.assemblySearchPaths)
             {
                 if (AreSameDirectory(assemblySearchDir, obfuscatedAssemblyOutputPath))
                 {
