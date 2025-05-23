@@ -93,7 +93,7 @@ namespace Obfuz
 #elif UNITY_IOS
                 "PlaybackEngines\\iOSSupport\\Variations\\il2cpp\\Managed",
 #elif UNITY_WEBGL
-                "PlaybackEngines\\WebGLSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines\\WebGLSupport\\Variations\\nondevelopment\\Data\\Managed",
 #elif UNITY_MINIGAME || UNITY_WEIXINMINIGAME
                 "PlaybackEngines\\WeixinMiniGameSupport\\Variations\\il2cpp\\Managed",
 #elif UNITY_OPENHARMONY
