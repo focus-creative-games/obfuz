@@ -27,20 +27,8 @@ namespace Obfuz
             return false;
         }
 
-        public bool IsInWhiteList(MethodDef method)
+        private bool DoesMethodContainsRuntimeInitializeOnLoadMethodAttributeAndLoadTypeGreaterEqualAfterAssembliesLoaded(MethodDef method)
         {
-            if (IsInWhiteList(method.DeclaringType))
-            {
-                return true;
-            }
-            if (method.Name.StartsWith(ConstValues.ObfuzInternalSymbolNamePrefix))
-            {
-                return true;
-            }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(method, method.DeclaringType, ObfuzScope.MethodBody))
-            {
-                return true;
-            }
             CustomAttribute ca = method.CustomAttributes.Find("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
             if (ca != null && ca.ConstructorArguments.Count > 0)
             {
@@ -49,6 +37,35 @@ namespace Obfuz
                 {
                     return true;
                 }
+            }
+            return false;
+        }
+
+        public bool IsInWhiteList(MethodDef method)
+        {
+            TypeDef typeDef = method.DeclaringType;
+            if (IsInWhiteList(typeDef))
+            {
+                return true;
+            }
+            if (method.Name.StartsWith(ConstValues.ObfuzInternalSymbolNamePrefix))
+            {
+                return true;
+            }
+            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(method, typeDef, ObfuzScope.MethodBody))
+            {
+                return true;
+            }
+            CustomAttribute ca = method.CustomAttributes.Find("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
+            if (DoesMethodContainsRuntimeInitializeOnLoadMethodAttributeAndLoadTypeGreaterEqualAfterAssembliesLoaded(method))
+            {
+                return true;
+            }
+
+            // don't obfuscate cctor when it has RuntimeInitializeOnLoadMethodAttribute with load type AfterAssembliesLoaded
+            if (method.IsStatic && method.Name == ".cctor" && typeDef.Methods.Any(m => DoesMethodContainsRuntimeInitializeOnLoadMethodAttributeAndLoadTypeGreaterEqualAfterAssembliesLoaded(m)))
+            {
+                return true;
             }
             return false;
         }
