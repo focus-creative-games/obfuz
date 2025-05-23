@@ -228,6 +228,24 @@ namespace Obfuz.Data
             return new RvaData(field.runtimeValueField, offset, value.Length);
         }
 
+
+        private void AddVerifyCodes(IList<Instruction> insts, DefaultMetadataImporter importer)
+        {
+            int verifyIntValue = 0x12345678;
+            IRandom verifyRandom = _encryptionScope.localRandomCreator(verifyIntValue);
+            int verifyOps = EncryptionUtil.GenerateEncryptionOpCodes(verifyRandom, _encryptionScope.encryptor, 4);
+            int verifySalt = verifyRandom.NextInt();
+            int encryptedVerifyIntValue = _encryptionScope.encryptor.Encrypt(verifyIntValue, verifyOps, verifySalt);
+
+            insts.Add(Instruction.Create(OpCodes.Ldc_I4, verifyIntValue));
+            insts.Add(Instruction.CreateLdcI4(encryptedVerifyIntValue));
+            insts.Add(Instruction.CreateLdcI4(verifyOps));
+            insts.Add(Instruction.CreateLdcI4(verifySalt));
+            insts.Add(Instruction.Create(OpCodes.Call, importer.DecryptInt));
+            insts.Add(Instruction.Create(OpCodes.Call, importer.VerifySecretKey));
+
+        }
+
         private void CreateCCtorOfRvaTypeDef()
         {
             if (_rvaTypeDef == null)
@@ -246,6 +264,7 @@ namespace Obfuz.Data
             var ins = body.Instructions;
 
             DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(mod, _encryptionScopeProvider);
+            AddVerifyCodes(ins, importer);
             foreach (var field in _rvaFields)
             {
                 // ldc
@@ -260,7 +279,7 @@ namespace Obfuz.Data
                 ins.Add(Instruction.Create(OpCodes.Dup));
                 ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
                 ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
-                ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArrayMethod));
+                ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArray));
 
                 // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
                 ins.Add(Instruction.CreateLdcI4(field.encryptionOps));

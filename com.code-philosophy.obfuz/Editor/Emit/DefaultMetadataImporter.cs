@@ -134,6 +134,8 @@ namespace Obfuz.Emit
 
             _initializeArray = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
             Assert.IsNotNull(_initializeArray);
+            _verifySecretKey = mod.Import(typeof(AssetUtility).GetMethod("VerifySecretKey", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_verifySecretKey, "VerifySecretKey not found");
 
             _staticDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultStaticEncryptionScope>));
             _dynamicDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultDynamicEncryptionScope>));
@@ -158,13 +160,16 @@ namespace Obfuz.Emit
         private IMethod _castFloatAsInt;
         private IMethod _castDoubleAsLong;
         private IMethod _initializeArray;
+        private IMethod _verifySecretKey;
 
         public IMethod CastIntAsFloat => _castIntAsFloat;
         public IMethod CastLongAsDouble => _castLongAsDouble;
         public IMethod CastFloatAsInt => _castFloatAsInt;
         public IMethod CastDoubleAsLong => _castDoubleAsLong;
 
-        public IMethod InitializedArrayMethod => _initializeArray;
+        public IMethod InitializedArray => _initializeArray;
+
+        public IMethod VerifySecretKey => _verifySecretKey;
 
         public IMethod EncryptBlock => _defaultEncryptionServiceMetadataImporter.EncryptBlock;
         public IMethod DecryptBlock => _defaultEncryptionServiceMetadataImporter.DecryptBlock;
