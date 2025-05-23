@@ -399,6 +399,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
+        
+
         private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
             foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
@@ -414,6 +416,35 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         if (methodSpec.Method is MemberRef memberRef2)
                         {
                             RenameMethodRef(memberRef2, refMethodMetasMap);
+                        }
+                    }
+                }
+                
+                foreach (var type in mod.GetTypes())
+                {
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        if (method.HasOverrides)
+                        {
+                            foreach (MethodOverride methodOverride in method.Overrides)
+                            {
+                                if (methodOverride.MethodDeclaration is MemberRef memberRef)
+                                {
+                                    RenameMethodRef(memberRef, refMethodMetasMap);
+                                }
+                                else
+                                {
+                                    Assert.IsTrue(methodOverride.MethodDeclaration is MethodDef);
+                                }
+                                if (methodOverride.MethodBody is MemberRef memberRef2)
+                                {
+                                    RenameMethodRef(memberRef2, refMethodMetasMap);
+                                }
+                                else
+                                {
+                                    Assert.IsTrue(methodOverride.MethodBody is MethodDef);
+                                }
+                            }
                         }
                     }
                 }
@@ -616,28 +647,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
             Debug.Log("Rename events begin");
         }
-
-        //private void Rename(ModuleDef mod)
-        //{
-        //    string oldName = mod.Assembly.Name;
-        //    string newName = _renameRecordMap.TryGetExistRenameMapping(mod, out var n) ? n :  _nameMaker.GetNewName(mod, oldName);
-        //    _renameRecordMap.AddRename(mod, newName);
-        //    mod.Assembly.Name = newName;
-        //    mod.Name = $"{newName}.dll";
-        //    //Debug.Log($"rename module. oldName:{oldName} newName:{newName}");
-        //    foreach (AssemblyReferenceInfo ass in GetReferenceMeAssemblies(mod))
-        //    {
-        //        foreach (AssemblyRef assRef in ass.module.GetAssemblyRefs())
-        //        {
-        //            if (assRef.Name == oldName)
-        //            {
-        //                _renameRecordMap.AddRename(mod, newName);
-        //                assRef.Name = newName;
-        //               // Debug.Log($"rename assembly:{ass.name}  ref oldName:{oldName} newName:{newName}");
-        //            }
-        //        }
-        //    }
-        //}
 
         private void Rename(TypeDef type, RefTypeDefMetas refTypeDefMeta)
         {
