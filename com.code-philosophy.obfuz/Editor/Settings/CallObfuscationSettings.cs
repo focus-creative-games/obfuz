@@ -7,6 +7,13 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
+    public class CallObfuscationSettingsFacade
+    {
+        public List<string> ruleFiles;
+        public int obfuscationLevel;
+        public int maxProxyMethodCountPerDispatchMethod;
+    }
+
     [Serializable]
     public class CallObfuscationSettings
     {
@@ -19,5 +26,15 @@ namespace Obfuz.Settings
 
         [Tooltip("rule config xml files")]
         public string[] ruleFiles;
+
+        public CallObfuscationSettingsFacade ToFacade()
+        {
+            return new CallObfuscationSettingsFacade
+            {
+                ruleFiles = ruleFiles.ToList(),
+                obfuscationLevel = obfuscationLevel,
+                maxProxyMethodCountPerDispatchMethod = maxProxyMethodCountPerDispatchMethod,
+            };
+        }
     }
 }

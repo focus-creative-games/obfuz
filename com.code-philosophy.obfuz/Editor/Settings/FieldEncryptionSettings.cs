@@ -7,6 +7,12 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
+    public class FieldEncryptionSettingsFacade
+    {
+        public int encryptionLevel;
+        public List<string> ruleFiles;
+    }
+
     [Serializable]
     public class FieldEncryptionSettings
     {
@@ -16,5 +22,14 @@ namespace Obfuz.Settings
 
         [Tooltip("rule config xml files")]
         public string[] ruleFiles;
+
+        public FieldEncryptionSettingsFacade ToFacade()
+        {
+            return new FieldEncryptionSettingsFacade
+            {
+                ruleFiles = ruleFiles.ToList(),
+                encryptionLevel = encryptionLevel,
+            };
+        }
     }
 }

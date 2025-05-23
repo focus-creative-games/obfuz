@@ -15,19 +15,15 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public class CallObfusPass : BasicBlockObfuscationPassBase
     {
-        private readonly List<string> _configFiles;
-        private readonly int _obfuscationLevel;
-        private readonly int _maxProxyMethodPerDispatchMethod;
+        private readonly CallObfuscationSettingsFacade _settings;
         private IObfuscator _dynamicProxyObfuscator;
         private IObfuscationPolicy _dynamicProxyPolicy;
 
         public override ObfuscationPassType Type => ObfuscationPassType.CallObfus;
 
-        public CallObfusPass(CallObfuscationSettings settings)
+        public CallObfusPass(CallObfuscationSettingsFacade settings)
         {
-            _configFiles = settings.ruleFiles.ToList();
-            _obfuscationLevel = settings.obfuscationLevel;
-            _maxProxyMethodPerDispatchMethod = settings.maxProxyMethodCountPerDispatchMethod;
+            _settings = settings;
         }
 
         public override void Stop()
@@ -38,8 +34,8 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel, _maxProxyMethodPerDispatchMethod);
-            _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.assembliesToObfuscate, _configFiles);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _settings);
+            _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)

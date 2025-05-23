@@ -12,17 +12,15 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
     public class FieldEncryptPass : InstructionObfuscationPassBase
     {
-        private readonly List<string> _configFiles;
-        private readonly int _encryptionLevel;
+        private FieldEncryptionSettingsFacade _settings;
         private IEncryptPolicy _encryptionPolicy;
         private IFieldEncryptor _memoryEncryptor;
 
         public override ObfuscationPassType Type => ObfuscationPassType.FieldEncrypt;
 
-        public FieldEncryptPass(FieldEncryptionSettings settings)
+        public FieldEncryptPass(FieldEncryptionSettingsFacade settings)
         {
-            _configFiles = settings.ruleFiles.ToList();
-            _encryptionLevel = settings.encryptionLevel;
+            _settings = settings;
         }
 
         protected override bool ForceProcessAllAssembliesAndIgnoreAllPolicy => true;
@@ -30,8 +28,8 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _memoryEncryptor = new DefaultFieldEncryptor(ctx.encryptionScopeProvider, ctx.moduleEntityManager, _encryptionLevel);
-            _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.assembliesToObfuscate, _configFiles);
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.encryptionScopeProvider, ctx.moduleEntityManager, _settings);
+            _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
         }
 
         public override void Stop()

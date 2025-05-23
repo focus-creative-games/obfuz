@@ -42,7 +42,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public List<CANamedArgument> namedArguments;
         }
 
-        public SymbolRename(SymbolObfuscationSettings settings)
+        public SymbolRename(SymbolObfuscationSettingsFacade settings)
         {
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
             _mappingXmlPath = settings.symbolMappingFile;
@@ -59,7 +59,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _toObfuscatedModules = ctx.modulesToObfuscate;
             _obfuscatedAndNotObfuscatedModules = ctx.allObfuscationRelativeModules;
             _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
-            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.assembliesToObfuscate, _obfuscationRuleFiles);
+            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, _obfuscationRuleFiles);
             _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SupportPassPolicy(ctx.passPolicy), new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
             BuildCustomAttributeArguments();
         }

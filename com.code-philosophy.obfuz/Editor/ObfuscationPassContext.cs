@@ -61,18 +61,13 @@ namespace Obfuz
     {
         public static ObfuscationPassContext Current { get; set; }
 
+        public CoreSettingsFacade coreSettings;
 
         public GroupByModuleEntityManager moduleEntityManager;
 
         public AssemblyCache assemblyCache;
-
         public List<ModuleDef> modulesToObfuscate;
         public List<ModuleDef> allObfuscationRelativeModules;
-
-        public List<string> assembliesToObfuscate;
-        public List<string> nonObfuscatedButReferencingObfuscatedAssemblies;
-
-        public string obfuscatedAssemblyOutputPath;
 
         public EncryptionScopeProvider encryptionScopeProvider;
         public ConstFieldAllocator constFieldAllocator;

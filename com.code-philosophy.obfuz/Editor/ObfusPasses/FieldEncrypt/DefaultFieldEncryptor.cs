@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
+using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,13 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
     {
         private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
-        private readonly int _encryptionLevel;
+        private readonly FieldEncryptionSettingsFacade _settings;
 
-        public DefaultFieldEncryptor(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultFieldEncryptor(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, FieldEncryptionSettingsFacade settings)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
-            _encryptionLevel = encryptionLevel;
+            _settings = settings;
         }
 
         private DefaultMetadataImporter GetMetadataImporter(MethodDef method)
@@ -64,7 +65,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         private int GenerateEncryptionOperations(IRandom random, IEncryptor encryptor)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(random, encryptor, _encryptionLevel);
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, encryptor, _settings.encryptionLevel);
         }
 
         public int GenerateSalt(IRandom random)

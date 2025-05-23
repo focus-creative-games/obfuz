@@ -21,11 +21,9 @@ namespace Obfuz
 
     public class Obfuscator
     {
-        private readonly string _obfuscatedAssemblyTempOutputPath;
-        private readonly string _obfuscatedAssemblyOutputPath;
-
-        private readonly List<string> _assembliesToObfuscate;
-        private readonly List<string> _nonObfuscatedButReferencingObfuscatedAssemblies;
+        private readonly CoreSettingsFacade _coreSettings;
+        private readonly List<string> _allObfuscationRelativeAssemblyNames;
+        private readonly HashSet<string> _assembliesUsingDynamicSecretKeys;
         private readonly CombinedAssemblyResolver _assemblyResolver;
 
         private readonly ConfigurablePassPolicy _passPolicy;
@@ -33,38 +31,20 @@ namespace Obfuz
         private readonly Pipeline _pipeline1 = new Pipeline();
         private readonly Pipeline _pipeline2 = new Pipeline();
 
-        private readonly byte[] _defaultStaticByteSecretKey;
-        private readonly byte[] _defaultDynamicByteSecret;
-        private readonly HashSet<string> _assembliesUsingDynamicSecretKeys;
-
-        private readonly int _randomSeed;
-        private readonly string _encryptionVmGenerationSecretKey;
-        private readonly int _encryptionVmOpCodeCount;
-        private readonly string _encryptionVmCodeFile;
-
         private ObfuscationPassContext _ctx;
 
         public Obfuscator(ObfuscatorBuilder builder)
         {
-            _defaultStaticByteSecretKey = KeyGenerator.GenerateKey(builder.DefaultStaticSecretKey, VirtualMachine.SecretKeyLength);
-            _defaultDynamicByteSecret = KeyGenerator.GenerateKey(builder.DefaultDynamicSecretKey, VirtualMachine.SecretKeyLength);
-            _assembliesUsingDynamicSecretKeys = new HashSet<string>(builder.AssembliesUsingDynamicSecretKeys);
+            _coreSettings = builder.CoreSettingsFacade;
+            _allObfuscationRelativeAssemblyNames = _coreSettings.assembliesToObfuscate
+                .Concat(_coreSettings.nonObfuscatedButReferencingObfuscatedAssemblies)
+                .ToList();
+            _assembliesUsingDynamicSecretKeys = new HashSet<string>(_coreSettings.assembliesUsingDynamicSecretKeys);
 
+            _assemblyResolver = new CombinedAssemblyResolver(new PathAssemblyResolver(_coreSettings.assemblySearchPaths.ToArray()), new UnityProjectManagedAssemblyResolver(_coreSettings.buildTarget));
+            _passPolicy = new ConfigurablePassPolicy(_coreSettings.assembliesToObfuscate, _coreSettings.enabledObfuscationPasses, _coreSettings.obfuscationPassRuleConfigFiles);
 
-            _randomSeed = builder.RandomSeed;
-            _encryptionVmGenerationSecretKey = builder.EncryptionVmGenerationSecretKey;
-            _encryptionVmOpCodeCount = builder.EncryptionVmOpCodeCount;
-            _encryptionVmCodeFile = builder.EncryptionVmCodeFile;
-
-            _assembliesToObfuscate = builder.AssembliesToObfuscate;
-            _nonObfuscatedButReferencingObfuscatedAssemblies = builder.NonObfuscatedButReferencingObfuscatedAssemblies;
-            _obfuscatedAssemblyOutputPath = builder.ObfuscatedAssemblyOutputPath;
-            _obfuscatedAssemblyTempOutputPath = builder.ObfuscatedAssemblyTempOutputPath;
-            _assemblyResolver = new CombinedAssemblyResolver(new PathAssemblyResolver(builder.AssemblySearchPaths.ToArray()), new UnityProjectManagedAssemblyResolver(builder.BuildTarget));
-
-            _passPolicy = new ConfigurablePassPolicy(_assembliesToObfuscate, builder.EnableObfuscationPasses, builder.ObfuscationPassRuleConfigFiles);
-
-            foreach (var pass in builder.ObfuscationPasses)
+            foreach (var pass in _coreSettings.obfuscationPasses)
             {
                 if (pass is SymbolObfusPass symbolObfusPass)
                 {
@@ -82,12 +62,12 @@ namespace Obfuz
         public void Run()
         {
             Debug.Log($"Obfuscator Run. begin");
-            FileUtil.RecreateDir(_obfuscatedAssemblyOutputPath);
-            FileUtil.RecreateDir(_obfuscatedAssemblyTempOutputPath);
+            FileUtil.RecreateDir(_coreSettings.obfuscatedAssemblyOutputPath);
+            FileUtil.RecreateDir(_coreSettings.obfuscatedAssemblyTempOutputPath);
             RunPipeline(_pipeline1);
-            _assemblyResolver.InsertFirst(new PathAssemblyResolver(_obfuscatedAssemblyTempOutputPath));
+            _assemblyResolver.InsertFirst(new PathAssemblyResolver(_coreSettings.obfuscatedAssemblyTempOutputPath));
             RunPipeline(_pipeline2);
-            FileUtil.CopyDir(_obfuscatedAssemblyTempOutputPath, _obfuscatedAssemblyOutputPath, true);
+            FileUtil.CopyDir(_coreSettings.obfuscatedAssemblyTempOutputPath, _coreSettings.obfuscatedAssemblyOutputPath, true);
             Debug.Log($"Obfuscator Run. end");
         }
 
@@ -104,17 +84,18 @@ namespace Obfuz
 
         private IEncryptor CreateEncryptionVirtualMachine(byte[] secretKey)
         {
-            var vmCreator = new VirtualMachineCreator(_encryptionVmGenerationSecretKey);
-            var vm = vmCreator.CreateVirtualMachine(_encryptionVmOpCodeCount);
+            var vmCreator = new VirtualMachineCreator(_coreSettings.encryptionVmGenerationSecretKey);
+            var vm = vmCreator.CreateVirtualMachine(_coreSettings.encryptionVmOpCodeCount);
             var vmGenerator = new VirtualMachineCodeGenerator(vm);
 
-            if (!File.Exists(_encryptionVmCodeFile))
+            string encryptionVmCodeFile = _coreSettings.encryptionVmCodeFile;
+            if (!File.Exists(encryptionVmCodeFile))
             {
-                throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not exists! Please run `Obfuz/GenerateVm` to generate it!");
+                throw new Exception($"EncryptionVm CodeFile:`{encryptionVmCodeFile}` not exists! Please run `Obfuz/GenerateVm` to generate it!");
             }
-            if (!vmGenerator.ValidateMatch(_encryptionVmCodeFile))
+            if (!vmGenerator.ValidateMatch(encryptionVmCodeFile))
             {
-                throw new Exception($"EncryptionVm CodeFile:`{_encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
+                throw new Exception($"EncryptionVm CodeFile:`{encryptionVmCodeFile}` not match with encryptionVM settings! Please run `Obfuz/GenerateVm` to update it!");
             }
             var vms = new VirtualMachineSimulator(vm, secretKey);
 
@@ -249,19 +230,19 @@ namespace Obfuz
         {
             int[] intSecretKey = KeyGenerator.ConvertToIntKey(byteSecret);
             IEncryptor encryption = CreateEncryptionVirtualMachine(byteSecret);
-            RandomCreator localRandomCreator = (seed) => new RandomWithKey(intSecretKey, _randomSeed ^ seed);
+            RandomCreator localRandomCreator = (seed) => new RandomWithKey(intSecretKey, _coreSettings.randomSeed ^ seed);
             return new EncryptionScopeInfo(encryption, localRandomCreator);
         }
 
         private EncryptionScopeProvider CreateEncryptionScopeProvider()
         {
-            var defaultStaticScope = CreateEncryptionScope(_defaultStaticByteSecretKey);
-            var defaultDynamicScope = CreateEncryptionScope(_defaultDynamicByteSecret);
+            var defaultStaticScope = CreateEncryptionScope(_coreSettings.defaultStaticSecretKey);
+            var defaultDynamicScope = CreateEncryptionScope(_coreSettings.defaultDynamicSecretKey);
             foreach (string dynamicAssName in _assembliesUsingDynamicSecretKeys)
             {
-                if (!_assembliesToObfuscate.Contains(dynamicAssName))
+                if (!_coreSettings.assembliesToObfuscate.Contains(dynamicAssName))
                 {
-                    throw new Exception($"Dynamic secret assembly `{dynamicAssName}` should be in the toObfuscatedAssemblyNames list!");
+                    throw new Exception($"Dynamic secret assembly `{dynamicAssName}` should be in the assembliesToObfuscate list!");
                 }
             }
             return new EncryptionScopeProvider(defaultStaticScope, defaultDynamicScope, _assembliesUsingDynamicSecretKeys);
@@ -280,12 +261,10 @@ namespace Obfuz
             var constFieldAllocator = new ConstFieldAllocator(encryptionScopeProvider, rvaDataAllocator, moduleEntityManager);
             _ctx = new ObfuscationPassContext
             {
+                coreSettings = _coreSettings,
                 assemblyCache = assemblyCache,
                 modulesToObfuscate = modulesToObfuscate,
                 allObfuscationRelativeModules = allObfuscationRelativeModules,
-                assembliesToObfuscate = _assembliesToObfuscate,
-                nonObfuscatedButReferencingObfuscatedAssemblies = _nonObfuscatedButReferencingObfuscatedAssemblies,
-                obfuscatedAssemblyOutputPath = _obfuscatedAssemblyOutputPath,
                 moduleEntityManager = moduleEntityManager,
 
                 encryptionScopeProvider = encryptionScopeProvider,
@@ -301,7 +280,7 @@ namespace Obfuz
 
         private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> modulesToObfuscate, List<ModuleDef> allObfuscationRelativeModules)
         {
-            foreach (string assName in _assembliesToObfuscate.Concat(_nonObfuscatedButReferencingObfuscatedAssemblies))
+            foreach (string assName in _allObfuscationRelativeAssemblyNames)
             {
                 ModuleDefMD mod = assemblyCache.TryLoadModule(assName);
                 if (mod == null)
@@ -309,7 +288,7 @@ namespace Obfuz
                     Debug.Log($"assembly: {assName} not found! ignore.");
                     continue;
                 }
-                if (_assembliesToObfuscate.Contains(assName))
+                if (_coreSettings.assembliesToObfuscate.Contains(assName))
                 {
                     modulesToObfuscate.Add(mod);
                 }
@@ -322,7 +301,7 @@ namespace Obfuz
             foreach (ModuleDef mod in _ctx.allObfuscationRelativeModules)
             {
                 string assNameWithExt = mod.Name;
-                string outputFile = $"{_obfuscatedAssemblyTempOutputPath}/{assNameWithExt}";
+                string outputFile = $"{_coreSettings.obfuscatedAssemblyTempOutputPath}/{assNameWithExt}";
                 mod.Write(outputFile);
                 Debug.Log($"save module. name:{mod.Assembly.Name} output:{outputFile}");
             }

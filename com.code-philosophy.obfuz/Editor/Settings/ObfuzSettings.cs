@@ -8,8 +8,6 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
-
-
     public class ObfuzSettings : ScriptableObject
     {
         [Tooltip("enable Obfuz")]

@@ -7,6 +7,12 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
+    public class ConstEncryptionSettingsFacade
+    {
+        public int encryptionLevel;
+        public List<string> ruleFiles;
+    }
+
     [Serializable]
     public class ConstEncryptionSettings
     {
@@ -16,5 +22,14 @@ namespace Obfuz.Settings
 
         [Tooltip("config xml files")]
         public string[] ruleFiles;
+
+        public ConstEncryptionSettingsFacade ToFacade()
+        {
+            return new ConstEncryptionSettingsFacade
+            {
+                ruleFiles = ruleFiles.ToList(),
+                encryptionLevel = encryptionLevel,
+            };
+        }
     }
 }

@@ -5,6 +5,7 @@ using Obfuz.Utils;
 using Obfuz.Emit;
 using Obfuz.Data;
 using UnityEngine;
+using Obfuz.Settings;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
@@ -15,12 +16,12 @@ namespace Obfuz.ObfusPasses.CallObfus
         private readonly CallProxyAllocator _proxyCallAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public DefaultCallProxyObfuscator(EncryptionScopeProvider encryptionScopeProvider, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel, int maxProxyMethodPerDispatchMethod)
+        public DefaultCallProxyObfuscator(EncryptionScopeProvider encryptionScopeProvider, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, CallObfuscationSettingsFacade settings)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
-            _proxyCallAllocator = new CallProxyAllocator(encryptionScopeProvider, moduleEntityManager, encryptionLevel, maxProxyMethodPerDispatchMethod);
+            _proxyCallAllocator = new CallProxyAllocator(encryptionScopeProvider, moduleEntityManager, settings);
         }
 
         public override void Done()

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using System.Text;
+using Obfuz.Settings;
 
 namespace Obfuz.ObfusPasses.ConstEncrypt
 {
@@ -16,15 +17,15 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         private readonly RvaDataAllocator _rvaDataAllocator;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
-        private readonly int _encryptionLevel;
+        private readonly ConstEncryptionSettingsFacade _settings;
 
-        public DefaultConstEncryptor(EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public DefaultConstEncryptor(EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, ConstEncryptionSettingsFacade settings)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _rvaDataAllocator = rvaDataAllocator;
             _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
-            _encryptionLevel = encryptionLevel;
+            _settings = settings;
         }
 
         private IRandom CreateRandomForValue(EncryptionScopeInfo encryptionScope, int value)
@@ -34,7 +35,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         private int GenerateEncryptionOperations(EncryptionScopeInfo encryptionScope, IRandom random)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(random, encryptionScope.encryptor, _encryptionLevel);
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, encryptionScope.encryptor, _settings.encryptionLevel);
         }
 
         public int GenerateSalt(IRandom random)

@@ -7,6 +7,15 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
+    public class SymbolObfuscationSettingsFacade
+    {
+        public bool debug;
+        public string obfuscatedNamePrefix;
+        public bool useConsistentNamespaceObfuscation;
+        public string symbolMappingFile;
+        public List<string> ruleFiles;
+    }
+
     [Serializable]
     public class SymbolObfuscationSettings
     {
@@ -23,5 +32,17 @@ namespace Obfuz.Settings
 
         [Tooltip("rule files")]
         public string[] ruleFiles;
+
+        public SymbolObfuscationSettingsFacade ToFacade()
+        {
+            return new SymbolObfuscationSettingsFacade
+            {
+                debug = debug,
+                obfuscatedNamePrefix = obfuscatedNamePrefix,
+                useConsistentNamespaceObfuscation = useConsistentNamespaceObfuscation,
+                symbolMappingFile = symbolMappingFile,
+                ruleFiles = ruleFiles.ToList(),
+            };
+        }
     }
 }
