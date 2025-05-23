@@ -585,12 +585,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public void InitAndAddRename(VirtualMethodGroup methodGroup, string newName)
         {
-            RenameRecord methodRecord = _methodRenames[methodGroup.methods[0]];
+            RenameRecord methodRecord = methodGroup.methods.Where(m => _methodRenames.ContainsKey(m)).Select(m => _methodRenames[m]).FirstOrDefault();
+            MethodDef firstMethod = methodGroup.methods[0];
             _virtualMethodGroups.Add(methodGroup, new RenameRecord
             {
                 status = RenameStatus.Renamed,
-                signature = methodRecord.signature,
-                oldName = methodRecord.oldName,
+                signature = methodRecord != null ? methodRecord.signature : TypeSigUtil.ComputeMethodDefSignature(firstMethod),
+                oldName = methodRecord != null ? methodRecord.oldName : firstMethod.Name,
                 newName = newName,
             });
         }
