@@ -163,9 +163,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(MethodDef methodDef)
         {
             TypeDef typeDef = methodDef.DeclaringType;
-            if (MetaUtil.IsInheritFromUnityObject(typeDef))
+            if (MetaUtil.IsInheritFromUnityObject(typeDef) && s_monoBehaviourEvents.Contains(methodDef.Name))
             {
-                return !s_monoBehaviourEvents.Contains(methodDef.Name);
+                return false;
             }
             if (MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(methodDef))
             {
