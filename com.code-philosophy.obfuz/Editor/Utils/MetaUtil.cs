@@ -860,5 +860,10 @@ namespace Obfuz.Utils
         {
             return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
         }
+
+        public static bool HasRuntimeInitializeOnLoadMethodAttribute(MethodDef method)
+        {
+            return method.CustomAttributes.Any(ca => ca.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
+        }
     }
 }

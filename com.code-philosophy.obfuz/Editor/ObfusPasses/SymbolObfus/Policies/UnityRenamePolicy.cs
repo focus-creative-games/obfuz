@@ -2,6 +2,7 @@
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -134,6 +135,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
+            if (typeDef.Methods.Any(m => MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(m)))
+            {
+                return false;
+            }
             return true;
         }
 
@@ -142,6 +147,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             if (MetaUtil.IsInheritFromUnityObject(methodDef.DeclaringType))
             {
                 return !s_monoBehaviourEvents.Contains(methodDef.Name);
+            }
+            if (MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(methodDef))
+            {
+                return false;
             }
             if (methodDef.DeclaringType.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
             {
