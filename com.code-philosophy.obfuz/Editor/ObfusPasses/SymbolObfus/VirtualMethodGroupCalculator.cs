@@ -61,6 +61,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
             var typeMethods = new TypeFlatMethods();
 
+            var interfaceMethods = new List<MethodDef>();
             if (typeDef.BaseType != null)
             {
                 TypeDef baseTypeDef = MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(typeDef.BaseType);
@@ -70,10 +71,30 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     TypeDef intfTypeDef = MetaUtil.GetTypeDefOrGenericTypeBaseThrowException(intfType.Interface);
                     CalculateType(intfTypeDef);
-                    typeMethods.flatMethods.AddRange(_visitedTypes[intfTypeDef].flatMethods);
+                    //typeMethods.flatMethods.AddRange(_visitedTypes[intfTypeDef].flatMethods);
+                    interfaceMethods.AddRange(_visitedTypes[intfTypeDef].flatMethods);
                 }
             }
-            foreach (var method in typeDef.Methods)
+            foreach (MethodDef method in interfaceMethods)
+            {
+                if (typeMethods.TryFindMatchVirtualMethod(method, out var matchMethodDef))
+                {
+                    // merge group
+                    var group = _methodGroups[matchMethodDef];
+                    var matchGroup = _methodGroups[method];
+                    if (group != matchGroup)
+                    {
+                        foreach (var m in matchGroup.methods)
+                        {
+                            group.methods.Add(m);
+                            _methodGroups[m] = group;
+                        }
+                    }
+                }
+            }
+
+            typeMethods.flatMethods.AddRange(interfaceMethods);
+            foreach (MethodDef method in typeDef.Methods)
             {
                 if (!method.IsVirtual)
                 {
