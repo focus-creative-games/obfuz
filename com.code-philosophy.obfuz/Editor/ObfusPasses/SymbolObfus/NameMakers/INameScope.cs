@@ -2,7 +2,9 @@
 {
     public interface INameScope
     {
-        void AddPreservedName(string name);
+        bool AddPreservedName(string name);
+
+        bool IsNamePreserved(string name);
 
         string GetNewName(string originalName, bool reuse);
     }

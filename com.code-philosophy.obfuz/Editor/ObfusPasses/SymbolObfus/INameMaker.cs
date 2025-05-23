@@ -22,6 +22,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         string GetNewName(MethodDef methodDef, string originalName);
 
+        string GetNewName(VirtualMethodGroup virtualMethodGroup, string originalName);
+
         string GetNewName(ParamDef param, string originalName);
 
         string GetNewName(FieldDef fieldDef, string originalName);

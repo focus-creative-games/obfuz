@@ -11,12 +11,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
         private readonly HashSet<string> _preservedNames = new HashSet<string>();
 
 
-        public void AddPreservedName(string name)
+        public bool AddPreservedName(string name)
         {
             if (!string.IsNullOrEmpty(name))
             {
-                _preservedNames.Add(name);
+                return _preservedNames.Add(name);
             }
+            return false;
+        }
+
+        public bool IsNamePreserved(string name)
+        {
+            return _preservedNames.Contains(name);
         }
 
 
