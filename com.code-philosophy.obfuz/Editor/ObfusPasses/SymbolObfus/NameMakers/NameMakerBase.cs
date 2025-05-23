@@ -57,6 +57,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
             GetNameScope(_namespaceScope).AddPreservedName(name);
         }
 
+        public bool IsNamePreserved(VirtualMethodGroup virtualMethodGroup, string name)
+        {
+            return  virtualMethodGroup.methods.Any(m => GetNameScope(m.DeclaringType).IsNamePreserved(name));
+        }
+
         private string GetDefaultNewName(object scope, string originName)
         {
             return GetNameScope(scope).GetNewName(originName, false);
@@ -88,7 +93,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
             while (true)
             {
                 string newName = scope.GetNewName(originalName, false);
-                if (virtualMethodGroup.methods.Any(m => GetNameScope(m).IsNamePreserved(newName)))
+                if (virtualMethodGroup.methods.Any(m => GetNameScope(m.DeclaringType).IsNamePreserved(newName)))
                 {
                     continue;
                 }
@@ -96,7 +101,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
                 {
                     foreach (var method in virtualMethodGroup.methods)
                     {
-                        GetNameScope(method).AddPreservedName(newName);
+                        GetNameScope(method.DeclaringType).AddPreservedName(newName);
                     }
                     return newName;
                 }

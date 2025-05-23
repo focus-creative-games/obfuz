@@ -16,6 +16,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         void AddPreservedName(EventDef eventDef, string name);
 
+        bool IsNamePreserved(VirtualMethodGroup virtualMethodGroup, string name);
+
         string GetNewName(TypeDef typeDef, string originalName);
 
         string GetNewNamespace(TypeDef typeDef, string originalNamespace, bool reuse);

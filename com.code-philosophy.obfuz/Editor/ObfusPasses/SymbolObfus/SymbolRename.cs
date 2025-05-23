@@ -479,7 +479,29 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     groupNeedRenames.Add(group, needRename);
                     if (needRename)
                     {
-                        _renameRecordMap.InitAndAddRename(group, _renameRecordMap.TryGetExistRenameMapping(method, out var nn) ? nn : _nameMaker.GetNewName(method, method.Name));
+                        bool conflict = false;
+                        string newVirtualMethodName = null;
+                        foreach (MethodDef m in group.methods)
+                        {
+                            if (_renameRecordMap.TryGetExistRenameMapping(m, out var existVirtualMethodName))
+                            {
+                                if (newVirtualMethodName == null)
+                                {
+                                    newVirtualMethodName = existVirtualMethodName;
+                                }
+                                else if(newVirtualMethodName != existVirtualMethodName)
+                                {
+                                    Debug.LogWarning($"Virtual method rename conflict. {m} => {existVirtualMethodName} != {newVirtualMethodName}");
+                                    conflict = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (newVirtualMethodName == null || conflict || _nameMaker.IsNamePreserved(group, newVirtualMethodName))
+                        {
+                            newVirtualMethodName = _nameMaker.GetNewName(group, method.Name);
+                        }
+                        _renameRecordMap.InitAndAddRename(group, newVirtualMethodName);
                     }
                 }
                 if (!needRename)
