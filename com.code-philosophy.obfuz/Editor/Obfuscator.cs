@@ -35,7 +35,9 @@ namespace Obfuz
 
         public Obfuscator(ObfuscatorBuilder builder)
         {
+            CheckSettings(builder.CoreSettingsFacade);
             _coreSettings = builder.CoreSettingsFacade;
+
             _allObfuscationRelativeAssemblyNames = _coreSettings.assembliesToObfuscate
                 .Concat(_coreSettings.nonObfuscatedButReferencingObfuscatedAssemblies)
                 .ToList();
@@ -57,6 +59,33 @@ namespace Obfuz
             }
             _pipeline1.AddPass(new CleanUpInstructionPass());
             _pipeline2.AddPass(new RemoveObfuzAttributesPass());
+        }
+
+        private void CheckSettings(CoreSettingsFacade settings)
+        {
+            var totalAssemblies = new HashSet<string>();
+            foreach (var assName in settings.assembliesToObfuscate)
+            {
+                if (string.IsNullOrWhiteSpace(assName))
+                {
+                    throw new Exception($"the name of some assembly in assembliesToObfuscate is empty! Please check your settings.");
+                }
+                if (!totalAssemblies.Add(assName))
+                {
+                    throw new Exception($"the name of assembly `{assName}` in assembliesToObfuscate is duplicated! Please check your settings.");
+                }
+            }
+            foreach (var assName in settings.nonObfuscatedButReferencingObfuscatedAssemblies)
+            {
+                if (string.IsNullOrWhiteSpace(assName))
+                {
+                    throw new Exception($"the name of some assembly in nonObfuscatedButReferencingObfuscatedAssemblies is empty! Please check your settings.");
+                }
+                if (!totalAssemblies.Add(assName))
+                {
+                    throw new Exception($"the name of assembly `{assName}` in nonObfuscatedButReferencingObfuscatedAssemblies is duplicated! Please check your settings.");
+                }
+            }
         }
 
         public void Run()
