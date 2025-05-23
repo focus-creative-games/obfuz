@@ -224,9 +224,9 @@ namespace Obfuz
             {
                 _buildTarget = target,
                 _defaultStaticSecretKey = settings.secretSettings.defaultStaticSecretKey,
-                _defaultStaticSecretKeyOutputPath = settings.secretSettings.DefaultStaticSecretKeyOutputPath,
+                _defaultStaticSecretKeyOutputPath = settings.secretSettings.staticSecretKeyOutputPath,
                 _defaultDynamicSecretKey = settings.secretSettings.defaultDynamicSecretKey,
-                _defaultDynamicSecretKeyOutputPath = settings.secretSettings.DefaultDynamicSecretKeyOutputPath,
+                _defaultDynamicSecretKeyOutputPath = settings.secretSettings.dynamicSecretKeyOutputPath,
                 _assembliesUsingDynamicSecretKeys = settings.secretSettings.assembliesUsingDynamicSecretKeys.ToList(),
                 _randomSeed = settings.secretSettings.randomSeed,
                 _encryptionVmGenerationSecretKey = settings.encryptionVMSettings.codeGenerationSecretKey,

@@ -93,7 +93,6 @@ namespace Obfuz.Settings
         {
             if (!s_Instance)
             {
-                Debug.LogError("Cannot save ScriptableSingleton: no instance!");
                 return;
             }
 

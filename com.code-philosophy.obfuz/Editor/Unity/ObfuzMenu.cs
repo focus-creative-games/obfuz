@@ -28,11 +28,11 @@ namespace Obfuz.Unity
             SecretSettings settings = ObfuzSettings.Instance.secretSettings;
 
             var staticSecretBytes = KeyGenerator.GenerateKey(settings.defaultStaticSecretKey, VirtualMachine.SecretKeyLength);
-            SaveKey(staticSecretBytes, settings.DefaultStaticSecretKeyOutputPath);
-            Debug.Log($"Save static secret key to {settings.DefaultStaticSecretKeyOutputPath}");
+            SaveKey(staticSecretBytes, settings.staticSecretKeyOutputPath);
+            Debug.Log($"Save static secret key to {settings.staticSecretKeyOutputPath}");
             var dynamicSecretBytes = KeyGenerator.GenerateKey(settings.defaultDynamicSecretKey, VirtualMachine.SecretKeyLength);
-            SaveKey(dynamicSecretBytes, settings.DefaultDynamicSecretKeyOutputPath);
-            Debug.Log($"Save dynamic secret key to {settings.DefaultDynamicSecretKeyOutputPath}");
+            SaveKey(dynamicSecretBytes, settings.dynamicSecretKeyOutputPath);
+            Debug.Log($"Save dynamic secret key to {settings.dynamicSecretKeyOutputPath}");
             AssetDatabase.Refresh();
         }
 
