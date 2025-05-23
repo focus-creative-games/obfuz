@@ -17,6 +17,7 @@ namespace Obfuz.ObfusPasses.CallObfus
     {
         private readonly List<string> _configFiles;
         private readonly int _obfuscationLevel;
+        private readonly int _maxProxyMethodPerDispatchMethod;
         private IObfuscator _dynamicProxyObfuscator;
         private IObfuscationPolicy _dynamicProxyPolicy;
 
@@ -26,6 +27,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             _configFiles = settings.ruleFiles.ToList();
             _obfuscationLevel = settings.obfuscationLevel;
+            _maxProxyMethodPerDispatchMethod = settings.maxProxyMethodCountPerDispatchMethod;
         }
 
         public override void Stop()
@@ -36,7 +38,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel);
+            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _obfuscationLevel, _maxProxyMethodPerDispatchMethod);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.assembliesToObfuscate, _configFiles);
         }
 

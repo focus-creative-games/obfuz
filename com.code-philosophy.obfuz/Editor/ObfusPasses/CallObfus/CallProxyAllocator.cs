@@ -76,9 +76,6 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private readonly Dictionary<MethodKey, MethodProxyInfo> _methodProxys = new Dictionary<MethodKey, MethodProxyInfo>();
 
-
-        const int maxProxyMethodPerDispatchMethod = 1000;
-
         class CallInfo
         {
             public IMethod method;
@@ -91,15 +88,17 @@ namespace Obfuz.ObfusPasses.CallObfus
             public List<CallInfo> methods = new List<CallInfo>();
         }
 
+        private readonly int _maxProxyMethodPerDispatchMethod;
         private readonly Dictionary<MethodSig, List<DispatchMethodInfo>> _dispatchMethods = new Dictionary<MethodSig, List<DispatchMethodInfo>>(SignatureEqualityComparer.Instance);
 
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleCallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, int encryptionLevel)
+        public ModuleCallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, int encryptionLevel, int maxProxyMethodPerDispatchMethod)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _encryptionLevel = encryptionLevel;
+            _maxProxyMethodPerDispatchMethod = maxProxyMethodPerDispatchMethod;
         }
 
         public void Init(ModuleDef mod)
@@ -172,7 +171,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 dispatchMethods = new List<DispatchMethodInfo>();
                 _dispatchMethods.Add(methodSig, dispatchMethods);
             }
-            if (dispatchMethods.Count == 0 || dispatchMethods.Last().methods.Count >= maxProxyMethodPerDispatchMethod)
+            if (dispatchMethods.Count == 0 || dispatchMethods.Last().methods.Count >= _maxProxyMethodPerDispatchMethod)
             {
                 var newDispatchMethodInfo = new DispatchMethodInfo
                 {
@@ -263,17 +262,19 @@ namespace Obfuz.ObfusPasses.CallObfus
         private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private GroupByModuleEntityManager _moduleEntityManager;
         private readonly int _encryptionLevel;
+        private readonly int _maxProxyMethodPerDispatchMethod;
 
-        public CallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel)
+        public CallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, int encryptionLevel, int maxProxyMethodPerDispatchMethod)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
             _encryptionLevel = encryptionLevel;
+            _maxProxyMethodPerDispatchMethod = maxProxyMethodPerDispatchMethod;
         }
 
         private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_encryptionScopeProvider, _encryptionLevel));
+            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_encryptionScopeProvider, _encryptionLevel, _maxProxyMethodPerDispatchMethod));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
