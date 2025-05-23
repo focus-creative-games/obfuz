@@ -125,17 +125,35 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     "OnSubmit",
     "OnCancel",
 };
+
+        private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
+        {
+            if (typeDef.Name.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            {
+                return true;
+            }
+            if (typeDef.DeclaringType != null)
+            {
+                return IsUnitySourceGeneratedAssemblyType(typeDef.DeclaringType);
+            }
+            return false;
+        }
+
         public override bool NeedRename(TypeDef typeDef)
         {
             if (MetaUtil.IsScriptOrSerializableType(typeDef))
             {
                 return false;
             }
-            if (typeDef.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            if (typeDef.Methods.Any(m => MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(m)))
             {
                 return false;
             }
-            if (typeDef.Methods.Any(m => MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(m)))
+            if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
+            {
+                return false;
+            }
+            if (IsUnitySourceGeneratedAssemblyType(typeDef))
             {
                 return false;
             }
@@ -144,7 +162,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(MethodDef methodDef)
         {
-            if (MetaUtil.IsInheritFromUnityObject(methodDef.DeclaringType))
+            TypeDef typeDef = methodDef.DeclaringType;
+            if (MetaUtil.IsInheritFromUnityObject(typeDef))
             {
                 return !s_monoBehaviourEvents.Contains(methodDef.Name);
             }
@@ -152,7 +171,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (methodDef.DeclaringType.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            if (IsUnitySourceGeneratedAssemblyType(typeDef))
             {
                 return false;
             }
@@ -166,7 +185,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return !MetaUtil.IsSerializableField(fieldDef);
             }
-            if (fieldDef.DeclaringType.FullName.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
+            if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
+            {
+                return false;
+            }
+            if (IsUnitySourceGeneratedAssemblyType(typeDef))
             {
                 return false;
             }

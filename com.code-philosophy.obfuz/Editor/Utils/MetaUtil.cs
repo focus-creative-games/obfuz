@@ -853,17 +853,22 @@ namespace Obfuz.Utils
 
         public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
+            return obj.CustomAttributes.Find("System.Runtime.CompilerServices.CompilerGeneratedAttribute") != null;
         }
 
         public static bool HasEncryptFieldAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Obfuz.EncryptFieldAttribute");
+            return obj.CustomAttributes.Find("Obfuz.EncryptFieldAttribute") != null;
         }
 
         public static bool HasRuntimeInitializeOnLoadMethodAttribute(MethodDef method)
         {
-            return method.CustomAttributes.Any(ca => ca.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
+            return method.CustomAttributes.Find("UnityEngine.RuntimeInitializeOnLoadMethodAttribute") != null;
+        }
+
+        public static bool HasBlackboardEnumAttribute(TypeDef typeDef)
+        {
+            return typeDef.CustomAttributes.Find("Unity.Behavior.BlackboardEnumAttribute") != null;
         }
     }
 }
