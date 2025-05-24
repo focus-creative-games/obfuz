@@ -591,7 +591,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             {
                 status = RenameStatus.Renamed,
                 signature = methodRecord != null ? methodRecord.signature : TypeSigUtil.ComputeMethodDefSignature(firstMethod),
-                oldName = methodRecord != null ? methodRecord.oldName : firstMethod.Name,
+                oldName = methodRecord != null ? methodRecord.oldName : (string)firstMethod.Name,
                 newName = newName,
             });
         }

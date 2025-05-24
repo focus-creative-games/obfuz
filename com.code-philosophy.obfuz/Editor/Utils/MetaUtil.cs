@@ -802,7 +802,7 @@ namespace Obfuz.Utils
 
         public static ObfuzScope? GetObfuzIgnoreScope(IHasCustomAttribute obj)
         {
-            var ca = obj.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+            var ca = obj.CustomAttributes.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
             if (ca == null)
             {
                 return null;
@@ -816,13 +816,13 @@ namespace Obfuz.Utils
             TypeDef cur = typeDef;
             while (cur != null)
             {
-                var ca = cur.CustomAttributes?.FirstOrDefault(ca => ca.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+                var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
                 if (ca != null)
                 {
                     var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
                     CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("InheritByNestedTypes", false);
                     bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
-                    return cur == typeDef || inheritByNestedTypes ? scope : null;
+                    return cur == typeDef || inheritByNestedTypes ? (ObfuzScope?) scope : null;
                 }
                 cur = cur.DeclaringType;
             }

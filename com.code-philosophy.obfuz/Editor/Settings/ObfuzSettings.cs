@@ -82,7 +82,7 @@ namespace Obfuz.Settings
             }
             else
             {
-                s_Instance ??= CreateInstance<ObfuzSettings>();
+                s_Instance = s_Instance ?? CreateInstance<ObfuzSettings>();
             }
             return s_Instance;
         }
