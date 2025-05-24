@@ -74,12 +74,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     arguments = ca.ConstructorArguments.ToList();
                 }
-                List<CANamedArgument> namedArguments = null;
-                if (ca.NamedArguments.Any(a => MetaUtil.MayRenameCustomDataType(a.Type.ElementType)))
-                {
-                    namedArguments = ca.NamedArguments.ToList();
-                }
-                if (arguments != null | namedArguments != null)
+                List<CANamedArgument> namedArguments = ca.NamedArguments.Count > 0 ? ca.NamedArguments.ToList() : null;
+                if (arguments != null || namedArguments != null)
                 {
                     customAttributes.Add(new CustomAttributeInfo
                     {
