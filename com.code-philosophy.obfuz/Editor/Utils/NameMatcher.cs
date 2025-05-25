@@ -9,6 +9,8 @@ namespace Obfuz.Utils
 
         public string NameOrPattern => _str;
 
+        public bool IsWildcardPattern => _regex != null;
+
         public NameMatcher(string nameOrPattern)
         {
             if (string.IsNullOrEmpty(nameOrPattern))
