@@ -266,11 +266,16 @@ namespace Obfuz.Utils
                 case ElementType.Class:
                 {
                     var vts = type as ClassOrValueTypeSig;
-                    TypeDef typeDef = vts.TypeDefOrRef.ResolveTypeDefThrow();
-                    if (typeDef == vts.TypeDefOrRef)
+                    if (vts.TypeDefOrRef is TypeDef typeDef)
                     {
                         return type;
                     }
+                    TypeRef typeRef = (TypeRef)vts.TypeDefOrRef;
+                    if (typeRef.DefinitionAssembly.IsCorLib())
+                    {
+                        return type;
+                    }
+                    typeDef = typeRef.ResolveTypeDefThrow();
                     return type.IsClassSig ? (TypeSig)new ClassSig(typeDef) : new ValueTypeSig(typeDef);
                 }
                 case ElementType.Array:
@@ -299,7 +304,7 @@ namespace Obfuz.Utils
                     foreach (var arg in gis.GenericArguments)
                     {
                         TypeSig newArg = RetargetTypeRefInTypeSig(arg);
-                        anyChange |= newArg != genericType;
+                        anyChange |= newArg != arg;
                         genericArgs.Add(newArg);
                     }
                     if (!anyChange)
