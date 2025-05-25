@@ -30,6 +30,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
                     break;
                 }
             }
+
+            // keep generic type name pattern {name}`{n}, if not, il2cpp may raise exception in typeof(G<T>) when G contains a field likes `T a`.
+            int index = originalName.LastIndexOf('`');
+            if (index != -1)
+            {
+                nameBuilder.Append(originalName.Substring(index));
+            }
         }
     }
 }
