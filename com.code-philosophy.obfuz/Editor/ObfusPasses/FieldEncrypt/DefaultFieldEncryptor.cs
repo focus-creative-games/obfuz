@@ -108,6 +108,10 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 // value has been put on stack
 
+                if (fei.fieldType == ElementType.R4)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastFloatAsInt));
+                }
                 // encrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
@@ -115,10 +119,19 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // xor
                 outputInstructions.Add(Instruction.CreateLdcI4((int)fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
+
+                if (fei.fieldType == ElementType.R4)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastIntAsFloat));
+                }
             }
             else if (fei.fieldType == ElementType.I8 || fei.fieldType == ElementType.U8 || fei.fieldType == ElementType.R8)
             {
                 // value has been put on stack
+                if (fei.fieldType == ElementType.R8)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastDoubleAsLong));
+                }
 
                 // encrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
@@ -127,6 +140,10 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 // xor
                 outputInstructions.Add(Instruction.Create(OpCodes.Ldc_I8, fei.xorValueForZero));
                 outputInstructions.Add(Instruction.Create(OpCodes.Xor));
+                if (fei.fieldType == ElementType.R8)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastLongAsDouble));
+                }
             }
             else
             {
@@ -157,6 +174,11 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
                 outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.DecryptInt));
+
+                if (fei.fieldType == ElementType.R4)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastIntAsFloat));
+                }
             }
             else if (fei.fieldType == ElementType.I8 || fei.fieldType == ElementType.U8 || fei.fieldType == ElementType.R8)
             {
@@ -173,6 +195,11 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.encryptOps));
                 outputInstructions.Add(Instruction.CreateLdcI4(fei.salt));
                 outputInstructions.Add(Instruction.Create(OpCodes.Call, encryptionServiceMetadataImporter.DecryptLong));
+
+                if (fei.fieldType == ElementType.R8)
+                {
+                    outputInstructions.Add(Instruction.Create(OpCodes.Call, importer.CastLongAsDouble));
+                }
             }
             else
             {
