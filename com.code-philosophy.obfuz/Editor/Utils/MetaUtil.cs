@@ -825,7 +825,7 @@ namespace Obfuz.Utils
                 if (ca != null)
                 {
                     var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
-                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("InheritByNestedTypes", false);
+                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
                     bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
                     return cur == typeDef || inheritByNestedTypes ? (ObfuzScope?) scope : null;
                 }
