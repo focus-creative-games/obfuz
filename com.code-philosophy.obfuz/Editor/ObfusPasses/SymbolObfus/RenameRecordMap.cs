@@ -128,7 +128,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     nameMaker.AddPreservedNamespace(type, type.Namespace);
                     string fullTypeName = type.FullName;
                     RenameMappingType rmt = rma?.types.GetValueOrDefault(fullTypeName);
-                    if (rmt != null)
+                    if (rmt != null && rmt.status == RenameStatus.Renamed)
                     {
                         var (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
                         nameMaker.AddPreservedNamespace(type, newNamespace);
@@ -149,7 +149,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         string methodSig = TypeSigUtil.ComputeMethodDefSignature(method);
 
                         RenameMappingMethod rmm = rmt?.methods.GetValueOrDefault(methodSig);
-                        if (rmm != null)
+                        if (rmm != null && rmm.status == RenameStatus.Renamed)
                         {
                             nameMaker.AddPreservedName(method, rmm.newName);
                         }
@@ -168,7 +168,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         nameMaker.AddPreservedName(field, field.Name);
                         string fieldSig = TypeSigUtil.ComputeFieldDefSignature(field);
                         RenameMappingField rmf = rmt?.fields.GetValueOrDefault(fieldSig);
-                        if (rmf != null)
+                        if (rmf != null && rmf.status == RenameStatus.Renamed)
                         {
                             nameMaker.AddPreservedName(field, rmf.newName);
                         }
@@ -186,7 +186,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         nameMaker.AddPreservedName(property, property.Name);
                         string propertySig = TypeSigUtil.ComputePropertyDefSignature(property);
                         RenameMappingProperty rmp = rmt?.properties.GetValueOrDefault(propertySig);
-                        if (rmp != null)
+                        if (rmp != null && rmp.status == RenameStatus.Renamed)
                         {
                             nameMaker.AddPreservedName(property, rmp.newName);
                         }
@@ -204,7 +204,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         nameMaker.AddPreservedName(eventDef, eventDef.Name);
                         string eventSig = TypeSigUtil.ComputeEventDefSignature(eventDef);
                         RenameMappingEvent rme = rmt?.events.GetValueOrDefault(eventSig);
-                        if (rme != null)
+                        if (rme != null && rme.status == RenameStatus.Renamed)
                         {
                             nameMaker.AddPreservedName(eventDef, rme.newName);
                         }
@@ -627,9 +627,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             if (_typeRenames.TryGetValue(type, out var record) && record.renameMappingData != null)
             {
                 var rmt = (RenameMappingType)record.renameMappingData;
-                Assert.IsFalse(string.IsNullOrWhiteSpace(rmt.newFullName));
-                (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
-                return true;
+                if (rmt.status == RenameStatus.Renamed)
+                {
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(rmt.newFullName));
+                    (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
+                    return true;
+                }
             }
             newNamespace = null;
             newName = null;
@@ -640,8 +643,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             if (_methodRenames.TryGetValue(method, out var record) && record.renameMappingData != null)
             {
-                newName = ((RenameMappingMethod)record.renameMappingData).newName;
-                return true;
+                RenameMappingMethod rmm = (RenameMappingMethod)record.renameMappingData;
+                if (rmm.status == RenameStatus.Renamed)
+                {
+                    newName = ((RenameMappingMethod)record.renameMappingData).newName;
+                    return true;
+                }
             }
             newName = null;
             return false;
@@ -651,8 +658,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             if (_fieldRenames.TryGetValue(field, out var record) && record.renameMappingData != null)
             {
-                newName = ((RenameMappingField)record.renameMappingData).newName;
-                return true;
+                RenameMappingField rmm = (RenameMappingField)record.renameMappingData;
+                if (rmm.status == RenameStatus.Renamed)
+                {
+                    newName = ((RenameMappingField)record.renameMappingData).newName;
+                    return true;
+                }
             }
             newName = null;
             return false;
@@ -662,8 +673,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             if (_propertyRenames.TryGetValue(property, out var record) && record.renameMappingData != null)
             {
-                newName = ((RenameMappingProperty)record.renameMappingData).newName;
-                return true;
+                RenameMappingProperty rmm = (RenameMappingProperty)record.renameMappingData;
+                if (rmm.status == RenameStatus.Renamed)
+                {
+                    newName = ((RenameMappingProperty)record.renameMappingData).newName;
+                    return true;
+                }
             }
             newName = null;
             return false;
@@ -673,8 +688,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             if (_eventRenames.TryGetValue(eventDef, out var record) && record.renameMappingData != null)
             {
-                newName = ((RenameMappingEvent)record.renameMappingData).newName;
-                return true;
+                RenameMappingEvent rmm = (RenameMappingEvent)record.renameMappingData;
+                if (rmm.status == RenameStatus.Renamed)
+                {
+                    newName = ((RenameMappingEvent)record.renameMappingData).newName;
+                    return true;
+                }
             }
             newName = null;
             return false;
