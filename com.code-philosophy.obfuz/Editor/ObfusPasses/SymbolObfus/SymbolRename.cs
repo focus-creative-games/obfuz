@@ -396,6 +396,20 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         }
 
         
+        private void RenameMethodRefOrMethodSpec(IMethod method, Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
+        {
+            if (method is MemberRef memberRef)
+            {
+                RenameMethodRef(memberRef, refMethodMetasMap);
+            }
+            else if (method is MethodSpec methodSpec)
+            {
+                if (methodSpec.Method is MemberRef memberRef2)
+                {
+                    RenameMethodRef(memberRef2, refMethodMetasMap);
+                }
+            }
+        }
 
         private void BuildRefMethodMetasMap(Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
@@ -403,17 +417,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             {
                 foreach (IMethod method in WalkAllMethodInstructionOperand<IMethod>(mod))
                 {
-                    if (method is MemberRef memberRef)
-                    {
-                        RenameMethodRef(memberRef, refMethodMetasMap);
-                    }
-                    else if (method is MethodSpec methodSpec)
-                    {
-                        if (methodSpec.Method is MemberRef memberRef2)
-                        {
-                            RenameMethodRef(memberRef2, refMethodMetasMap);
-                        }
-                    }
+                    RenameMethodRefOrMethodSpec(method, refMethodMetasMap);
                 }
                 
                 foreach (var type in mod.GetTypes())
@@ -424,23 +428,23 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         {
                             foreach (MethodOverride methodOverride in method.Overrides)
                             {
-                                if (methodOverride.MethodDeclaration is MemberRef memberRef)
-                                {
-                                    RenameMethodRef(memberRef, refMethodMetasMap);
-                                }
-                                else
-                                {
-                                    Assert.IsTrue(methodOverride.MethodDeclaration is MethodDef);
-                                }
-                                if (methodOverride.MethodBody is MemberRef memberRef2)
-                                {
-                                    RenameMethodRef(memberRef2, refMethodMetasMap);
-                                }
-                                else
-                                {
-                                    Assert.IsTrue(methodOverride.MethodBody is MethodDef);
-                                }
+                                RenameMethodRefOrMethodSpec(methodOverride.MethodDeclaration, refMethodMetasMap);
+                                RenameMethodRefOrMethodSpec(methodOverride.MethodBody, refMethodMetasMap);
                             }
+                        }
+                    }
+                }
+                foreach (var e in _refTypeRefMetasMap)
+                {
+                    TypeDef typeDef = e.Key;
+                    var hierarchyFields = new List<FieldDef>();
+                    BuildHierarchyFields(typeDef, hierarchyFields);
+                    RefTypeDefMetas typeDefMetas = e.Value;
+                    foreach (CustomAttribute ca in typeDefMetas.customAttributes)
+                    {
+                        if (ca.Constructor is IMethod method)
+                        {
+                            RenameMethodRefOrMethodSpec(method, refMethodMetasMap);
                         }
                     }
                 }

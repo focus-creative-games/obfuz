@@ -1,4 +1,5 @@
 using dnlib.DotNet;
+using NUnit.Framework;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -407,6 +408,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             typeNode.SetAttribute("fullName", record?.signature ?? type.FullName);
             typeNode.SetAttribute("newFullName", record != null && record.status == RenameStatus.Renamed ? record.newName : "");
             typeNode.SetAttribute("status", record != null ? record.status.ToString() : RenameStatus.NotRenamed.ToString());
+            if (record != null && record.status == RenameStatus.Renamed)
+            {
+                Assert.IsFalse(string.IsNullOrWhiteSpace(record.newName), "New name for type cannot be null or empty when status is Renamed.");
+            }
 
             foreach (FieldDef field in type.Fields)
             {
@@ -622,6 +627,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             if (_typeRenames.TryGetValue(type, out var record) && record.renameMappingData != null)
             {
                 var rmt = (RenameMappingType)record.renameMappingData;
+                Assert.IsFalse(string.IsNullOrWhiteSpace(rmt.newFullName));
                 (newNamespace, newName) = MetaUtil.SplitNamespaceAndName(rmt.newFullName);
                 return true;
             }
