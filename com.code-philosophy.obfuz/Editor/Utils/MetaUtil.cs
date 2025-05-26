@@ -816,23 +816,23 @@ namespace Obfuz.Utils
             return scope;
         }
 
-        public static ObfuzScope? GetSelfOrInheritObfuzIgnoreScope(TypeDef typeDef)
-        {
-            TypeDef cur = typeDef;
-            while (cur != null)
-            {
-                var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
-                if (ca != null)
-                {
-                    var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
-                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
-                    bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
-                    return cur == typeDef || inheritByNestedTypes ? (ObfuzScope?) scope : null;
-                }
-                cur = cur.DeclaringType;
-            }
-            return null;
-        }
+        //public static ObfuzScope? GetSelfOrInheritObfuzIgnoreScope(TypeDef typeDef)
+        //{
+        //    TypeDef cur = typeDef;
+        //    while (cur != null)
+        //    {
+        //        var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+        //        if (ca != null)
+        //        {
+        //            var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
+        //            CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
+        //            bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
+        //            return inheritByNestedTypes ? (ObfuzScope?) scope : null;
+        //        }
+        //        cur = cur.DeclaringType;
+        //    }
+        //    return null;
+        //}
 
 
         public static bool HasObfuzIgnoreScope(IHasCustomAttribute obj, ObfuzScope targetScope)
@@ -845,16 +845,121 @@ namespace Obfuz.Utils
             return objScope != null && (objScope & targetScope) != 0;
         }
 
+        public static bool HasEnclosingObfuzIgnoreScope(TypeDef typeDef, ObfuzScope targetScope)
+        {
+            TypeDef cur = typeDef;
+            while (cur != null)
+            {
+                var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+                if (ca != null)
+                {
+                    var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
+                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToNestedTypes", false);
+                    bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
+                    return inheritByNestedTypes && (scope & targetScope) != 0;
+                }
+                cur = cur.DeclaringType;
+            }
+            return false;
+        }
+
+        public static bool HasDeclaringOrEnclosingMemberObfuzIgnoreScope(TypeDef typeDef, ObfuzScope targetScope)
+        {
+            TypeDef cur = typeDef;
+            while (cur != null)
+            {
+                var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
+                if (ca != null)
+                {
+                    var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
+                    if (cur != typeDef)
+                    {
+                        CANamedArgument applyToNestedTypesArg = ca.GetNamedArgument(cur == typeDef ? "ApplyToMembers" : "ApplyToNestedTypes", false);
+                        if (applyToNestedTypesArg != null && !(bool)applyToNestedTypesArg.Value)
+                        {
+                            return false;
+                        }
+                    }
+
+                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
+                    bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
+                    return inheritByNestedTypes && (scope & targetScope) != 0;
+                }
+                cur = cur.DeclaringType;
+            }
+            return false;
+        }
+
+        //public static bool HasSelfOrInheritObfuzIgnoreScope(TypeDef obj, ObfuzScope targetScope)
+        //{
+        //    ObfuzScope? scope = GetSelfOrInheritObfuzIgnoreScope(obj);
+        //    return scope != null && (scope & targetScope) != 0;
+        //}
+
         public static bool HasSelfOrInheritObfuzIgnoreScope(IHasCustomAttribute obj, TypeDef declaringType, ObfuzScope targetScope)
         {
-            ObfuzScope? objScope = GetObfuzIgnoreScope(obj);
-            if (objScope != null)
+            return HasObfuzIgnoreScope(obj, targetScope) || HasDeclaringOrEnclosingMemberObfuzIgnoreScope(declaringType, targetScope);
+        }
+
+        public static bool HasSelfOrInheritPropertyOrEventOrOrTypeDefObfuzIgnoreScope(MethodDef obj, ObfuzScope targetScope)
+        {
+            if (HasObfuzIgnoreScope(obj, targetScope))
             {
-                return (objScope & targetScope) != 0;
+                return true;
             }
 
-            ObfuzScope? parentScope = GetSelfOrInheritObfuzIgnoreScope(declaringType);
-            return parentScope != null && (parentScope & targetScope) != 0;
+            TypeDef declaringType = obj.DeclaringType;
+
+            foreach (var propertyDef in declaringType.Properties)
+            {
+                if (propertyDef.GetMethod == obj || propertyDef.SetMethod == obj)
+                {
+                    return HasObfuzIgnoreScope(propertyDef, targetScope) || HasDeclaringOrEnclosingMemberObfuzIgnoreScope(declaringType, targetScope);
+                }
+            }
+
+            foreach (var eventDef in declaringType.Events)
+            {
+                if (eventDef.AddMethod == obj || eventDef.RemoveMethod == obj)
+                {
+                    ObfuzScope? eventScope = GetObfuzIgnoreScope(eventDef);
+                    if (eventScope != null && (eventScope & targetScope) != 0)
+                    {
+                        return true;
+                    }
+                    return HasObfuzIgnoreScope(eventDef, targetScope) || HasDeclaringOrEnclosingMemberObfuzIgnoreScope(declaringType, targetScope);
+                }
+            }
+
+            return HasDeclaringOrEnclosingMemberObfuzIgnoreScope(declaringType, targetScope);
+        }
+
+        public static bool HasSelfOrInheritPropertyOrEventOrOrTypeDefIgnoreMethodName(MethodDef obj)
+        {
+            if (HasObfuzIgnoreScope(obj, ObfuzScope.MethodName))
+            {
+                return true;
+            }
+
+            TypeDef declaringType = obj.DeclaringType;
+
+            foreach (var propertyDef in declaringType.Properties)
+            {
+                if (propertyDef.GetMethod == obj || propertyDef.SetMethod == obj)
+                {
+                    return HasSelfOrInheritObfuzIgnoreScope(propertyDef, declaringType, ObfuzScope.PropertyGetterSetterName | ObfuzScope.MethodName);
+                }
+            }
+
+            foreach (var eventDef in declaringType.Events)
+            {
+                if (eventDef.AddMethod == obj || eventDef.RemoveMethod == obj)
+                {
+                    return HasSelfOrInheritObfuzIgnoreScope(eventDef, declaringType, ObfuzScope.EventAddRemoveFireName | ObfuzScope.MethodName);
+                }
+            }
+
+            return HasDeclaringOrEnclosingMemberObfuzIgnoreScope(declaringType, ObfuzScope.MethodName);
         }
 
         public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)

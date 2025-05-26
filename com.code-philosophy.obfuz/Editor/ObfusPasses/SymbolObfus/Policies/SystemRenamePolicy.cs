@@ -5,14 +5,24 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
     public class SystemRenamePolicy : ObfuscationPolicyBase
     {
+        private bool IsFullIgnoreObfuscatedType(TypeDef typeDef)
+        {
+            return typeDef.FullName == "Obfuz.ObfuzIgnoreAttribute" || typeDef.FullName == "Obfuz.ObfuzScope";
+        }
+
         public override bool NeedRename(TypeDef typeDef)
         {
             string name = typeDef.Name;
-            if (name == "<Module>" || name == "ObfuzIgnoreAttribute")
+            if (name == "<Module>")
             {
                 return false;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(typeDef, typeDef.DeclaringType, ObfuzScope.TypeName))
+            if (IsFullIgnoreObfuscatedType(typeDef))
+            {
+                return false;
+            }
+
+            if (MetaUtil.HasObfuzIgnoreScope(typeDef, ObfuzScope.TypeName) || MetaUtil.HasEnclosingObfuzIgnoreScope(typeDef.DeclaringType, ObfuzScope.TypeName))
             {
                 return false;
             }
@@ -21,7 +31,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(MethodDef methodDef)
         {
-            if (methodDef.DeclaringType.IsDelegate)
+            if (methodDef.DeclaringType.IsDelegate || IsFullIgnoreObfuscatedType(methodDef.DeclaringType))
             {
                 return false;
             }
@@ -30,7 +40,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(methodDef, methodDef.DeclaringType, ObfuzScope.MethodName))
+            if (MetaUtil.HasSelfOrInheritPropertyOrEventOrOrTypeDefIgnoreMethodName(methodDef))
             {
                 return false;
             }
@@ -39,7 +49,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(FieldDef fieldDef)
         {
-            if (fieldDef.DeclaringType.IsDelegate)
+            if (fieldDef.DeclaringType.IsDelegate || IsFullIgnoreObfuscatedType(fieldDef.DeclaringType))
             {
                 return false;
             }
@@ -56,7 +66,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(PropertyDef propertyDef)
         {
-            if (propertyDef.DeclaringType.IsDelegate)
+            if (propertyDef.DeclaringType.IsDelegate || IsFullIgnoreObfuscatedType(propertyDef.DeclaringType))
             {
                 return false;
             }
@@ -69,7 +79,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(EventDef eventDef)
         {
-            if (eventDef.DeclaringType.IsDelegate)
+            if (eventDef.DeclaringType.IsDelegate || IsFullIgnoreObfuscatedType(eventDef.DeclaringType))
             {
                 return false;
             }

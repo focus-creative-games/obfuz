@@ -16,15 +16,12 @@ namespace Obfuz
         MethodParameter = 0x8,
         MethodBody = 0x10,
         Method = MethodName | MethodParameter | MethodBody,
-        PropertyName = 020,
-        PropertyGetter = 0x40,
-        PropertySetter = 0x80,
-        Property = PropertyName | PropertyGetter | PropertySetter,
+        PropertyName = 0x20,
+        PropertyGetterSetterName = 0x40,
+        Property = PropertyName | PropertyGetterSetterName,
         EventName = 0x100,
-        EventAdd = 0x200,
-        EventRemove = 0x400,
-        EventFire = 0x800,
-        Event = EventName | EventAdd | EventRemove,
+        EventAddRemoveFireName = 0x200,
+        Event = EventName | PropertyGetterSetterName,
         Module = 0x1000,
         All = TypeName | Field | Method | Property | Event,
     }
@@ -35,6 +32,8 @@ namespace Obfuz
         public ObfuzScope Scope { get; set; }
 
         public bool ApplyToMembers { get; set; } = true;
+
+        public bool ApplyToNestedTypes { get; set; } = true;
 
         public ObfuzIgnoreAttribute(ObfuzScope scope = ObfuzScope.All)
         {
