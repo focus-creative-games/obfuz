@@ -432,6 +432,10 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public override bool NeedObfuscateString(MethodDef method, bool currentInLoop, string value)
         {
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
             ObfuscationRule rule = GetMethodObfuscationRule(method);
             if (rule.encryptString == false)
             {
