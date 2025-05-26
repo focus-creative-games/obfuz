@@ -57,7 +57,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (fieldDef.DeclaringType.IsEnum && fieldDef.Name == "value__")
+            if (fieldDef.DeclaringType.IsEnum && !fieldDef.IsStatic)
             {
                 return false;
             }
