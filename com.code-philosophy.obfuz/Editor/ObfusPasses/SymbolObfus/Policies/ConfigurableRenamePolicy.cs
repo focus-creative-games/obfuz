@@ -617,6 +617,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             foreach (AssemblyRuleSpec assSpec in _assemblyRuleSpecs.Values.SelectMany(arr => arr))
             {
                 ModuleDef module = _assembliesToObfuscate.FirstOrDefault(m => m.Assembly.Name == assSpec.assemblyName);
+                if (module == null)
+                {
+                    continue;
+                }
                 List<TypeDef> types = module.GetTypes().ToList();
                 foreach (TypeRuleSpec typeSpec in assSpec.types)
                 {
