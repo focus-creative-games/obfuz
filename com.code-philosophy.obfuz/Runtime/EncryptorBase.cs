@@ -148,6 +148,10 @@ namespace Obfuz
 
         public unsafe virtual byte[] Decrypt(byte[] value, int offset, int length, int ops, int salt)
         {
+            if (length == 0)
+            {
+                return Array.Empty<byte>();
+            }
             var decryptedBytes = new byte[length];
             int intArrLength = length >> 2;
 
@@ -202,12 +206,20 @@ namespace Obfuz
 
         public virtual byte[] Encrypt(string value, int ops, int salt)
         {
+            if (value.Length == 0)
+            {
+                return Array.Empty<byte>();
+            }
             byte[] bytes = Encoding.UTF8.GetBytes(value);
             return Encrypt(bytes, 0, bytes.Length, ops, salt);
         }
 
         public virtual string DecryptString(byte[] value, int offset, int length, int ops, int salt)
         {
+            if (length == 0)
+            {
+                return string.Empty;
+            }
             byte[] bytes = Decrypt(value, offset, length, ops, salt);
             return Encoding.UTF8.GetString(bytes);
         }
