@@ -1,9 +1,9 @@
-# Obfuz - 功能强大的开源 Unity 代码混淆插件
+# Obfuz - 最好用的开源Unity代码混淆和加固插件
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
 
-Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者提供强大、安全且易用的代码保护解决方案。
+Obfuz 是一款开源、强大、易用及稳定可靠的充分满足商业化游戏项目需求的Unity代码混淆和加固解决方案。
 
 [English](./README-EN.md) | [中文](./README.md)
 
@@ -14,9 +14,11 @@ Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者
 ## 为什么选择 Obfuz？
 
 - **开源免费**：基于 MIT 协议，免费使用和修改。
-- **企业级保护**：提供媲美商业工具的强大混淆功能。
-- **专为 Unity 设计**：深度集成 Unity 生态，简化开发流程。
-- **热更新优化**：为现代 Unity 项目中的热更新方案提供优异支持。
+- **功能强大**：提供媲美商业工具的强大混淆和代码加固功能。
+- **专为 Unity 设计**：为Unity工作流深度优化，自动化处理除了反射以外（因为工具做不到智能识别反射）所有需要特殊处理的情况（如MonoBehaviour名不能混淆），几乎零配置即可集成代码混淆功能。
+- **稳定可靠**：有全面的自动化测试项目，成功通过2400个多个测试用例，几乎覆盖所有常见的代码用例
+- **支持热更新**：支持HybridCLR、xlua之类最流行的代码热更新方案
+- **敏捷开发**：快速响应开发者需求、迅速修复bug，及时跟进Unity及团结引擎的最新改动
 
 ## 功能特性
 
@@ -26,7 +28,7 @@ Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者
 - **函数调用混淆**：打乱函数调用结构，增加破解难度。
 - **随机加密虚拟机**：生成随机化虚拟机，有效抵御反编译和破解工具。
 - **静态与动态解密**：结合静态和动态解密，防止离线静态分析。
-- **深度 Unity 集成**：与 Unity 工作流无缝衔接，配置简单即可使用。
+- **深度 Unity 集成**：与 Unity 工作流无缝衔接，简单配置即可使用。
 - **热更新支持**：全面兼容 HybridCLR、xLua、Puerts 等热更新框架，确保动态代码更新顺畅。
 
 ## 支持的Unity版本与平台
@@ -34,6 +36,12 @@ Obfuz 是一款开源的 Unity 代码混淆工具，致力于为 Unity 开发者
 - 支持Unity 2019+
 - 支持团结引擎
 - 支持Unity和团结引擎支持的所有平台
+- 支持il2cpp和mono backend
+
+## 文档
+
+- [文档](https://www.obfuz.com/)
+- [快速上手](https://www.obfuz.com/docs/beginner/quick-start)
 
 ## 未来计划
 
@@ -46,22 +54,6 @@ Obfuz 正在持续开发中，即将推出的功能包括：
 - **DLL 文件结构加密**：保护 DLL 文件结构免受篡改。
 - **代码虚拟化**：将代码转化为虚拟化指令，提供最高级别安全。
 
-## 文档
-
-- [文档](https://www.obfuz.com/)
-- [快速上手](https://www.obfuz.com/docs/beginner/quick-start)
-
-## 贡献
-
-我们欢迎社区贡献！开始贡献的步骤：
-
-- Fork 本仓库。
-- 创建功能分支（git checkout -b feature/your-feature）。
-- 提交更改（git commit -m 'Add your feature'）。
-- 推送分支（git push origin feature/your-feature）。
-- 提交 Pull Request。
-- 请阅读我们的贡献指南以获取更多信息。
-
 ## 许可证
 
 Obfuz 采用 MIT 许可证发布，欢迎自由使用、修改和分发。
@@ -71,5 +63,5 @@ Obfuz 采用 MIT 许可证发布，欢迎自由使用、修改和分发。
 如有问题、建议或错误报告，请在用以下方式联系我们：
 
 - GitHub 上提交 Issue
-- 邮件联系维护者：[obfuz@code-philosophy.com]
+- 邮件联系维护者：`obfuz@code-philosophy.com`
 - 加入 **Luban&Obfuz交流群**，QQ群号： 692890842

@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
 
-**Obfuz**  is an open-source Unity code obfuscation tool designed to provide Unity developers with a powerful, secure, and user-friendly code protection solution.
+**Obfuz** is an open-source, powerful, easy-to-use, and highly reliable Unity code obfuscation and protection solution that fully meets the demands of commercial game projects.
 
 [English](./README-EN.md) | [中文](./README.md)
 
@@ -13,10 +13,12 @@
 
 ## Why Choose Obfuz?
 
-- **Open Source & Free**: Licensed under MIT, Obfuz is free to use and modify.
-- **Enterprise-Grade Protection**: Offers robust obfuscation features comparable to commercial tools.
-- **Unity-Centric Design**: Seamlessly integrates with Unity’s ecosystem, streamlining your workflow.
-- **Hot Update Ready**: Optimized for modern Unity projects using hot update frameworks.
+- **Open Source & Free**: Licensed under MIT, free to use and modify.  
+- **Powerful Features**: Delivers obfuscation and code protection comparable to commercial tools.  
+- **Unity-First Design**: Deeply optimized for Unity workflows. Automatically handles all edge cases (e.g., preserving `MonoBehaviour` names) except reflection (due to technical limitations). Near-zero configuration required.  
+- **Battle-Tested**: Verified by 2,400+ automated test cases covering virtually all common code patterns.  
+- **Hot Reload Ready**: Fully compatible with leading hot-reload solutions like HybridCLR and xLua.  
+- **Agile Development**: Rapid bug fixes, prompt feature updates, and immediate support for the latest Unity/Unity Engine changes.  
 
 ## Features
 
@@ -34,6 +36,7 @@
 - Unity 2019 and later versions
 - Tuanjie 1.0.0 and later versions
 - All platforms supported by Unity and Tuanjie
+- il2cpp and mono backend
 
 ## Planned Features
 
@@ -50,17 +53,6 @@ Obfuz is actively evolving. Upcoming features include:
 
 - [Document](https://www.obfuz.com/)
 - [Quick Start](https://www.obfuz.com/docs/beginner/quick-start)
-
-## Contributing
-
-We welcome contributions from the community! To get started:
-
-- Fork the repository.
-- Create a feature branch (git checkout -b feature/your-feature).
-- Commit your changes (git commit -m 'Add your feature').
-- Push to the branch (git push origin feature/your-feature).
-- Open a Pull Request.
-- Please read our Contributing Guidelines for more details.
 
 ## License
 
