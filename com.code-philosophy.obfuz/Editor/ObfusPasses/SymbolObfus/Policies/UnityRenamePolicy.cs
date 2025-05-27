@@ -144,9 +144,34 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
+            if (MetaUtil.HasBurstCompileAttribute(typeDef))
+            {
+                return true;
+            }
             if (typeDef.DeclaringType != null)
             {
                 return IsUnitySourceGeneratedAssemblyType(typeDef.DeclaringType);
+            }
+            return false;
+        }
+
+        private bool DoesDeclaringTypeDisableAllMemberRenaming(TypeDef typeDef)
+        {
+            if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
+            {
+                return true;
+            }
+            if (IsUnitySourceGeneratedAssemblyType(typeDef))
+            {
+                return true;
+            }
+            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
+            {
+                return true;
+            }
+            if (IsUnitySourceGeneratedAssemblyType(typeDef))
+            {
+                return true;
             }
             return false;
         }
@@ -157,19 +182,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
+            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
             {
                 return false;
             }
             if (typeDef.Methods.Any(m => MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(m)))
-            {
-                return false;
-            }
-            if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
-            {
-                return false;
-            }
-            if (IsUnitySourceGeneratedAssemblyType(typeDef))
             {
                 return false;
             }
@@ -183,7 +200,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
+            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
             {
                 return false;
             }
@@ -191,9 +208,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (IsUnitySourceGeneratedAssemblyType(typeDef))
+            if (MetaUtil.HasBurstCompileAttribute(methodDef))
             {
-                return false;
+                return true;
             }
             return true;
         }
@@ -205,15 +222,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return !MetaUtil.IsSerializableField(fieldDef);
             }
-            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
-            {
-                return false;
-            }
-            if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
-            {
-                return false;
-            }
-            if (IsUnitySourceGeneratedAssemblyType(typeDef))
+            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
             {
                 return false;
             }

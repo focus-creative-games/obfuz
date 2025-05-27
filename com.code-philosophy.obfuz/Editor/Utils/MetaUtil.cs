@@ -984,5 +984,10 @@ namespace Obfuz.Utils
         {
             return typeDef.CustomAttributes.Find("Unity.Behavior.BlackboardEnumAttribute") != null;
         }
+
+        public static bool HasBurstCompileAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Find("Unity.Burst.BurstCompileAttribute") != null;
+        }
     }
 }
