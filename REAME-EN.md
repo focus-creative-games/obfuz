@@ -16,7 +16,7 @@
 - **Open Source & Free**: Licensed under MIT, free to use and modify.  
 - **Powerful Features**: Delivers obfuscation and code protection comparable to commercial tools.  
 - **Unity-First Design**: Deeply optimized for Unity workflows. Automatically handles all edge cases (e.g., preserving `MonoBehaviour` names) except reflection (due to technical limitations). Near-zero configuration required.  
-- **Battle-Tested**: Verified by 2,400+ automated test cases covering virtually all common code patterns.  
+- **Battle-Tested**: Verified by 3,000+ automated test cases covering virtually all common code patterns.  
 - **Hot Reload Ready**: Fully compatible with leading hot-reload solutions like HybridCLR and xLua.  
 - **Agile Development**: Rapid bug fixes, prompt feature updates, and immediate support for the latest Unity/Unity Engine changes.  
 
@@ -30,6 +30,7 @@
 - **Static and Dynamic Decryption**: Combines static and dynamic decryption to resist offline static analysis.
 - **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
 - **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
+- **DOTS Compatibility**: Works seamlessly across all DOTS versions with zero configuration required.
 
 ## Supported Unity Versions & Platforms
 
