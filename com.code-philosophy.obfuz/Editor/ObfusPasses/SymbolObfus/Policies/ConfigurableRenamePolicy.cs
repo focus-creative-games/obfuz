@@ -205,6 +205,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             rule.nameMatcher = new NameMatcher(element.GetAttribute("name"));
             rule.obfuscateName = ConfigUtil.ParseNullableBool(element.GetAttribute("obName"));
             rule.applyToMembers = ParseApplyToMembersScope(element.GetAttribute("applyToMembers"));
+            rule.applyToNestedTypes = ConfigUtil.ParseNullableBool(element.GetAttribute("applyToNestedTypes")) ?? true;
             rule.modifierType = ParseModifierType(element.GetAttribute("modifier"));
             rule.classType = ParseClassType(element.GetAttribute("classType"));
 
@@ -638,12 +639,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 }
             }
 
-            foreach (TypeDef nestedType in typeDef.NestedTypes)
+            if (typeSpec.applyToNestedTypes)
             {
-                var nestedRuleResult = GetOrCreateTypeRuleResult(nestedType);
-                if (typeSpec.applyToNestedTypes && typeSpec.obfuscateName != null)
+                foreach (TypeDef nestedType in typeDef.NestedTypes)
                 {
-                    nestedRuleResult.obfuscateName = typeSpec.obfuscateName;
+                    var nestedRuleResult = GetOrCreateTypeRuleResult(nestedType);
+                    BuildTypeRuleResult(typeSpec, nestedType, nestedRuleResult);
                 }
             }
         }
