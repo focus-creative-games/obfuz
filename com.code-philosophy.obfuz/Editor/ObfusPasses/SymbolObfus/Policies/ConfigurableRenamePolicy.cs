@@ -544,6 +544,21 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                     {
                         continue;
                     }
+                    if (typeSpec.obfuscateName != null && typeSpec.applyToMembers != null && (typeSpec.applyToMembers & ObfuzScope.EventAddRemoveFireName) != 0)
+                    {
+                        if (eventDef.AddMethod != null)
+                        {
+                            GetOrCreateMethodRuleResult(eventDef.AddMethod).obfuscateName = typeSpec.obfuscateName;
+                        }
+                        if (eventDef.RemoveMethod != null)
+                        {
+                            GetOrCreateMethodRuleResult(eventDef.RemoveMethod).obfuscateName = typeSpec.obfuscateName;
+                        }
+                        if (eventDef.InvokeMethod != null)
+                        {
+                            GetOrCreateMethodRuleResult(eventDef.InvokeMethod).obfuscateName = typeSpec.obfuscateName;
+                        }
+                    }
                     if (eventSpec.obfuscateName != null)
                     {
                         eventRuleResult.obfuscateName = eventSpec.obfuscateName;
@@ -565,6 +580,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                     }
                 }
             }
+
             foreach (var propertyDef in typeDef.Properties)
             {
                 RuleResult propertyRuleResult = GetOrCreatePropertyRuleResult(propertyDef);
@@ -577,6 +593,17 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                     if (!propertySpec.nameMatcher.IsMatch(propertyDef.Name) || !MatchModifier(propertySpec.modifierType, propertyDef))
                     {
                         continue;
+                    }
+                    if (typeSpec.obfuscateName != null && typeSpec.applyToMembers != null && (typeSpec.applyToMembers & ObfuzScope.PropertyGetterSetterName) != 0)
+                    {
+                        if (propertyDef.GetMethod != null)
+                        {
+                            GetOrCreateMethodRuleResult(propertyDef.GetMethod).obfuscateName = typeSpec.obfuscateName;
+                        }
+                        if (propertyDef.SetMethod != null)
+                        {
+                            GetOrCreateMethodRuleResult(propertyDef.SetMethod).obfuscateName = typeSpec.obfuscateName;
+                        }
                     }
                     if (propertySpec.obfuscateName != null)
                     {
