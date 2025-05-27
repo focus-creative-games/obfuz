@@ -126,7 +126,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     "OnCancel",
 };
 
-        private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
+        private readonly Dictionary<TypeDef, bool> _unitySourceGeneratedComputeCache = new Dictionary<TypeDef, bool>();
+
+        private bool ComputeIsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
         {
             if (typeDef.Name.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
             {
@@ -153,6 +155,17 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return IsUnitySourceGeneratedAssemblyType(typeDef.DeclaringType);
             }
             return false;
+        }
+
+        private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
+        {
+            if (_unitySourceGeneratedComputeCache.TryGetValue(typeDef, out var result))
+            {
+                return result;
+            }
+            result = ComputeIsUnitySourceGeneratedAssemblyType(typeDef);
+            _unitySourceGeneratedComputeCache.Add(typeDef, result);
+            return result;
         }
 
         private bool DoesDeclaringTypeDisableAllMemberRenaming(TypeDef typeDef)
