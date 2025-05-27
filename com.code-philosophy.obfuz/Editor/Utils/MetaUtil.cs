@@ -116,6 +116,36 @@ namespace Obfuz.Utils
             return null;
         }
 
+        public static bool IsInheritFromDOTSTypes(TypeDef typeDef)
+        {
+            TypeDef cur = typeDef;
+            while (true)
+            {
+                if (cur.Namespace.StartsWith("Unity.Entities") ||
+                    //cur.Namespace.StartsWith("Unity.Jobs") ||
+                    cur.Namespace.StartsWith("Unity.Burst"))
+                {
+                    return true;
+                }
+                foreach (var interfaceType in cur.Interfaces)
+                {
+                    TypeDef interfaceTypeDef = interfaceType.Interface.ResolveTypeDef();
+                    if (interfaceTypeDef != null && (interfaceTypeDef.Namespace.StartsWith("Unity.Entities") ||
+                        //interfaceTypeDef.Namespace.StartsWith("Unity.Jobs") ||
+                        interfaceTypeDef.Namespace.StartsWith("Unity.Burst")))
+                    {
+                        return true;
+                    }
+                }
+
+                cur = GetBaseTypeDef(cur);
+                if (cur == null)
+                {
+                    return false;
+                }
+            }
+        }
+
         public static bool IsInheritFromMonoBehaviour(TypeDef typeDef)
         {
             TypeDef cur = typeDef;

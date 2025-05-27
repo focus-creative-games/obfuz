@@ -132,6 +132,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
+            if (typeDef.FullName == "Unity.Entities.CodeGeneratedRegistry.AssemblyTypeRegistry")
+            {
+                return true;
+            }
+            if (typeDef.Name.StartsWith("__JobReflectionRegistrationOutput"))
+            {
+                return true;
+            }
+            if (typeDef.CustomAttributes.Find("Unity.Jobs.DOTSCompilerGeneratedAttribute") != null)
+            {
+                return true;
+            }
             if (typeDef.DeclaringType != null)
             {
                 return IsUnitySourceGeneratedAssemblyType(typeDef.DeclaringType);
@@ -142,6 +154,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(TypeDef typeDef)
         {
             if (MetaUtil.IsScriptType(typeDef))
+            {
+                return false;
+            }
+            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
             {
                 return false;
             }
@@ -167,6 +183,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
+            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
+            {
+                return false;
+            }
             if (MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(methodDef))
             {
                 return false;
@@ -184,6 +204,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             if (MetaUtil.IsScriptOrSerializableType(typeDef))
             {
                 return !MetaUtil.IsSerializableField(fieldDef);
+            }
+            if (MetaUtil.IsInheritFromDOTSTypes(typeDef))
+            {
+                return false;
             }
             if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
             {
