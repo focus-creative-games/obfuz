@@ -12,8 +12,6 @@ namespace Obfuz
     {
         public ObfuzScope Scope { get; set; }
 
-        public bool ApplyToMembers { get; set; } = true;
-
         public bool ApplyToNestedTypes { get; set; } = true;
 
         public ObfuzIgnoreAttribute(ObfuzScope scope = ObfuzScope.All)

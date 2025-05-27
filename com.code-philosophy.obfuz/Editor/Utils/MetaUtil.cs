@@ -811,25 +811,6 @@ namespace Obfuz.Utils
             return scope;
         }
 
-        //public static ObfuzScope? GetSelfOrInheritObfuzIgnoreScope(TypeDef typeDef)
-        //{
-        //    TypeDef cur = typeDef;
-        //    while (cur != null)
-        //    {
-        //        var ca = cur.CustomAttributes?.FirstOrDefault(c => c.AttributeType.FullName == "Obfuz.ObfuzIgnoreAttribute");
-        //        if (ca != null)
-        //        {
-        //            var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
-        //            CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
-        //            bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
-        //            return inheritByNestedTypes ? (ObfuzScope?) scope : null;
-        //        }
-        //        cur = cur.DeclaringType;
-        //    }
-        //    return null;
-        //}
-
-
         public static bool HasObfuzIgnoreScope(IHasCustomAttribute obj, ObfuzScope targetScope)
         {
             ObfuzScope? objScope = GetObfuzIgnoreScope(obj);
@@ -869,16 +850,13 @@ namespace Obfuz.Utils
                     var scope = (ObfuzScope)ca.ConstructorArguments[0].Value;
                     if (cur != typeDef)
                     {
-                        CANamedArgument applyToNestedTypesArg = ca.GetNamedArgument(cur == typeDef ? "ApplyToMembers" : "ApplyToNestedTypes", false);
+                        CANamedArgument applyToNestedTypesArg = ca.GetNamedArgument("ApplyToNestedTypes", false);
                         if (applyToNestedTypesArg != null && !(bool)applyToNestedTypesArg.Value)
                         {
                             return false;
                         }
                     }
-
-                    CANamedArgument inheritByNestedTypesArg = ca.GetNamedArgument("ApplyToMembers", false);
-                    bool inheritByNestedTypes = inheritByNestedTypesArg == null || (bool)inheritByNestedTypesArg.Value;
-                    return inheritByNestedTypes && (scope & targetScope) != 0;
+                    return (scope & targetScope) != 0;
                 }
                 cur = cur.DeclaringType;
             }
