@@ -141,7 +141,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(TypeDef typeDef)
         {
-            if (MetaUtil.IsScriptOrSerializableType(typeDef))
+            if (MetaUtil.IsScriptType(typeDef))
             {
                 return false;
             }
@@ -163,7 +163,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(MethodDef methodDef)
         {
             TypeDef typeDef = methodDef.DeclaringType;
-            if (MetaUtil.IsInheritFromUnityObject(typeDef) && s_monoBehaviourEvents.Contains(methodDef.Name))
+            if (MetaUtil.IsInheritFromMonoBehaviour(typeDef) && s_monoBehaviourEvents.Contains(methodDef.Name))
             {
                 return false;
             }

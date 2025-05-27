@@ -7,7 +7,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     {
         private bool IsFullIgnoreObfuscatedType(TypeDef typeDef)
         {
-            return typeDef.FullName == "Obfuz.ObfuzIgnoreAttribute" || typeDef.FullName == "Obfuz.ObfuzScope";
+            return typeDef.FullName == "Obfuz.ObfuzIgnoreAttribute" || typeDef.FullName == "Obfuz.ObfuzScope" || typeDef.FullName == "Obfuz.EncryptFieldAttribute";
         }
 
         public override bool NeedRename(TypeDef typeDef)

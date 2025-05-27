@@ -116,7 +116,7 @@ namespace Obfuz.Utils
             return null;
         }
 
-        public static bool IsInheritFromUnityObject(TypeDef typeDef)
+        public static bool IsInheritFromMonoBehaviour(TypeDef typeDef)
         {
             TypeDef cur = typeDef;
             while (true)
@@ -126,7 +126,7 @@ namespace Obfuz.Utils
                 {
                     return false;
                 }
-                if (cur.Name == "Object" && cur.Namespace == "UnityEngine" && cur.Module.Name == "UnityEngine.CoreModule.dll")
+                if (cur.Name == "MonoBehaviour" && cur.Namespace == "UnityEngine" && cur.Module.Name == "UnityEngine.CoreModule.dll")
                 {
                     return true;
                 }
@@ -134,18 +134,8 @@ namespace Obfuz.Utils
         }
 
 
-
-        public static bool IsScriptOrSerializableType(TypeDef type)
+        public static bool IsScriptType(TypeDef type)
         {
-            if (type.ContainsGenericParameter)
-            {
-                return false;
-            }
-            if (type.IsSerializable)
-            {
-                return true;
-            }
-
             for (TypeDef parentType = GetBaseTypeDef(type); parentType != null; parentType = GetBaseTypeDef(parentType))
             {
                 if ((parentType.Name == "MonoBehaviour" || parentType.Name == "ScriptableObject")
@@ -157,6 +147,11 @@ namespace Obfuz.Utils
             }
 
             return false;
+        }
+
+        public static bool IsScriptOrSerializableType(TypeDef type)
+        {
+            return type.IsSerializable || IsScriptType(type);
         }
 
         public static bool IsSerializableTypeSig(TypeSig typeSig)
