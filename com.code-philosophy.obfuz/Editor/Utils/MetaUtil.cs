@@ -989,5 +989,10 @@ namespace Obfuz.Utils
         {
             return obj.CustomAttributes.Find("Unity.Burst.BurstCompileAttribute") != null;
         }
+
+        public static bool HasDOTSCompilerGeneratedAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Find("Unity.Jobs.DOTSCompilerGeneratedAttribute") != null;
+        }
     }
 }

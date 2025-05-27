@@ -142,7 +142,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
-            if (typeDef.CustomAttributes.Find("Unity.Jobs.DOTSCompilerGeneratedAttribute") != null)
+            if (MetaUtil.HasDOTSCompilerGeneratedAttribute(typeDef))
             {
                 return true;
             }
@@ -221,9 +221,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasBurstCompileAttribute(methodDef))
+            if (MetaUtil.HasBurstCompileAttribute(methodDef) || MetaUtil.HasDOTSCompilerGeneratedAttribute(methodDef))
             {
-                return true;
+                return false;
             }
             return true;
         }
@@ -236,6 +236,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return !MetaUtil.IsSerializableField(fieldDef);
             }
             if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
+            {
+                return false;
+            }
+            if (MetaUtil.HasBurstCompileAttribute(fieldDef) || MetaUtil.HasDOTSCompilerGeneratedAttribute(fieldDef))
             {
                 return false;
             }
