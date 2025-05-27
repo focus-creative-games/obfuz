@@ -1,4 +1,4 @@
-# A Powerful Open-Source Unity Code Obfuscation Plugin​
+# Obfuz
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
