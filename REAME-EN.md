@@ -23,7 +23,7 @@
 ## Features
 
 - **Symbol Obfuscation**: Supports comprehensive configuration rules and incremental obfuscation for flexible and efficient code protection.
-- **Constant Obfuscation**: Obfuscates constants such as `int`, `long`, `float`, `double`, and `string` to prevent reverse engineering.
+- **Constant Obfuscation**: Obfuscates constants such as `int`, `long`, `float`, `double`, `string` and `array` to prevent reverse engineering.
 - **Variable Memory Encryption**: Encrypts variables in memory to enhance runtime security.
 - **Function Call Obfuscation**: Scrambles function call structures to increase cracking difficulty.
 - **Randomized Encryption VM**: Generates randomized virtual machines to thwart decompilation and cracking tools.
