@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +16,7 @@ namespace Obfuz.Settings
         public bool useConsistentNamespaceObfuscation;
         public string symbolMappingFile;
         public List<string> ruleFiles;
+        public List<Type> customRenamePolicyTypes;
     }
 
     [Serializable]
@@ -33,6 +36,9 @@ namespace Obfuz.Settings
         [Tooltip("rule files")]
         public string[] ruleFiles;
 
+        [Tooltip("custom rename policy types")]
+        public string[] customRenamePolicyTypes;
+
         public SymbolObfuscationSettingsFacade ToFacade()
         {
             return new SymbolObfuscationSettingsFacade
@@ -42,6 +48,7 @@ namespace Obfuz.Settings
                 useConsistentNamespaceObfuscation = useConsistentNamespaceObfuscation,
                 symbolMappingFile = symbolMappingFile,
                 ruleFiles = ruleFiles.ToList(),
+                customRenamePolicyTypes = customRenamePolicyTypes.Select(typeName => ReflectionUtil.FindUniqueTypeInCurrentAppDomain(typeName)).ToList(),
             };
         }
     }

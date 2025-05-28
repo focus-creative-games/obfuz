@@ -128,10 +128,7 @@ namespace Obfuz
             }
             var vms = new VirtualMachineSimulator(vm, secretKey);
 
-            var generatedVmTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .Select(assembly => assembly.GetType("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine"))
-                .Where(type => type != null)
-                .ToList();
+            var generatedVmTypes = ReflectionUtil.FindTypesInCurrentAppDomain("Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine");
             if (generatedVmTypes.Count == 0)
             {
                 throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine not found in any assembly! Please run `Obfuz/GenerateVm` to generate it!");

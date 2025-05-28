@@ -33,6 +33,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap;
         private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator;
+        private readonly List<IObfuscationPolicy> _customPolicies = new List<IObfuscationPolicy>();
 
         class CustomAttributeInfo
         {
@@ -50,6 +51,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _renameRecordMap = new RenameRecordMap(settings.debug ? null : settings.symbolMappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
             _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
+
+            foreach (var customPolicyType in settings.customRenamePolicyTypes)
+            {
+                if (Activator.CreateInstance(customPolicyType, new object[] { this }) is IObfuscationPolicy customPolicy)
+                {
+                    _customPolicies.Add(customPolicy);
+                }
+                else
+                {
+                    Debug.LogWarning($"Custom rename policy type {customPolicyType} is not a valid IObfuscationPolicy");
+                }
+            }
         }
 
         public void Init()
@@ -59,8 +72,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _toObfuscatedModules = ctx.modulesToObfuscate;
             _obfuscatedAndNotObfuscatedModules = ctx.allObfuscationRelativeModules;
             _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
+
             var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate,  _obfuscationRuleFiles);
-            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(new SupportPassPolicy(ctx.passPolicy), new SystemRenamePolicy(), new UnityRenamePolicy(), obfuscateRuleConfig));
+            var totalRenamePolicies = new List<IObfuscationPolicy>
+            {
+                new SupportPassPolicy(ctx.passPolicy),
+                new SystemRenamePolicy(),
+                new UnityRenamePolicy(),
+                obfuscateRuleConfig,
+            };
+            totalRenamePolicies.AddRange(_customPolicies);
+
+            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(totalRenamePolicies.ToArray()));
             BuildCustomAttributeArguments();
         }
 
