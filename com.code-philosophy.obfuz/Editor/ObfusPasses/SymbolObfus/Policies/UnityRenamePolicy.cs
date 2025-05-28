@@ -126,9 +126,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     "OnCancel",
 };
 
-        private readonly Dictionary<TypeDef, bool> _unitySourceGeneratedComputeCache = new Dictionary<TypeDef, bool>();
+        private readonly CachedDictionary<TypeDef, bool> _computeDeclaringTypeDisableAllMemberRenamingCache;
+        private readonly CachedDictionary<TypeDef, bool> _isInheritScriptCache;
+        private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourCache;
 
-        private bool ComputeIsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
+        public UnityRenamePolicy()
+        {
+            _computeDeclaringTypeDisableAllMemberRenamingCache = new CachedDictionary<TypeDef, bool>(ComputeDeclaringTypeDisableAllMemberRenaming);
+            _isInheritScriptCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptType);
+            _isInheritFromMonoBehaviourCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsInheritFromMonoBehaviour);
+        }
+
+        private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
         {
             if (typeDef.Name.StartsWith("UnitySourceGeneratedAssemblyMonoScriptTypes_"))
             {
@@ -157,18 +166,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             return false;
         }
 
-        private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
-        {
-            if (_unitySourceGeneratedComputeCache.TryGetValue(typeDef, out var result))
-            {
-                return result;
-            }
-            result = ComputeIsUnitySourceGeneratedAssemblyType(typeDef);
-            _unitySourceGeneratedComputeCache.Add(typeDef, result);
-            return result;
-        }
-
-        private bool DoesDeclaringTypeDisableAllMemberRenaming(TypeDef typeDef)
+        private bool ComputeDeclaringTypeDisableAllMemberRenaming(TypeDef typeDef)
         {
             if (typeDef.IsEnum && MetaUtil.HasBlackboardEnumAttribute(typeDef))
             {
@@ -182,20 +180,16 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
-            if (IsUnitySourceGeneratedAssemblyType(typeDef))
-            {
-                return true;
-            }
             return false;
         }
 
         public override bool NeedRename(TypeDef typeDef)
         {
-            if (MetaUtil.IsScriptType(typeDef))
+            if (_isInheritScriptCache.GetValue(typeDef))
             {
                 return false;
             }
-            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
+            if (_computeDeclaringTypeDisableAllMemberRenamingCache.GetValue(typeDef))
             {
                 return false;
             }
@@ -209,11 +203,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(MethodDef methodDef)
         {
             TypeDef typeDef = methodDef.DeclaringType;
-            if (MetaUtil.IsInheritFromMonoBehaviour(typeDef) && s_monoBehaviourEvents.Contains(methodDef.Name))
+            if (s_monoBehaviourEvents.Contains(methodDef.Name) && _isInheritFromMonoBehaviourCache.GetValue(typeDef))
             {
                 return false;
             }
-            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
+            if (_computeDeclaringTypeDisableAllMemberRenamingCache.GetValue(typeDef))
             {
                 return false;
             }
@@ -235,11 +229,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return !MetaUtil.IsSerializableField(fieldDef);
             }
-            if (DoesDeclaringTypeDisableAllMemberRenaming(typeDef))
+            if (_computeDeclaringTypeDisableAllMemberRenamingCache.GetValue(typeDef))
             {
                 return false;
             }
-            if (MetaUtil.HasBurstCompileAttribute(fieldDef) || MetaUtil.HasDOTSCompilerGeneratedAttribute(fieldDef))
+            if (MetaUtil.HasBurstCompileAttribute(fieldDef))
             {
                 return false;
             }
