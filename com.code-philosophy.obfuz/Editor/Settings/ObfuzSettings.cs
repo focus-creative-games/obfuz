@@ -54,6 +54,11 @@ namespace Obfuz.Settings
             return $"{ObfuzRootDir}/{target}/TempObfuscatedAssemblies";
         }
 
+        public string GetObfuscatedLinkXmlPath(BuildTarget target)
+        {
+            return $"{ObfuzRootDir}/{target}/link.xml";
+        }
+
         private static ObfuzSettings s_Instance;
 
         public static ObfuzSettings Instance
