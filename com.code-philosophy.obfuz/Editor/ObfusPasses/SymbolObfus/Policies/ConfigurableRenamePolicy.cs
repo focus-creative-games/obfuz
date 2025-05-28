@@ -59,6 +59,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             public ModifierType? modifierType;
             public ClassType? classType;
             public List<string> inheritTypes;
+            public List<string> hasCustomAttributes;
             public bool? obfuscateName;
             public ObfuzScope? applyToMembers;
             public bool applyToNestedTypes;
@@ -199,7 +200,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             return scope;
         }
 
-        private List<string> ParseInheritTypes(string inheritStr)
+        private List<string> ParseTypes(string inheritStr)
         {
             if (string.IsNullOrWhiteSpace(inheritStr))
             {
@@ -227,7 +228,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             rule.applyToNestedTypes = ConfigUtil.ParseNullableBool(element.GetAttribute("applyToNestedTypes")) ?? true;
             rule.modifierType = ParseModifierType(element.GetAttribute("modifier"));
             rule.classType = ParseClassType(element.GetAttribute("classType"));
-            rule.inheritTypes = ParseInheritTypes(element.GetAttribute("inherit"));
+            rule.inheritTypes = ParseTypes(element.GetAttribute("inherit"));
+            rule.hasCustomAttributes = ParseTypes(element.GetAttribute("hasCustomAttributes"));
 
             //rule.nestTypeRuleSpecs = new List<TypeRuleSpec>();
             rule.fields = new List<FieldRuleSpec>();
@@ -694,13 +696,33 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             return false;
         }
 
+        private bool MatchCustomAttributes(List<string> customAttributes, TypeDef typeDef)
+        {
+            if (customAttributes == null || customAttributes.Count == 0)
+            {
+                return true;
+            }
+            foreach (string customAttributeName in customAttributes)
+            {
+                if (typeDef.CustomAttributes.Find(customAttributeName) != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private IEnumerable<TypeDef> GetMatchTypes(ModuleDef mod, List<TypeDef> types, TypeRuleSpec typeSpec)
         {
             if (typeSpec.nameMatcher.IsWildcardPattern)
             {
                 foreach (var typeDef in types)
                 {
-                    if (!typeSpec.nameMatcher.IsMatch(typeDef.FullName) || !MatchModifier(typeSpec.modifierType, typeDef) || !MatchClassType(typeSpec.classType, typeDef) || !MatchInheritTypes(typeSpec.inheritTypes, typeDef))
+                    if (!typeSpec.nameMatcher.IsMatch(typeDef.FullName)
+                        || !MatchModifier(typeSpec.modifierType, typeDef)
+                        || !MatchClassType(typeSpec.classType, typeDef)
+                        || !MatchInheritTypes(typeSpec.inheritTypes, typeDef)
+                        || !MatchCustomAttributes(typeSpec.hasCustomAttributes, typeDef))
                     {
                         continue;
                     }
@@ -710,7 +732,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             else
             {
                 TypeDef typeDef = mod.FindNormal(typeSpec.nameMatcher.NameOrPattern);
-                if (typeDef != null && MatchModifier(typeSpec.modifierType, typeDef) && MatchClassType(typeSpec.classType, typeDef) && MatchInheritTypes(typeSpec.inheritTypes, typeDef))
+                if (typeDef != null
+                    && MatchModifier(typeSpec.modifierType, typeDef)
+                    && MatchClassType(typeSpec.classType, typeDef)
+                    && MatchInheritTypes(typeSpec.inheritTypes, typeDef)
+                    && MatchCustomAttributes(typeSpec.hasCustomAttributes, typeDef))
                 {
                     yield return typeDef;
                 }
