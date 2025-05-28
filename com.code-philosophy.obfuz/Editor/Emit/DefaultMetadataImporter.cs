@@ -31,6 +31,8 @@ namespace Obfuz.Emit
         private IMethod _decryptFromRvaString;
         private IMethod _decryptFromRvaBytes;
 
+        private IMethod _decryptInitializeArray;
+
         public IMethod EncryptBlock => _encryptBlock;
         public IMethod DecryptBlock => _decryptBlock;
 
@@ -53,6 +55,8 @@ namespace Obfuz.Emit
         public IMethod DecryptFromRvaDouble => _decryptFromRvaDouble;
         public IMethod DecryptFromRvaBytes => _decryptFromRvaBytes;
         public IMethod DecryptFromRvaString => _decryptFromRvaString;
+
+        public IMethod DecryptInitializeArray => _decryptInitializeArray;
 
         public EncryptionServiceMetadataImporter(ModuleDef mod, Type encryptionServiceType)
         {
@@ -99,6 +103,8 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_decryptFromRvaBytes);
             _decryptFromRvaString = mod.Import(encryptionServiceType.GetMethod("DecryptFromRvaString", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptFromRvaString);
+            _decryptInitializeArray = mod.Import(encryptionServiceType.GetMethod("DecryptInitializeArray", new[] { typeof(System.Array), typeof(System.RuntimeFieldHandle), typeof(int), typeof(int), typeof(int) }));
+            Assert.IsNotNull(_decryptInitializeArray);
         }
     }
 
@@ -194,5 +200,6 @@ namespace Obfuz.Emit
         public IMethod DecryptFromRvaBytes => _defaultEncryptionServiceMetadataImporter.DecryptFromRvaBytes;
         public IMethod DecryptFromRvaString => _defaultEncryptionServiceMetadataImporter.DecryptFromRvaString;
 
+        public IMethod DecryptInitializeArray => _defaultEncryptionServiceMetadataImporter.DecryptInitializeArray;
     }
 }

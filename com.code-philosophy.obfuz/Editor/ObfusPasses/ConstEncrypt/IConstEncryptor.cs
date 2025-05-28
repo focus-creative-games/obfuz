@@ -17,7 +17,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions);
 
-        void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions);
+        void ObfuscateBytes(MethodDef method, bool needCacheValue, FieldDef field, byte[] value, List<Instruction> obfuscatedInstructions);
     }
 
     public abstract class ConstEncryptorBase : IConstEncryptor
@@ -28,5 +28,6 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         public abstract void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions);
         public abstract void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions);
         public abstract void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions);
+        public abstract void ObfuscateBytes(MethodDef method, bool needCacheValue, FieldDef field, byte[] value, List<Instruction> obfuscatedInstructions);
     }
 }

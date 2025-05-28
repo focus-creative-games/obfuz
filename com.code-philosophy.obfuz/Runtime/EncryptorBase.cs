@@ -1,5 +1,7 @@
 ﻿using JetBrains.Annotations;
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
@@ -247,23 +249,115 @@ namespace Obfuz
 
         public virtual unsafe void DecryptBlock(byte[] data, int ops, int salt)
         {
-            int length = data.Length;
+            fixed(byte* dataPtr = &data[0])
+            {
+                DecryptBlock(dataPtr, data.Length, ops, salt);
+            }
+        }
+
+        private unsafe void DecryptBlock(byte* data, int length, int ops, int salt)
+        {
             int intArrLength = length >> 2;
 
-            fixed (byte* dstBytePtr = &data[0])
+            int* dstIntPtr = (int*)data;
+            int last = 0;
+            for (int i = 0; i < intArrLength; i++)
             {
-                int* dstIntPtr = (int*)dstBytePtr;
-                int last = 0;
-                for (int i = 0; i < intArrLength; i++)
-                {
-                    int oldLast = last;
-                    last = dstIntPtr[i];
-                    dstIntPtr[i] = Decrypt(oldLast ^ last, ops, salt);
-                }
+                int oldLast = last;
+                last = dstIntPtr[i];
+                dstIntPtr[i] = Decrypt(oldLast ^ last, ops, salt);
             }
             for (int i = intArrLength * 4; i < length; i++)
             {
                 data[i] = (byte)(data[i] ^ salt);
+            }
+        }
+
+        public virtual unsafe void DecryptInitializeArray(System.Array arr, System.RuntimeFieldHandle field, int length, int ops, int salt)
+        {
+            //Assert.AreEqual(Marshal.SizeOf(arr.GetType().GetElementType()), arr.Length);
+            RuntimeHelpers.InitializeArray(arr, field);
+            if (arr is byte[] byteArr)
+            {
+                fixed (byte* dataPtr = &byteArr[0])
+                {
+                    DecryptBlock(dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is int[] intArr)
+            {
+                fixed (int* dataPtr = &intArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is long[] longArr)
+            {
+                fixed (long* dataPtr = &longArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is sbyte[] sbyteArr)
+            {
+                fixed (sbyte* dataPtr = &sbyteArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is short[] shortArr)
+            {
+                fixed (short* dataPtr = &shortArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is ushort[] ushortArr)
+            {
+                fixed (ushort* dataPtr = &ushortArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is uint[] uintArr)
+            {
+                fixed (uint* dataPtr = &uintArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is ulong[] ulongArr)
+            {
+                fixed (ulong* dataPtr = &ulongArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is float[] floatArr)
+            {
+                fixed (float* dataPtr = &floatArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else if (arr is double[] doubleArr)
+            {
+                fixed (double* dataPtr = &doubleArr[0])
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+            }
+            else
+            {
+                void* dataPtr = UnsafeUtility.PinGCArrayAndGetDataAddress(arr, out ulong handle);
+                try
+                {
+                    DecryptBlock((byte*)dataPtr, length, ops, salt);
+                }
+                finally
+                {
+                    UnsafeUtility.ReleaseGCObject(handle);
+                }
             }
         }
     }

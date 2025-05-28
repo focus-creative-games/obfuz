@@ -26,6 +26,19 @@ namespace Obfuz.Unity
             return GenerateAdditionalLinkXmlFile(data.target);
         }
 
+#if !UNITY_2021_2_OR_NEWER
+
+        public void OnBeforeRun(BuildReport report, UnityLinkerBuildPipelineData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnAfterRun(BuildReport report, UnityLinkerBuildPipelineData data)
+        {
+            throw new NotImplementedException();
+        }
+#endif
+
         public static string GenerateAdditionalLinkXmlFile(BuildTarget target)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;

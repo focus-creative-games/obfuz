@@ -47,8 +47,8 @@ namespace Obfuz.Settings
                 obfuscatedNamePrefix = obfuscatedNamePrefix,
                 useConsistentNamespaceObfuscation = useConsistentNamespaceObfuscation,
                 symbolMappingFile = symbolMappingFile,
-                ruleFiles = ruleFiles.ToList(),
-                customRenamePolicyTypes = customRenamePolicyTypes.Select(typeName => ReflectionUtil.FindUniqueTypeInCurrentAppDomain(typeName)).ToList(),
+                ruleFiles = ruleFiles?.ToList() ?? new List<string>(),
+                customRenamePolicyTypes = customRenamePolicyTypes?.Select(typeName => ReflectionUtil.FindUniqueTypeInCurrentAppDomain(typeName)).ToList() ?? new List<Type>(),
             };
         }
     }

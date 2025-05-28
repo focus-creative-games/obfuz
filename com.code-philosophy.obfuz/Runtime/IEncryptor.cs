@@ -28,5 +28,7 @@ namespace Obfuz
 
         byte[] Encrypt(string value, int ops, int salt);
         string DecryptString(byte[] value, int offset, int stringBytesLength, int ops, int salt);
+
+        void DecryptInitializeArray(System.Array arr, System.RuntimeFieldHandle field, int length, int ops, int salt);
     }
 }

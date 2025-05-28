@@ -2,12 +2,14 @@
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
 using Obfuz.Settings;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.ConstEncrypt
@@ -113,34 +115,27 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 }
                 case Code.Call:
                 {
-                    //if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
-                    //{
-                    //    Instruction prevInst = globalInstructions[instructionIndex - 1];
-                    //    if (prevInst.OpCode.Code == Code.Ldtoken)
-                    //    {
-                    //        IField rvaField = (IField)prevInst.Operand;
-                    //        FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
-                    //        byte[] data = ravFieldDef.InitialValue;
-                    //        if (data != null && _dataObfuscatorPolicy.NeedObfuscateArray(method, currentInLoop, data))
-                    //        {
-                    //            if (_encryptedRvaFields.Add(ravFieldDef))
-                    //            {
-
-                    //            }
-
-                    //            // remove prev ldtoken instruction
-                    //            Assert.AreEqual(Code.Ldtoken, totalFinalInstructions.Last().OpCode.Code);
-                    //            //totalFinalInstructions.RemoveAt(totalFinalInstructions.Count - 1);
-                    //            // dup arr argument for decryption operation
-                    //            totalFinalInstructions.Insert(totalFinalInstructions.Count - 1, Instruction.Create(OpCodes.Dup));
-                    //            totalFinalInstructions.Add(inst.Clone());
-                    //            //bool needCache = currentInLoop ? constCachePolicy.cacheStringInLoop : constCachePolicy.cacheStringNotInLoop;
-                    //            bool needCache = false;
-                    //            _dataObfuscator.ObfuscateBytes(method, needCache, data, outputInstructions);
-                    //            return true;
-                    //        }
-                    //    }
-                    //}
+                    if (((IMethod)inst.Operand).FullName == "System.Void System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array,System.RuntimeFieldHandle)")
+                    {
+                        Instruction prevInst = globalInstructions[instructionIndex - 1];
+                        if (prevInst.OpCode.Code == Code.Ldtoken)
+                        {
+                            IField rvaField = (IField)prevInst.Operand;
+                            FieldDef ravFieldDef = rvaField.ResolveFieldDefThrow();
+                            if (ravFieldDef.Module != method.Module)
+                            {
+                                return false;
+                            }
+                            byte[] data = ravFieldDef.InitialValue;
+                            if (data != null && data.Length > 0 && _dataObfuscatorPolicy.NeedObfuscateArray(method, currentInLoop, data))
+                            {
+                                // don't need cache for byte array obfuscation
+                                needCache = false;
+                                _dataObfuscator.ObfuscateBytes(method, needCache, ravFieldDef, data, outputInstructions);
+                                return true;
+                            }
+                        }
+                    }
                     return false;
                 }
                 default: return false;

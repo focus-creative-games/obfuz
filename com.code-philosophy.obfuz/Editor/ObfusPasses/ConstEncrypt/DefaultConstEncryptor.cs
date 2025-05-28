@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using System.Text;
 using Obfuz.Settings;
+using UnityEngine.Assertions.Must;
 
 namespace Obfuz.ObfusPasses.ConstEncrypt
 {
@@ -144,30 +145,60 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaDouble));
         }
 
-        public void ObfuscateBytes(MethodDef method, bool needCacheValue, byte[] value, List<Instruction> obfuscatedInstructions)
+
+        class EncryptedRvaDataInfo
         {
-            throw new NotSupportedException("ObfuscateBytes is not supported yet.");
-            //if (needCacheValue)
-            //{
-            //    FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
-            //    obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
-            //    return;
-            //}
+            public readonly FieldDef fieldDef;
+            public readonly byte[] originalBytes;
+            public readonly byte[] encryptedBytes;
+            public readonly int opts;
+            public readonly int salt;
 
-            //int ops = GenerateEncryptionOperations();
-            //int salt = GenerateSalt();
-            //byte[] encryptedValue = _encryptor.Encrypt(value, 0, value.Length, ops, salt);
-            //Assert.IsTrue(encryptedValue.Length % 4 == 0);
-            //RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+            public EncryptedRvaDataInfo(FieldDef fieldDef, byte[] originalBytes, byte[] encryptedBytes, int opts, int salt)
+            {
+                this.fieldDef = fieldDef;
+                this.originalBytes = originalBytes;
+                this.encryptedBytes = encryptedBytes;
+                this.opts = opts;
+                this.salt = salt;
+            }
+        }
 
-            //DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
-            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
-            //// should use value.Length, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(value.Length));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
-            //obfuscatedInstructions.Add(Instruction.CreateLdcI4(salt));
-            //obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptFromRvaBytes));
+        private readonly Dictionary<FieldDef, EncryptedRvaDataInfo> _encryptedRvaFields = new Dictionary<FieldDef, EncryptedRvaDataInfo>();
+
+        private EncryptedRvaDataInfo GetEncryptedRvaData(FieldDef fieldDef)
+        {
+            if (!_encryptedRvaFields.TryGetValue(fieldDef, out var encryptedRvaData))
+            {
+                EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(fieldDef.Module);
+                IRandom random = CreateRandomForValue(encryptionScope, FieldEqualityComparer.CompareDeclaringTypes.GetHashCode(fieldDef));
+                int ops = GenerateEncryptionOperations(encryptionScope, random);
+                int salt = GenerateSalt(random);
+                byte[] originalBytes = fieldDef.InitialValue;
+                byte[] encryptedBytes = (byte[])originalBytes.Clone();
+                encryptionScope.encryptor.EncryptBlock(encryptedBytes, ops, salt);
+                Assert.AreNotEqual(originalBytes, encryptedBytes, "Original bytes should not be the same as encrypted bytes.");
+                encryptedRvaData = new EncryptedRvaDataInfo(fieldDef, originalBytes, encryptedBytes, ops, salt);
+                _encryptedRvaFields.Add(fieldDef, encryptedRvaData);
+                fieldDef.InitialValue = encryptedBytes;
+                byte[] decryptedBytes = (byte[])encryptedBytes.Clone();
+                encryptionScope.encryptor.DecryptBlock(decryptedBytes, ops, salt);
+                Assert.AreEqual(originalBytes, decryptedBytes, "Decrypted bytes should match the original bytes after encryption and decryption.");
+            }
+            return encryptedRvaData;
+        }
+
+
+        public void ObfuscateBytes(MethodDef method, bool needCacheValue, FieldDef field, byte[] value, List<Instruction> obfuscatedInstructions)
+        {
+            EncryptedRvaDataInfo encryptedData = GetEncryptedRvaData(field);
+            Assert.AreEqual(value.Length, encryptedData.encryptedBytes.Length);
+
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.encryptedBytes.Length));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.opts));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.salt));
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptInitializeArray));
         }
 
         public void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions)
