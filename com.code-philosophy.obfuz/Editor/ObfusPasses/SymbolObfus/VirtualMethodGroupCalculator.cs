@@ -12,6 +12,36 @@ namespace Obfuz.ObfusPasses.SymbolObfus
     public class VirtualMethodGroup
     {
         public List<MethodDef> methods;
+
+        private HashSet<TypeDef> _nameScopes;
+
+        public HashSet<TypeDef> GetNameConflictTypeScopes()
+        {
+            if (_nameScopes != null)
+            {
+                return _nameScopes;
+            }
+
+            _nameScopes = new HashSet<TypeDef>();
+            foreach (var method in methods)
+            {
+                TypeDef cur = method.DeclaringType;
+                while (cur != null)
+                {
+                    _nameScopes.Add(cur);
+                    cur = MetaUtil.GetBaseTypeDef(cur);
+                }
+            }
+            return _nameScopes;
+        }
+
+        public IEnumerable<TypeDef> GetNameDeclaringTypeScopes()
+        {
+            foreach (var method in methods)
+            {
+                yield return method.DeclaringType;
+            }
+        }
     }
 
     public class VirtualMethodGroupCalculator
