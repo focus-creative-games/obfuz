@@ -5,6 +5,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
     public class SystemRenamePolicy : ObfuscationPolicyBase
     {
+        private readonly ObfuzIgnoreScopeComputeCache _obfuzIgnoreScopeComputeCache;
+
+        public SystemRenamePolicy(ObfuzIgnoreScopeComputeCache obfuzIgnoreScopeComputeCache)
+        {
+            _obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache;
+        }
+
         private bool IsFullIgnoreObfuscatedType(TypeDef typeDef)
         {
             return typeDef.FullName == "Obfuz.ObfuzIgnoreAttribute" || typeDef.FullName == "Obfuz.ObfuzScope" || typeDef.FullName == "Obfuz.EncryptFieldAttribute";
@@ -22,7 +29,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (MetaUtil.HasObfuzIgnoreScope(typeDef, ObfuzScope.TypeName) || MetaUtil.HasEnclosingObfuzIgnoreScope(typeDef.DeclaringType, ObfuzScope.TypeName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrEnclosingObfuzIgnoreScope(typeDef, ObfuzScope.TypeName))
             {
                 return false;
             }
@@ -40,7 +47,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (MetaUtil.HasSelfOrInheritPropertyOrEventOrOrTypeDefIgnoreMethodName(methodDef))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritPropertyOrEventOrOrTypeDefIgnoreMethodName(methodDef))
             {
                 return false;
             }
@@ -53,7 +60,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(fieldDef, fieldDef.DeclaringType, ObfuzScope.Field))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(fieldDef, fieldDef.DeclaringType, ObfuzScope.Field))
             {
                 return false;
             }
@@ -70,7 +77,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(propertyDef, propertyDef.DeclaringType, ObfuzScope.PropertyName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(propertyDef, propertyDef.DeclaringType, ObfuzScope.PropertyName))
             {
                 return false;
             }
@@ -83,7 +90,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(eventDef, eventDef.DeclaringType, ObfuzScope.EventName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(eventDef, eventDef.DeclaringType, ObfuzScope.EventName))
             {
                 return false;
             }

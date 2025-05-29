@@ -77,7 +77,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var totalRenamePolicies = new List<IObfuscationPolicy>
             {
                 new SupportPassPolicy(ctx.passPolicy),
-                new SystemRenamePolicy(),
+                new SystemRenamePolicy(ctx.obfuzIgnoreScopeComputeCache),
                 new UnityRenamePolicy(),
                 obfuscateRuleConfig,
             };

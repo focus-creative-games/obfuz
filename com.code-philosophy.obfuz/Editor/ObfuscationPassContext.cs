@@ -68,6 +68,7 @@ namespace Obfuz
         public AssemblyCache assemblyCache;
         public List<ModuleDef> modulesToObfuscate;
         public List<ModuleDef> allObfuscationRelativeModules;
+        public ObfuzIgnoreScopeComputeCache obfuzIgnoreScopeComputeCache;
 
         public EncryptionScopeProvider encryptionScopeProvider;
         public ConstFieldAllocator constFieldAllocator;

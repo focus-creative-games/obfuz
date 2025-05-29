@@ -12,6 +12,12 @@ namespace Obfuz
 {
     public class ObfuscationMethodWhitelist
     {
+        private readonly ObfuzIgnoreScopeComputeCache _obfuzComputeCache;
+
+        public ObfuscationMethodWhitelist(ObfuzIgnoreScopeComputeCache obfuzComputeCache)
+        {
+            _obfuzComputeCache = obfuzComputeCache;
+        }
 
         public bool IsInWhiteList(ModuleDef module)
         {
@@ -52,7 +58,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(method, typeDef, ObfuzScope.MethodBody))
+            if (_obfuzComputeCache.HasSelfOrInheritObfuzIgnoreScope(method, typeDef, ObfuzScope.MethodBody))
             {
                 return true;
             }
@@ -80,7 +86,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(type, type.DeclaringType, ObfuzScope.TypeName))
+            if (_obfuzComputeCache.HasSelfOrInheritObfuzIgnoreScope(type, type.DeclaringType, ObfuzScope.TypeName))
             {
                 return true;
             }

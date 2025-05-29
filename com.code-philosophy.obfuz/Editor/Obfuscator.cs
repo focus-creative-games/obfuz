@@ -283,6 +283,7 @@ namespace Obfuz
 
             EncryptionScopeProvider encryptionScopeProvider = CreateEncryptionScopeProvider();
             var moduleEntityManager = new GroupByModuleEntityManager();
+            var obfuzIgnoreScopeComputeCache = new ObfuzIgnoreScopeComputeCache();
             var rvaDataAllocator = new RvaDataAllocator(encryptionScopeProvider, moduleEntityManager);
             var constFieldAllocator = new ConstFieldAllocator(encryptionScopeProvider, rvaDataAllocator, moduleEntityManager);
             _ctx = new ObfuscationPassContext
@@ -294,10 +295,11 @@ namespace Obfuz
                 moduleEntityManager = moduleEntityManager,
 
                 encryptionScopeProvider = encryptionScopeProvider,
+                obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache,
 
                 rvaDataAllocator = rvaDataAllocator,
                 constFieldAllocator = constFieldAllocator,
-                whiteList = new ObfuscationMethodWhitelist(),
+                whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache),
                 passPolicy = _passPolicy,
             };
             ObfuscationPassContext.Current = _ctx;

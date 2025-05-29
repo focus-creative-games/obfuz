@@ -15,9 +15,11 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         }
 
         private readonly XmlFieldRuleParser<ObfuscationRule> _configParser;
+        private readonly ObfuzIgnoreScopeComputeCache _obfuzIgnoreScopeComputeCache;
 
-        public ConfigurableEncryptPolicy(List<string> toObfuscatedAssemblyNames, List<string> configFiles)
+        public ConfigurableEncryptPolicy(ObfuzIgnoreScopeComputeCache obfuzIgnoreScopeComputeCache, List<string> toObfuscatedAssemblyNames, List<string> configFiles)
         {
+            _obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache;
             _configParser = new XmlFieldRuleParser<ObfuscationRule>(toObfuscatedAssemblyNames, ParseRule, null);
             _configParser.LoadConfigs(configFiles);
         }
@@ -33,7 +35,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 return true;
             }
-            if (MetaUtil.HasSelfOrInheritObfuzIgnoreScope(field, field.DeclaringType, ObfuzScope.Field))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(field, field.DeclaringType, ObfuzScope.Field))
             {
                 return false;
             }

@@ -29,7 +29,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         {
             var ctx = ObfuscationPassContext.Current;
             _memoryEncryptor = new DefaultFieldEncryptor(ctx.encryptionScopeProvider, ctx.moduleEntityManager, _settings);
-            _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
+            _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.obfuzIgnoreScopeComputeCache, ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
         }
 
         public override void Stop()
