@@ -129,12 +129,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         private readonly CachedDictionary<TypeDef, bool> _computeDeclaringTypeDisableAllMemberRenamingCache;
         private readonly CachedDictionary<TypeDef, bool> _isInheritScriptCache;
         private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourCache;
+        private readonly CachedDictionary<TypeDef, bool> _isScriptOrSerializableTypeCache;
 
         public UnityRenamePolicy()
         {
             _computeDeclaringTypeDisableAllMemberRenamingCache = new CachedDictionary<TypeDef, bool>(ComputeDeclaringTypeDisableAllMemberRenaming);
             _isInheritScriptCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptType);
             _isInheritFromMonoBehaviourCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsInheritFromMonoBehaviour);
+            _isScriptOrSerializableTypeCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptOrSerializableType);
         }
 
         private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
@@ -185,7 +187,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         public override bool NeedRename(TypeDef typeDef)
         {
-            if (_isInheritScriptCache.GetValue(typeDef))
+            if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
             {
                 return false;
             }
@@ -225,9 +227,16 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(FieldDef fieldDef)
         {
             TypeDef typeDef = fieldDef.DeclaringType;
-            if (MetaUtil.IsScriptOrSerializableType(typeDef))
+            if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
             {
-                return !MetaUtil.IsSerializableField(fieldDef);
+                if (fieldDef.IsPublic && !fieldDef.IsStatic)
+                {
+                    return false;
+                }
+                if (!fieldDef.IsStatic && MetaUtil.IsSerializableField(fieldDef))
+                {
+                    return false;
+                }
             }
             if (_computeDeclaringTypeDisableAllMemberRenamingCache.GetValue(typeDef))
             {
@@ -236,6 +245,22 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             if (MetaUtil.HasBurstCompileAttribute(fieldDef))
             {
                 return false;
+            }
+            return true;
+        }
+
+        public override bool NeedRename(PropertyDef propertyDef)
+        {
+            TypeDef typeDef = propertyDef.DeclaringType;
+            if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
+            {
+                bool isGetterPublic = propertyDef.GetMethod != null && propertyDef.GetMethod.IsPublic && !propertyDef.GetMethod.IsStatic;
+                bool isSetterPublic = propertyDef.SetMethod != null && propertyDef.SetMethod.IsPublic && !propertyDef.SetMethod.IsStatic;
+
+                if (isGetterPublic || isSetterPublic)
+                {
+                    return false;
+                }
             }
             return true;
         }
