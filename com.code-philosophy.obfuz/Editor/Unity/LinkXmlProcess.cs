@@ -42,6 +42,12 @@ namespace Obfuz.Unity
         public static string GenerateAdditionalLinkXmlFile(BuildTarget target)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
+            string symbolMappingFile = settings.symbolObfusSettings.symbolMappingFile;
+            if (!File.Exists(symbolMappingFile))
+            {
+                Debug.LogWarning($"Symbol mapping file not found: {symbolMappingFile}. Skipping link.xml generation.");
+                return null;
+            }
             string linkXmlPath = settings.GetObfuscatedLinkXmlPath(target);
             FileUtil.CreateParentDir(linkXmlPath);
 
@@ -49,12 +55,12 @@ namespace Obfuz.Unity
                 new System.Xml.XmlWriterSettings { Encoding = Encoding.UTF8, Indent = true });
             try
             {
+                var symbolMapping = new LiteSymbolMappingReader(symbolMappingFile);
                 string[] linkGuids = AssetDatabase.FindAssets("t:TextAsset");
                 var linkXmlPaths = linkGuids.Select(guid => AssetDatabase.GUIDToAssetPath(guid))
                     .Where(f => Path.GetFileName(f) == "link.xml")
                     .ToArray();
 
-                var symbolMapping = new LiteSymbolMappingReader(settings.symbolObfusSettings.symbolMappingFile);
                 var assembliesToObfuscated = new HashSet<string>(settings.assemblySettings.GetAssembliesToObfuscate());
 
                 writer.WriteStartDocument();
