@@ -33,11 +33,19 @@ namespace Obfuz.Settings
         [Tooltip("symbol mapping file path")]
         public string symbolMappingFile = "Assets/Obfuz/SymbolObfus/symbol-mapping.xml";
 
+        [Tooltip("debug symbol mapping file path, used for debugging purposes")]
+        public string debugSymbolMappingFile = "Assets/Obfuz/SymbolObfus/symbol-mapping-debug.xml";
+
         [Tooltip("rule files")]
         public string[] ruleFiles;
 
         [Tooltip("custom rename policy types")]
         public string[] customRenamePolicyTypes;
+
+        public string GetSymbolMappingFile()
+        {
+            return debug ? debugSymbolMappingFile : symbolMappingFile;
+        }
 
         public SymbolObfuscationSettingsFacade ToFacade()
         {
@@ -46,7 +54,7 @@ namespace Obfuz.Settings
                 debug = debug,
                 obfuscatedNamePrefix = obfuscatedNamePrefix,
                 useConsistentNamespaceObfuscation = useConsistentNamespaceObfuscation,
-                symbolMappingFile = symbolMappingFile,
+                symbolMappingFile = GetSymbolMappingFile(),
                 ruleFiles = ruleFiles?.ToList() ?? new List<string>(),
                 customRenamePolicyTypes = customRenamePolicyTypes?.Select(typeName => ReflectionUtil.FindUniqueTypeInCurrentAppDomain(typeName)).ToList() ?? new List<Type>(),
             };

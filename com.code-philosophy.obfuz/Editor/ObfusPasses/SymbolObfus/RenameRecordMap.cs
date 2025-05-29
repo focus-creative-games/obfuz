@@ -87,6 +87,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         }
 
         private readonly string _mappingFile;
+        private readonly bool _debug;
         private readonly Dictionary<string, RenameMappingAssembly> _assemblies = new Dictionary<string, RenameMappingAssembly>();
 
 
@@ -99,9 +100,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<VirtualMethodGroup, RenameRecord> _virtualMethodGroups = new Dictionary<VirtualMethodGroup, RenameRecord>();
 
 
-        public RenameRecordMap(string mappingFile)
+        public RenameRecordMap(string mappingFile, bool debug)
         {
             _mappingFile = mappingFile;
+            _debug = debug;
         }
 
         public void Init(List<ModuleDef> assemblies, INameMaker nameMaker)
@@ -225,6 +227,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             if (string.IsNullOrEmpty(mappingFile) || !File.Exists(mappingFile))
             {
+                return;
+            }
+            if (_debug)
+            {
+                Debug.Log($"skip loading debug mapping file: {Path.GetFullPath(mappingFile)}");
                 return;
             }
             var doc = new XmlDocument();

@@ -42,7 +42,7 @@ namespace Obfuz.Unity
         public static string GenerateAdditionalLinkXmlFile(BuildTarget target)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
-            string symbolMappingFile = settings.symbolObfusSettings.symbolMappingFile;
+            string symbolMappingFile = settings.symbolObfusSettings.GetSymbolMappingFile();
             if (!File.Exists(symbolMappingFile))
             {
                 Debug.LogWarning($"Symbol mapping file not found: {symbolMappingFile}. Skipping link.xml generation.");
