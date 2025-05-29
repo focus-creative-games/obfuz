@@ -389,7 +389,7 @@ namespace Obfuz
                 {
                     if (ass.nameMatcher.IsMatch(assName))
                     {
-                        result = (ass, _defaultPassRule);
+                        result = (ass, ass.rule);
                         break;
                     }
                 }
