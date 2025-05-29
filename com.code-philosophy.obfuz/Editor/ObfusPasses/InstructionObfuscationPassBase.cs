@@ -19,14 +19,14 @@ namespace Obfuz.ObfusPasses
             ConfigurablePassPolicy passPolicy = ctx.passPolicy;
             foreach (ModuleDef mod in modules)
             {
-                if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && (whiteList.IsInWhiteList(mod) || !Support(passPolicy.GetAssemblyObfuscationPasses(mod))))
+                if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && whiteList.IsInWhiteList(mod))
                 {
                     continue;
                 }
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
-                    if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && (whiteList.IsInWhiteList(type) || !Support(passPolicy.GetTypeObfuscationPasses(type))))
+                    if (!ForceProcessAllAssembliesAndIgnoreAllPolicy && whiteList.IsInWhiteList(type))
                     {
                         continue;
                     }

@@ -17,14 +17,14 @@ namespace Obfuz.ObfusPasses
             ConfigurablePassPolicy passPolicy = ctx.passPolicy;
             foreach (ModuleDef mod in ctx.modulesToObfuscate)
             {
-                if (whiteList.IsInWhiteList(mod) || !Support(passPolicy.GetAssemblyObfuscationPasses(mod)))
+                if (whiteList.IsInWhiteList(mod))
                 {
                     continue;
                 }
                 // ToArray to avoid modify list exception
                 foreach (TypeDef type in mod.GetTypes().ToArray())
                 {
-                    if (whiteList.IsInWhiteList(type) || !Support(passPolicy.GetTypeObfuscationPasses(type)))
+                    if (whiteList.IsInWhiteList(type))
                     {
                         continue;
                     }
