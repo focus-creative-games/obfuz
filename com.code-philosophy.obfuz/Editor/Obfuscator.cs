@@ -90,14 +90,17 @@ namespace Obfuz
 
         public void Run()
         {
-            Debug.Log($"Obfuscator Run. begin");
+            Debug.Log($"Obfuscator begin");
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             FileUtil.RecreateDir(_coreSettings.obfuscatedAssemblyOutputPath);
             FileUtil.RecreateDir(_coreSettings.obfuscatedAssemblyTempOutputPath);
             RunPipeline(_pipeline1);
             _assemblyResolver.InsertFirst(new PathAssemblyResolver(_coreSettings.obfuscatedAssemblyTempOutputPath));
             RunPipeline(_pipeline2);
             FileUtil.CopyDir(_coreSettings.obfuscatedAssemblyTempOutputPath, _coreSettings.obfuscatedAssemblyOutputPath, true);
-            Debug.Log($"Obfuscator Run. end");
+            sw.Stop();
+            Debug.Log($"Obfuscator end. cost time: {sw.ElapsedMilliseconds} ms");
         }
 
         private void RunPipeline(Pipeline pipeline)
