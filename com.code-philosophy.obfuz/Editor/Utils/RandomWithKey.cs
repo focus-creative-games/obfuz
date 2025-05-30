@@ -1,11 +1,4 @@
-﻿using Obfuz.Emit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Obfuz.Utils
+﻿namespace Obfuz.Utils
 {
     public class RandomWithKey : IRandom
     {

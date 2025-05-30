@@ -5,8 +5,6 @@ using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.FieldEncrypt
@@ -29,7 +27,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, _encryptionScopeProvider);
         }
 
-         class FieldEncryptInfo
+        class FieldEncryptInfo
         {
             public int encryptOps;
             public int salt;
@@ -47,7 +45,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
                 case ElementType.I4:
                 case ElementType.U4:
                 case ElementType.R4:
-                    return encryptor.Encrypt(0, encryptOps, salt);
+                return encryptor.Encrypt(0, encryptOps, salt);
                 case ElementType.I8:
                 case ElementType.U8:
                 case ElementType.R8:

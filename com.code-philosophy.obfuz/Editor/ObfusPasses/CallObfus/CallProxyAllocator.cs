@@ -7,8 +7,6 @@ using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MethodImplAttributes = dnlib.DotNet.MethodImplAttributes;
 using TypeAttributes = dnlib.DotNet.TypeAttributes;
 
@@ -211,7 +209,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                     salt = salt,
                     encryptedIndex = encryptedIndex,
                 };
-                methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir});
+                methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir });
                 _methodProxys.Add(key, proxyInfo);
             }
             return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex, proxyInfo.index);

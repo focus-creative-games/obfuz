@@ -1,13 +1,9 @@
 ﻿using dnlib.DotNet;
-using Obfuz.Conf;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using UnityEngine;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
@@ -127,7 +123,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return null;
             }
-            
+
             ClassType type = ClassType.None;
             foreach (var s in classType.Split(','))
             {
@@ -520,7 +516,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         private void BuildTypeRuleResult(TypeRuleSpec typeSpec, TypeDef typeDef, RuleResult typeRuleResult)
         {
             string typeName = typeDef.FullName;
-        
+
             if (typeSpec.obfuscateName != null)
             {
                 typeRuleResult.obfuscateName = typeSpec.obfuscateName;

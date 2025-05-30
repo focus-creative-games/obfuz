@@ -1,8 +1,8 @@
-﻿using dnlib.DotNet.Emit;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
+using Obfuz.Emit;
 using System.Collections.Generic;
 using System.Linq;
-using Obfuz.Emit;
 
 namespace Obfuz.ObfusPasses
 {

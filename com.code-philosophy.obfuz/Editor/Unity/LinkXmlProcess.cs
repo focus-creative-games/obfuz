@@ -1,18 +1,15 @@
 ﻿using Obfuz.Settings;
-using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.UnityLinker;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 using FileUtil = Obfuz.Utils.FileUtil;
 
 namespace Obfuz.Unity

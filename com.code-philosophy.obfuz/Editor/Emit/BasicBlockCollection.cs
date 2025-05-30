@@ -3,9 +3,6 @@ using dnlib.DotNet.Emit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Obfuz.Emit
 {
@@ -141,7 +138,7 @@ namespace Obfuz.Emit
             }
             return splitPoints;
         }
-        
+
 
         private void BuildBasicBlocks(MethodDef method, HashSet<Instruction> splitPoints)
         {

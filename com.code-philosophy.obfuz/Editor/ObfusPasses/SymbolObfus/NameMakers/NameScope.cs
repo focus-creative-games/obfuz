@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers

@@ -1,17 +1,12 @@
 using dnlib.DotNet;
-using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.ObfusPasses.SymbolObfus.NameMakers;
 using Obfuz.ObfusPasses.SymbolObfus.Policies;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -50,7 +45,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
             _renameRecordMap = new RenameRecordMap(settings.symbolMappingFile, settings.debug);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
-            _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() :  NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
+            _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() : NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
 
             foreach (var customPolicyType in settings.customRenamePolicyTypes)
             {
@@ -73,7 +68,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _obfuscatedAndNotObfuscatedModules = ctx.allObfuscationRelativeModules;
             _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
 
-            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate,  _obfuscationRuleFiles);
+            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate, _obfuscationRuleFiles);
             var totalRenamePolicies = new List<IObfuscationPolicy>
             {
                 new SupportPassPolicy(ctx.passPolicy),
@@ -142,7 +137,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     }
                     foreach (EventDef eventDef in type.Events)
                     {
-                        CollectCArgumentWithTypeOf (eventDef, customAttributes);
+                        CollectCArgumentWithTypeOf(eventDef, customAttributes);
                     }
                 }
 
@@ -445,7 +440,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
-        
+
         private void RenameMethodRefOrMethodSpec(IMethod method, Dictionary<MethodDef, RefMethodMetas> refMethodMetasMap)
         {
             if (method is MemberRef memberRef)
@@ -469,7 +464,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     RenameMethodRefOrMethodSpec(method, refMethodMetasMap);
                 }
-                
+
                 foreach (var type in mod.GetTypes())
                 {
                     foreach (MethodDef method in type.Methods)
@@ -577,7 +572,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                                 {
                                     newVirtualMethodName = existVirtualMethodName;
                                 }
-                                else if(newVirtualMethodName != existVirtualMethodName)
+                                else if (newVirtualMethodName != existVirtualMethodName)
                                 {
                                     Debug.LogWarning($"Virtual method rename conflict. {m} => {existVirtualMethodName} != {newVirtualMethodName}");
                                     conflict = true;

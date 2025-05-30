@@ -1,6 +1,4 @@
-﻿using Obfuz.Emit;
-
-namespace Obfuz.ObfusPasses
+﻿namespace Obfuz.ObfusPasses
 {
     public abstract class ObfuscationPassBase : IObfuscationPass
     {

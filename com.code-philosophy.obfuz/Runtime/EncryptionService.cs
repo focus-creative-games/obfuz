@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Obfuz
+﻿namespace Obfuz
 {
 
     public static class EncryptionService<T> where T : IEncryptionScope

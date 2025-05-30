@@ -1,11 +1,7 @@
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Obfuz;
 using Obfuz.Settings;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 namespace Obfuz.ObfusPasses.FieldEncrypt
 {

@@ -1,8 +1,4 @@
-using System;
-using System.Reflection;
 using UnityEditor;
-using UnityEditor.Presets;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Obfuz.Settings
@@ -74,7 +70,7 @@ namespace Obfuz.Settings
 
         public override void OnGUI(string searchContext)
         {
-            if (_serializedObject == null||!_serializedObject.targetObject)
+            if (_serializedObject == null || !_serializedObject.targetObject)
             {
                 InitGUI();
             }

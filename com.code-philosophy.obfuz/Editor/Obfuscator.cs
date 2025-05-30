@@ -2,7 +2,6 @@
 using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.EncryptionVM;
-using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CleanUp;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Unity;
@@ -11,10 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using IAssemblyResolver = Obfuz.Utils.IAssemblyResolver;
 
 namespace Obfuz
 {
@@ -141,7 +137,7 @@ namespace Obfuz
                 throw new Exception($"class Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine found in multiple assemblies! Please retain only one!");
             }
 
-            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { secretKey } );
+            var gvmInstance = (IEncryptor)Activator.CreateInstance(generatedVmTypes[0], new object[] { secretKey });
 
             VerifyVm(vm, vms, gvmInstance);
 

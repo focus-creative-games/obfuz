@@ -1,5 +1,5 @@
-﻿using dnlib.DotNet.Emit;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using System.Collections.Generic;
 using System.Linq;
 

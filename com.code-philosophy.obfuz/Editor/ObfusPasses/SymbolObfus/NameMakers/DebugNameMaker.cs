@@ -1,5 +1,4 @@
-﻿using dnlib.DotNet;
-using System.Text;
+﻿using System.Text;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {

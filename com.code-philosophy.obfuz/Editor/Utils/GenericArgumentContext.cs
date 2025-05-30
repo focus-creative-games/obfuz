@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Obfuz.Utils
 {
@@ -20,24 +18,24 @@ namespace Obfuz.Utils
 
         public TypeSig Resolve(TypeSig typeSig)
         {
-			if (!typeSig.ContainsGenericParameter)
+            if (!typeSig.ContainsGenericParameter)
             {
-				return typeSig;
+                return typeSig;
             }
             typeSig = typeSig.RemovePinnedAndModifiers();
-			switch (typeSig.ElementType)
-			{
-				case ElementType.Ptr: return new PtrSig(Resolve(typeSig.Next));
-				case ElementType.ByRef: return new ByRefSig(Resolve(typeSig.Next));
+            switch (typeSig.ElementType)
+            {
+                case ElementType.Ptr: return new PtrSig(Resolve(typeSig.Next));
+                case ElementType.ByRef: return new ByRefSig(Resolve(typeSig.Next));
 
                 case ElementType.SZArray: return new SZArraySig(Resolve(typeSig.Next));
-				case ElementType.Array:
+                case ElementType.Array:
                 {
                     var ara = (ArraySig)typeSig;
                     return new ArraySig(Resolve(typeSig.Next), ara.Rank, ara.Sizes, ara.LowerBounds);
                 }
 
-				case ElementType.Var:
+                case ElementType.Var:
                 {
                     GenericVar genericVar = (GenericVar)typeSig;
                     var newSig = Resolve(typeArgsStack, genericVar.Number);
@@ -48,7 +46,7 @@ namespace Obfuz.Utils
                     return newSig;
                 }
 
-				case ElementType.MVar:
+                case ElementType.MVar:
                 {
                     GenericMVar genericVar = (GenericMVar)typeSig;
                     var newSig = Resolve(methodArgsStack, genericVar.Number);
@@ -58,13 +56,13 @@ namespace Obfuz.Utils
                     }
                     return newSig;
                 }
-				case ElementType.GenericInst:
+                case ElementType.GenericInst:
                 {
                     var gia = (GenericInstSig)typeSig;
                     return new GenericInstSig(gia.GenericType, gia.GenericArguments.Select(ga => Resolve(ga)).ToList());
                 }
 
-				case ElementType.FnPtr:
+                case ElementType.FnPtr:
                 {
                     var fptr = (FnPtrSig)typeSig;
                     var cs = fptr.Signature;
@@ -91,13 +89,13 @@ namespace Obfuz.Utils
                     return new FnPtrSig(ccs);
                 }
 
-				case ElementType.ValueArray:
+                case ElementType.ValueArray:
                 {
                     var vas = (ValueArraySig)typeSig;
                     return new ValueArraySig(Resolve(vas.Next), vas.Size);
                 }
                 default: return typeSig;
-			}
+            }
         }
 
         private TypeSig Resolve(List<TypeSig> args, uint number)

@@ -1,6 +1,5 @@
 ﻿using dnlib.DotNet;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {

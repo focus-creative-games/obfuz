@@ -1,11 +1,10 @@
-﻿using dnlib.DotNet.Emit;
-using dnlib.DotNet;
-using System.Collections.Generic;
-using Obfuz.Utils;
-using Obfuz.Emit;
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using Obfuz.Data;
-using UnityEngine;
+using Obfuz.Emit;
 using Obfuz.Settings;
+using Obfuz.Utils;
+using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {

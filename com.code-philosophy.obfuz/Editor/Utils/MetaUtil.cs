@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 
 namespace Obfuz.Utils
 {
@@ -714,7 +711,7 @@ namespace Obfuz.Utils
         public static void AppendIl2CppStackTraceNameOfTypeSig(StringBuilder sb, TypeSig typeSig)
         {
             typeSig = typeSig.RemovePinnedAndModifiers();
-            
+
             switch (typeSig.ElementType)
             {
                 case ElementType.Void: sb.Append("Void"); break;

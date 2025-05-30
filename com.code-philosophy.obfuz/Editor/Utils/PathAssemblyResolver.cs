@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using System.IO;
 
 namespace Obfuz.Utils
 {
@@ -19,7 +13,7 @@ namespace Obfuz.Utils
 
         public override string ResolveAssembly(string assemblyName)
         {
-            foreach(var path in _searchPaths)
+            foreach (var path in _searchPaths)
             {
                 string assPath = Path.Combine(path, assemblyName + ".dll");
                 if (File.Exists(assPath))

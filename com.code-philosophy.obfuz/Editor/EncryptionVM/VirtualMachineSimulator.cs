@@ -1,12 +1,6 @@
 ﻿using Obfuz.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Text;
-using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 
 namespace Obfuz.EncryptionVM
 {
@@ -47,7 +41,7 @@ namespace Obfuz.EncryptionVM
             byte[] strBytes = Encrypt("abcdef", ops, salt);
             Assert.AreEqual("abcdef", DecryptString(strBytes, 0, strBytes.Length, ops, salt));
             var arr = new byte[100];
-            for (int i = 0; i < arr.Length ; i++)
+            for (int i = 0; i < arr.Length; i++)
             {
                 arr[i] = (byte)i;
             }

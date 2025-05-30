@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Obfuz.Utils
 {
@@ -18,7 +14,7 @@ namespace Obfuz.Utils
 
         public static V GetValueOrDefault<K, V>(this Dictionary<K, V> dic, K key)
         {
-            return dic.TryGetValue(key, out  V v) ? v : default(V);
+            return dic.TryGetValue(key, out V v) ? v : default(V);
         }
     }
 }

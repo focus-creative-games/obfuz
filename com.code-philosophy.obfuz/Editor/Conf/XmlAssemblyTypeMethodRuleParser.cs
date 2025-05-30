@@ -2,11 +2,7 @@
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using UnityEditor.VersionControl;
 using UnityEngine;
 
 namespace Obfuz.Conf
@@ -17,7 +13,7 @@ namespace Obfuz.Conf
     }
 
 
-    public interface IMethodRule<R> where R: IRule<R>
+    public interface IMethodRule<R> where R : IRule<R>
     {
         string Name { get; set; }
         NameMatcher NameMatcher { get; set; }
@@ -33,7 +29,7 @@ namespace Obfuz.Conf
         public R Rule { get; set; }
     }
 
-    public interface ITypeRule<T, R> where T: IMethodRule<R> where R : IRule<R>
+    public interface ITypeRule<T, R> where T : IMethodRule<R> where R : IRule<R>
     {
         string Name { get; set; }
 

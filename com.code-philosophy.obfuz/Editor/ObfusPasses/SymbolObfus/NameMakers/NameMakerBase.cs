@@ -1,9 +1,6 @@
 ﻿using dnlib.DotNet;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
@@ -59,7 +56,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public bool IsNamePreserved(VirtualMethodGroup virtualMethodGroup, string name)
         {
-            return  virtualMethodGroup.GetNameConflictTypeScopes().Any(m => GetNameScope(m).IsNamePreserved(name));
+            return virtualMethodGroup.GetNameConflictTypeScopes().Any(m => GetNameScope(m).IsNamePreserved(name));
         }
 
         private string GetDefaultNewName(object scope, string originName)

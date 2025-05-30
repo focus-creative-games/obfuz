@@ -1,10 +1,7 @@
-﻿using NUnit.Framework;
-using Obfuz.EncryptionVM.Instructions;
+﻿using Obfuz.EncryptionVM.Instructions;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 
 namespace Obfuz.EncryptionVM
 {

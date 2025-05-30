@@ -1,5 +1,4 @@
-﻿using Obfuz.ObfusPasses;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Obfuz

@@ -2,7 +2,7 @@
 
 namespace Obfuz.EncryptionVM.Instructions
 {
-    public class  XorInstruction : EncryptionInstructionBase
+    public class XorInstruction : EncryptionInstructionBase
     {
         private readonly int _xorValue;
         private readonly int _opKeyIndex;

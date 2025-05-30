@@ -1,14 +1,8 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Data;
 using Obfuz.Emit;
-using Obfuz.ObfusPasses;
-using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Obfuz
 {

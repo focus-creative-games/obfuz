@@ -1,7 +1,5 @@
-﻿using JetBrains.Annotations;
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
@@ -249,7 +247,7 @@ namespace Obfuz
 
         public virtual unsafe void DecryptBlock(byte[] data, int ops, int salt)
         {
-            fixed(byte* dataPtr = &data[0])
+            fixed (byte* dataPtr = &data[0])
             {
                 DecryptBlock(dataPtr, data.Length, ops, salt);
             }

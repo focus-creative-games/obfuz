@@ -1,15 +1,9 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Obfuz.Utils;
 using Obfuz.Emit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Assertions;
 using Obfuz.Settings;
+using Obfuz.Utils;
+using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {

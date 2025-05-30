@@ -1,18 +1,14 @@
-﻿using System;
+﻿using dnlib.DotNet;
+using Obfuz.Settings;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor.Build;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
-using UnityEditor.Compilation;
-using Obfuz.Utils;
 using FileUtil = Obfuz.Utils.FileUtil;
-using Obfuz.Settings;
-using dnlib.DotNet;
 
 namespace Obfuz.Unity
 {
@@ -145,4 +141,4 @@ namespace Obfuz.Unity
         }
     }
 #endif
-        }
+}

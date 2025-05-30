@@ -21,7 +21,7 @@
         }
     }
 
-    public struct DefaultStaticEncryptionScope: IEncryptionScope
+    public struct DefaultStaticEncryptionScope : IEncryptionScope
     {
         public void ForcePreserveAOT()
         {

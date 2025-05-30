@@ -3,9 +3,6 @@ using Obfuz.ObfusPasses;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using UnityEngine;
 
@@ -189,7 +186,7 @@ namespace Obfuz
             ObfuscationPassType passType = ObfuscationPassType.None;
             foreach (var passName in obfuscationPassTypesStr.Split('|'))
             {
-                if (Enum.TryParse< ObfuscationPassType>(passName, out var pass))
+                if (Enum.TryParse<ObfuscationPassType>(passName, out var pass))
                 {
                     passType |= pass;
                 }

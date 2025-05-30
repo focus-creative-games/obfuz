@@ -1,9 +1,6 @@
 ﻿using dnlib.DotNet;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Obfuz.Emit
 {
@@ -45,7 +42,7 @@ namespace Obfuz.Emit
             }
         }
 
-        public List<T> GetEntities<T>()  where T: IGroupByModuleEntity
+        public List<T> GetEntities<T>() where T : IGroupByModuleEntity
         {
             var managers = new List<T>();
             foreach (var kv in _moduleEntityManagers)

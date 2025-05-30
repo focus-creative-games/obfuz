@@ -1,8 +1,6 @@
-using NUnit.Framework;
 using Obfuz.Editor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Obfuz.Settings
