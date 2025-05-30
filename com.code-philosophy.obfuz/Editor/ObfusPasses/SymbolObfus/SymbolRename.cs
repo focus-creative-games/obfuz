@@ -150,10 +150,37 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
+        private void PrecomputeNeedRename()
+        {
+            foreach (ModuleDef mod in _toObfuscatedModules)
+            {
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    _renamePolicy.NeedRename(type);
+                    foreach (var field in type.Fields)
+                    {
+                        _renamePolicy.NeedRename(field);
+                    }
+                    foreach (var method in type.Methods)
+                    {
+                        _renamePolicy.NeedRename(method);
+                    }
+                    foreach (var property in type.Properties)
+                    {
+                        _renamePolicy.NeedRename(property);
+                    }
+                    foreach (var eventDef in type.Events)
+                    {
+                        _renamePolicy.NeedRename(eventDef);
+                    }
+                }
+            }
+        }
+
         public void Process()
         {
             _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
-
+            PrecomputeNeedRename();
             RenameTypes();
             RenameFields();
             RenameMethods();
