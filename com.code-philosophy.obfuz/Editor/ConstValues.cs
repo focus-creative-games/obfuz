@@ -14,6 +14,10 @@ namespace Obfuz.Editor
 
         public const string ObfuzIgnoreAttributeFullName = "Obfuz.ObfuzIgnoreAttribute";
 
+        public const string ObfuzScopeFullName = "Obfuz.ObfuzScope";
+
         public const string EncryptFieldAttributeFullName = "Obfuz.EncryptFieldAttribute";
+
+        public const string EmbeddedAttributeFullName = "Microsoft.CodeAnalysis.EmbeddedAttribute";
     }
 }

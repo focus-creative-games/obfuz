@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Editor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -837,7 +838,7 @@ namespace Obfuz.Utils
 
         public static bool HasEncryptFieldAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Find("Obfuz.EncryptFieldAttribute") != null;
+            return obj.CustomAttributes.Find(ConstValues.EncryptFieldAttributeFullName) != null;
         }
 
         public static bool HasRuntimeInitializeOnLoadMethodAttribute(MethodDef method)
@@ -858,6 +859,11 @@ namespace Obfuz.Utils
         public static bool HasDOTSCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
             return obj.CustomAttributes.Find("Unity.Jobs.DOTSCompilerGeneratedAttribute") != null;
+        }
+
+        public static bool HasMicrosoftCodeAnalysisEmbeddedAttribute(IHasCustomAttribute obj)
+        {
+            return obj.CustomAttributes.Find("Microsoft.CodeAnalysis.EmbeddedAttribute") != null;
         }
     }
 }

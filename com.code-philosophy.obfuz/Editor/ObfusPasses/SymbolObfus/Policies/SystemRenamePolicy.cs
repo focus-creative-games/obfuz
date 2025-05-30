@@ -1,5 +1,7 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Editor;
 using Obfuz.Utils;
+using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
@@ -12,9 +14,17 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             _obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache;
         }
 
+        private readonly HashSet<string> _fullIgnoreTypeNames = new HashSet<string>
+        {
+            ConstValues.ObfuzIgnoreAttributeFullName,
+            ConstValues.ObfuzScopeFullName,
+            ConstValues.EncryptFieldAttributeFullName,
+            ConstValues.EmbeddedAttributeFullName,
+        };
+
         private bool IsFullIgnoreObfuscatedType(TypeDef typeDef)
         {
-            return typeDef.FullName == "Obfuz.ObfuzIgnoreAttribute" || typeDef.FullName == "Obfuz.ObfuzScope" || typeDef.FullName == "Obfuz.EncryptFieldAttribute";
+            return _fullIgnoreTypeNames.Contains(typeDef.FullName) || MetaUtil.HasMicrosoftCodeAnalysisEmbeddedAttribute(typeDef);
         }
 
         public override bool NeedRename(TypeDef typeDef)
