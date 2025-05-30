@@ -3,14 +3,8 @@ using Obfuz.Settings;
 using Obfuz;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
-using HybridCLR.Editor.Commands;
-using HybridCLR.Editor.Installer;
 using System.IO;
-using HybridCLR.Editor.ABI;
 using UnityEngine;
 using Obfuz.Unity;
 
@@ -34,11 +28,9 @@ namespace Obfuz4HybridCLR
             }
         }
 
-        public static void CompileAndObfuscateHotUpdateAssemblies(BuildTarget target)
+        public static void ObfuscateHotUpdateAssemblies(BuildTarget target, string outputDir)
         {
             string hotUpdateDllPath = SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target);
-            BashUtil.RemoveDir(hotUpdateDllPath);
-            CompileDllCommand.CompileDll(target);
 
             AssemblySettings assemblySettings = ObfuzSettings.Instance.assemblySettings;
             ObfuscationProcess.ValidateReferences(hotUpdateDllPath, new HashSet<string>(assemblySettings.GetAssembliesToObfuscate()), new HashSet<string>(assemblySettings.GetObfuscationRelativeAssemblyNames()));
@@ -46,10 +38,31 @@ namespace Obfuz4HybridCLR
             {
                 hotUpdateDllPath,
             };
-            Obfuscate(target, assemblySearchPaths, hotUpdateDllPath);
+            if (AreSameDirectory(hotUpdateDllPath, outputDir))
+            {
+                throw new Exception($"hotUpdateDllPath:{hotUpdateDllPath} can't be same to outputDir:{outputDir}");
+            }
+            Obfuscate(target, assemblySearchPaths, outputDir);
+            foreach (string hotUpdateAssemblyName in SettingsUtil.HotUpdateAssemblyNamesExcludePreserved)
+            {
+                string srcFile = $"{hotUpdateDllPath}/{hotUpdateAssemblyName}.dll";
+                string dstFile = $"{outputDir}/{hotUpdateAssemblyName}.dll";
+                // only copy non obfuscated assemblies
+                if (File.Exists(srcFile) && !File.Exists(dstFile))
+                {
+                    File.Copy(srcFile, dstFile, true);
+                    Debug.Log($"[CompileAndObfuscateDll] Copy nonObfuscated assembly {srcFile} to {dstFile}");
+                }
+            }
         }
 
-        public static void Obfuscate(BuildTarget target, List<string> assemblySearchPaths, string outputPath)
+        /// <summary>
+        /// output obfuscated assemblies to ObfuzSettings.Instance.GetObfuscatedAssemblyOutputPath(target)
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="assemblySearchPaths"></param>
+        /// <exception cref="Exception"></exception>
+        public static void Obfuscate(BuildTarget target, List<string> assemblySearchPaths, string obfuscatedAssemblyOutputPath)
         {
             var obfuzSettings = ObfuzSettings.Instance;
 
@@ -57,11 +70,6 @@ namespace Obfuz4HybridCLR
             ObfuscatorBuilder builder = ObfuscatorBuilder.FromObfuzSettings(obfuzSettings, target, true);
             builder.InsertTopPriorityAssemblySearchPaths(assemblySearchDirs);
 
-            string obfuscatedAssemblyOutputPath = obfuzSettings.GetObfuscatedAssemblyOutputPath(target);
-            if (AreSameDirectory(outputPath, obfuscatedAssemblyOutputPath))
-            {
-                throw new Exception($"outputPath:{outputPath} can't be same to ObfuscatedAssemblyOutputPath:{obfuscatedAssemblyOutputPath}");
-            }
             foreach (var assemblySearchDir in builder.CoreSettingsFacade.assemblySearchPaths)
             {
                 if (AreSameDirectory(assemblySearchDir, obfuscatedAssemblyOutputPath))
@@ -72,15 +80,6 @@ namespace Obfuz4HybridCLR
 
             Obfuscator obfuz = builder.Build();
             obfuz.Run();
-
-            Directory.CreateDirectory(outputPath);
-            foreach (string srcFile in Directory.GetFiles(obfuscatedAssemblyOutputPath, "*.dll"))
-            {
-                string fileName = Path.GetFileName(srcFile);
-                string destFile = $"{outputPath}/{fileName}";
-                File.Copy(srcFile, destFile, true);
-                Debug.Log($"Copy {srcFile} to {destFile}");
-            }
         }
     }
 }
