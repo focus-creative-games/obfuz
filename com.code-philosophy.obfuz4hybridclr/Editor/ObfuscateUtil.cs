@@ -69,6 +69,7 @@ namespace Obfuz4HybridCLR
             var assemblySearchDirs = assemblySearchPaths;
             ObfuscatorBuilder builder = ObfuscatorBuilder.FromObfuzSettings(obfuzSettings, target, true);
             builder.InsertTopPriorityAssemblySearchPaths(assemblySearchDirs);
+            builder.CoreSettingsFacade.obfuscatedAssemblyOutputPath = obfuscatedAssemblyOutputPath;
 
             foreach (var assemblySearchDir in builder.CoreSettingsFacade.assemblySearchPaths)
             {
