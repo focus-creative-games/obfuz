@@ -35,7 +35,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 return true;
             }
-            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(field, field.DeclaringType, ObfuzScope.Field))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(field, field.DeclaringType, ObfuzScope.Field))
             {
                 return false;
             }

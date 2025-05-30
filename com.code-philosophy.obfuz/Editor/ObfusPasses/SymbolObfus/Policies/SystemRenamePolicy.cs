@@ -29,7 +29,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 return false;
             }
 
-            if (_obfuzIgnoreScopeComputeCache.HasSelfOrEnclosingObfuzIgnoreScope(typeDef, ObfuzScope.TypeName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrEnclosingOrInheritObfuzIgnoreScope(typeDef, ObfuzScope.TypeName))
             {
                 return false;
             }
@@ -60,7 +60,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(fieldDef, fieldDef.DeclaringType, ObfuzScope.Field))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(fieldDef, fieldDef.DeclaringType, ObfuzScope.Field))
             {
                 return false;
             }
@@ -77,7 +77,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(propertyDef, propertyDef.DeclaringType, ObfuzScope.PropertyName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(propertyDef, propertyDef.DeclaringType, ObfuzScope.PropertyName))
             {
                 return false;
             }
@@ -90,7 +90,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (_obfuzIgnoreScopeComputeCache.HasSelfOrInheritObfuzIgnoreScope(eventDef, eventDef.DeclaringType, ObfuzScope.EventName))
+            if (_obfuzIgnoreScopeComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(eventDef, eventDef.DeclaringType, ObfuzScope.EventName))
             {
                 return false;
             }

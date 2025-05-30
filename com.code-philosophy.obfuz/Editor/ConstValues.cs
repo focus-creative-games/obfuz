@@ -11,5 +11,9 @@ namespace Obfuz.Editor
         public const string ObfuzInternalSymbolNamePrefix = "$Obfuz$";
 
         public const string ObfuzRuntimeAssemblyName = "Obfuz.Runtime";
+
+        public const string ObfuzIgnoreAttributeFullName = "Obfuz.ObfuzIgnoreAttribute";
+
+        public const string EncryptFieldAttributeFullName = "Obfuz.EncryptFieldAttribute";
     }
 }

@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Obfuz.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,8 @@ namespace Obfuz.ObfusPasses.CleanUp
             if (customAttributes.Count == 0)
                 return;
             var toRemove = new List<CustomAttribute>();
-            customAttributes.RemoveAll("Obfuz.ObfuzIgnoreAttribute");
-            customAttributes.RemoveAll("Obfuz.EncryptFieldAttribute");
+            customAttributes.RemoveAll(ConstValues.ObfuzIgnoreAttributeFullName);
+            customAttributes.RemoveAll(ConstValues.EncryptFieldAttributeFullName);
         }
 
         public override void Process()
