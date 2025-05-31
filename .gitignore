@@ -21,3 +21,5 @@
 *.csproj
 *.sln
 packages-lock.json
+/Samples/WorkWithHybridCLR/Assets/Obfuz/SymbolObfus/symbol-mapping.xml
+/Samples/WorkWithHybridCLR/Assets/StreamingAssets/HotUpdate.dll.bytes
