@@ -19,7 +19,6 @@ namespace Obfuz4HybridCLR
                 var dir1 = new DirectoryInfo(path1);
                 var dir2 = new DirectoryInfo(path2);
 
-                // 比较完整路径（考虑符号链接）
                 return dir1.FullName.TrimEnd('\\') == dir2.FullName.TrimEnd('\\');
             }
             catch
@@ -56,12 +55,6 @@ namespace Obfuz4HybridCLR
             }
         }
 
-        /// <summary>
-        /// output obfuscated assemblies to ObfuzSettings.Instance.GetObfuscatedAssemblyOutputPath(target)
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="assemblySearchPaths"></param>
-        /// <exception cref="Exception"></exception>
         public static void Obfuscate(BuildTarget target, List<string> assemblySearchPaths, string obfuscatedAssemblyOutputPath)
         {
             var obfuzSettings = ObfuzSettings.Instance;
