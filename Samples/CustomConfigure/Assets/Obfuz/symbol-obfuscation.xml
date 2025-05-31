@@ -2,6 +2,6 @@
 
 <obfuz>
     <assembly name="Assembly-CSharp">
-      <type name="SymbolObfus.Test1" obName="0"/>
+      <type name="SymbolObfus.Test1" obName="0" applyToMembers="*"/>
     </assembly>
 </obfuz>
