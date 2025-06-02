@@ -43,6 +43,7 @@ Obfuz 是一款开源、强大、易用及稳定可靠的充分满足商业化�
 
 - [文档](https://www.obfuz.com/)
 - [快速上手](https://www.obfuz.com/docs/beginner/quick-start)
+- [示例项目](https://github.com/focus-creative-games/obfuz-samples)
 
 ## 未来计划
 

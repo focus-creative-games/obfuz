@@ -54,6 +54,7 @@ Obfuz is actively evolving. Upcoming features include:
 
 - [Document](https://www.obfuz.com/)
 - [Quick Start](https://www.obfuz.com/docs/beginner/quick-start)
+- [Samples](https://github.com/focus-creative-games/obfuz-samples)
 
 ## License
 
