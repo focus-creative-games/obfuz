@@ -43,22 +43,22 @@ namespace Obfuz.Unity
         }
 
         [MenuItem("Obfuz/Documents/Quick Start")]
-        public static void OpenQuickStart() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/beginner/quickstart");
+        public static void OpenQuickStart() => Application.OpenURL("https://www.obfuz.com/docs/beginner/quickstart");
 
         [MenuItem("Obfuz/Documents/FAQ")]
-        public static void OpenFAQ() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/help/faq");
+        public static void OpenFAQ() => Application.OpenURL("https://www.obfuz.com/docs/help/faq");
 
         [MenuItem("Obfuz/Documents/Common Errors")]
-        public static void OpenCommonErrors() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/help/commonerrors");
+        public static void OpenCommonErrors() => Application.OpenURL("https://www.obfuz.com/docs/help/commonerrors");
 
         [MenuItem("Obfuz/Documents/Bug Report")]
-        public static void OpenBugReport() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/help/issue");
+        public static void OpenBugReport() => Application.OpenURL("https://www.obfuz.com/docs/help/issue");
 
         [MenuItem("Obfuz/Documents/GitHub")]
         public static void OpenGitHub() => Application.OpenURL("https://github.com/focus-creative-games/obfuz");
 
         [MenuItem("Obfuz/Documents/About")]
-        public static void OpenAbout() => Application.OpenURL("https://obfuz.doc.code-philosophy.com/docs/intro");
+        public static void OpenAbout() => Application.OpenURL("https://www.obfuz.com/docs/intro");
     }
 
 }
