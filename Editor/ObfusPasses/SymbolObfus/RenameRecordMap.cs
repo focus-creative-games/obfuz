@@ -41,6 +41,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public RenameStatus status;
             public string signature;
             public string newName;
+            public string oldStackTraceSignature;
+            public string newStackTraceSignature;
         }
 
         private class RenameMappingMethodParam
@@ -303,11 +305,15 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             string signature = ele.Attributes["signature"].Value;
             string newName = ele.Attributes["newName"].Value;
+            string oldStackTraceSignature = ele.Attributes["oldStackTraceSignature"].Value;
+            string newStackTraceSignature = ele.Attributes["newStackTraceSignature"].Value;
             var rmm = new RenameMappingMethod
             {
                 signature = signature,
                 newName = newName,
                 status = RenameStatus.Renamed,
+                oldStackTraceSignature = oldStackTraceSignature,
+                newStackTraceSignature = newStackTraceSignature,
             };
             type.methods.Add(signature, rmm);
         }
@@ -552,6 +558,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var methodNode = typeEle.OwnerDocument.CreateElement("method");
             methodNode.SetAttribute("signature", signature);
             methodNode.SetAttribute("newName", method.newName);
+            methodNode.SetAttribute("oldStackTraceSignature", method.oldStackTraceSignature);
+            methodNode.SetAttribute("newStackTraceSignature", method.newStackTraceSignature);
             typeEle.AppendChild(methodNode);
         }
 
