@@ -43,7 +43,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
             _mappingXmlPath = settings.symbolMappingFile;
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
-            _renameRecordMap = new RenameRecordMap(settings.symbolMappingFile, settings.debug);
+            _renameRecordMap = new RenameRecordMap(settings.symbolMappingFile, settings.debug, settings.keepUnknownSymbolInSymbolMappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
             _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() : NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
 

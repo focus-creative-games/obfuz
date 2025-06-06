@@ -87,6 +87,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private readonly string _mappingFile;
         private readonly bool _debug;
+        private readonly bool _keepUnknownSymbolInSymbolMappingFile;
         private readonly Dictionary<string, RenameMappingAssembly> _assemblies = new Dictionary<string, RenameMappingAssembly>();
 
 
@@ -99,10 +100,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<VirtualMethodGroup, RenameRecord> _virtualMethodGroups = new Dictionary<VirtualMethodGroup, RenameRecord>();
 
 
-        public RenameRecordMap(string mappingFile, bool debug)
+        public RenameRecordMap(string mappingFile, bool debug, bool keepUnknownSymbolInSymbolMappingFile)
         {
             _mappingFile = mappingFile;
             _debug = debug;
+            _keepUnknownSymbolInSymbolMappingFile = keepUnknownSymbolInSymbolMappingFile;
         }
 
         public void Init(List<ModuleDef> assemblies, INameMaker nameMaker)
@@ -395,7 +397,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                             {
                                 WriteTypeMapping(assemblyNode, typeDef);
                             }
-                            else
+                            else if (_keepUnknownSymbolInSymbolMappingFile)
                             {
                                 WriteTypeMapping(assemblyNode, typeName, ass.types[typeName]);
                             }
