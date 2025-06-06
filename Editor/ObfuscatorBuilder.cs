@@ -83,32 +83,49 @@ namespace Obfuz
 #endif
 
 #if UNITY_STANDALONE_WIN || (UNITY_EDITOR_WIN && UNITY_SERVER)
-                "PlaybackEngines\\windowsstandalonesupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/windowsstandalonesupport/Variations/il2cpp/Managed",
 #elif UNITY_STANDALONE_OSX || (UNITY_EDITOR_OSX && UNITY_SERVER)
-                "PlaybackEngines\\MacStandaloneSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/MacStandaloneSupport/Variations/il2cpp/Managed",
 #elif UNITY_STANDALONE_LINUX || (UNITY_EDITOR_LINUX && UNITY_SERVER)
-                "PlaybackEngines\\LinuxStandaloneSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/LinuxStandaloneSupport/Variations/il2cpp/Managed",
 #elif UNITY_ANDROID
-                "PlaybackEngines\\AndroidPlayer\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/AndroidPlayer/Variations/il2cpp/Managed",
 #elif UNITY_IOS
-                "PlaybackEngines\\iOSSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/iOSSupport/Variations/il2cpp/Managed",
 #elif UNITY_WEBGL
-                "PlaybackEngines\\WebGLSupport\\Variations\\nondevelopment\\Data\\Managed",
+                "PlaybackEngines/WebGLSupport/Variations/nondevelopment/Data/Managed",
 #elif UNITY_MINIGAME || UNITY_WEIXINMINIGAME
-                "PlaybackEngines\\WeixinMiniGameSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/WeixinMiniGameSupport/Variations/il2cpp/Managed",
 #elif UNITY_OPENHARMONY
-                "PlaybackEngines\\OpenHarmonyPlayer\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/OpenHarmonyPlayer/Variations/il2cpp/Managed",
 #elif UNITY_TVOS
-                "PlaybackEngines\AppleTVSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines\AppleTVSupport/Variations/il2cpp/Managed",
 #elif UNITY_WSA
-                "PlaybackEngines\\WSASupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/WSASupport/Variations/il2cpp/Managed",
 #elif UNITY_LUMIN
-                "PlaybackEngines\\LuminSupport\\Variations\\il2cpp\\Managed",
+                "PlaybackEngines/LuminSupport/Variations/il2cpp/Managed",
 #else
 #error "Unsupported platform, please report to us"
 #endif
                 };
-            return searchPaths.Select(path => Path.Combine(applicationContentsPath, path)).ToList();
+            var resultPaths = new List<string>();
+            foreach (var path in searchPaths)
+            {
+                string candidatePath1 = Path.Combine(applicationContentsPath, path);
+                if (Directory.Exists(candidatePath1))
+                {
+                    resultPaths.Add(candidatePath1);
+                }
+                if (path.StartsWith("PlaybackEngines"))
+                {
+                    string candidatePath2 = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(applicationContentsPath)), path);
+                    if (Directory.Exists(candidatePath2))
+                    {
+                        resultPaths.Add(candidatePath2);
+                    }
+                }
+            }
+            return resultPaths;
         }
 
         public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation)
@@ -116,6 +133,11 @@ namespace Obfuz
             List<string> searchPaths = searchPathIncludeUnityEditorInstallLocation ?
                 BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.additionalAssemblySearchPaths).ToList()
                 : settings.assemblySettings.additionalAssemblySearchPaths.ToList();
+            foreach (var path in searchPaths)
+            {
+                bool exists = Directory.Exists(path);
+                UnityEngine.Debug.Log($"search path:{path} exists:{exists}");
+            }
             var builder = new ObfuscatorBuilder
             {
                 _coreSettingsFacade = new CoreSettingsFacade()
