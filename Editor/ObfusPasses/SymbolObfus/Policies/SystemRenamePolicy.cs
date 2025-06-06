@@ -2,6 +2,7 @@
 using Obfuz.Editor;
 using Obfuz.Utils;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {
@@ -14,17 +15,26 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             _obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache;
         }
 
-        private readonly HashSet<string> _fullIgnoreTypeNames = new HashSet<string>
+        private readonly HashSet<string> _fullIgnoreTypeFullNames = new HashSet<string>
         {
             ConstValues.ObfuzIgnoreAttributeFullName,
             ConstValues.ObfuzScopeFullName,
             ConstValues.EncryptFieldAttributeFullName,
             ConstValues.EmbeddedAttributeFullName,
+            ConstValues.ZluaLuaInvokeAttributeFullName,
+            ConstValues.ZluaLuaCallbackAttributeFullName,
+            ConstValues.ZluaLuaMarshalAsAttributeFullName,
+        };
+
+
+        private readonly HashSet<string> _fullIgnoreTypeNames = new HashSet<string>
+        {
+            ConstValues.MonoPInvokeCallbackAttributeName,
         };
 
         private bool IsFullIgnoreObfuscatedType(TypeDef typeDef)
         {
-            return _fullIgnoreTypeNames.Contains(typeDef.FullName) || MetaUtil.HasMicrosoftCodeAnalysisEmbeddedAttribute(typeDef);
+            return _fullIgnoreTypeFullNames.Contains(typeDef.FullName) || _fullIgnoreTypeNames.Contains(typeDef.Name) || MetaUtil.HasMicrosoftCodeAnalysisEmbeddedAttribute(typeDef);
         }
 
         public override bool NeedRename(TypeDef typeDef)
