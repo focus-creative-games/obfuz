@@ -150,10 +150,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         string methodSig = TypeSigUtil.ComputeMethodDefSignature(method);
 
                         RenameMappingMethod rmm = rmt?.methods.GetValueOrDefault(methodSig);
-                        if (rmm != null && rmm.status == RenameStatus.Renamed)
-                        {
-                            nameMaker.AddPreservedName(method, rmm.newName);
-                        }
+                        //if (rmm != null && rmm.status == RenameStatus.Renamed)
+                        //{
+                        //    nameMaker.AddPreservedName(method, rmm.newName);
+                        //}
                         _methodRenames.Add(method, new RenameRecord
                         {
                             status = RenameStatus.NotRenamed,
