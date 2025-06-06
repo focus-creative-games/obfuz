@@ -385,10 +385,29 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 if (mod != null)
                 {
                     var types = mod.GetTypes().ToDictionary(t => _typeRenames.TryGetValue(t, out var rec) ? rec.oldName : t.FullName, t => t);
-                    var sortedTypes = new SortedDictionary<string, TypeDef>(types);
-                    foreach (TypeDef type in sortedTypes.Values)
+                    if (_assemblies.TryGetValue(assName, out var ass))
                     {
-                        WriteTypeMapping(assemblyNode, type);
+                        var totalTypeNames = types.Keys.Concat(ass.types.Keys).ToHashSet().ToList();
+                        totalTypeNames.Sort((a, b) => a.CompareTo((b)));
+                        foreach (string typeName in totalTypeNames)
+                        {
+                            if (types.TryGetValue(typeName, out TypeDef typeDef))
+                            {
+                                WriteTypeMapping(assemblyNode, typeDef);
+                            }
+                            else
+                            {
+                                WriteTypeMapping(assemblyNode, typeName, ass.types[typeName]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var sortedTypes = new SortedDictionary<string, TypeDef>(types);
+                        foreach (TypeDef type in sortedTypes.Values)
+                        {
+                            WriteTypeMapping(assemblyNode, type);
+                        }
                     }
                 }
                 else
