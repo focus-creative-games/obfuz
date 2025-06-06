@@ -374,37 +374,33 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var root = doc.CreateElement("mapping");
             doc.AppendChild(root);
 
-            var sortedModRenames = _modRenames.ToList();
-            sortedModRenames.Sort((a, b) => a.Value.oldName.CompareTo(b.Value.oldName));
-            foreach (var kvp in sortedModRenames)
+            var totalAssNames = _modRenames.Keys.Select(m => m.Assembly.Name.ToString()).Concat(_assemblies.Keys).ToHashSet().ToList();
+            totalAssNames.Sort((a, b) => a.CompareTo(b));
+            foreach (string assName in totalAssNames)
             {
-                ModuleDef mod = kvp.Key;
-                RenameRecord record = kvp.Value;
+                ModuleDef mod = _modRenames.Keys.FirstOrDefault(m => m.Assembly.Name == assName);
                 var assemblyNode = doc.CreateElement("assembly");
-                assemblyNode.SetAttribute("name", mod.Assembly.Name);
-                foreach (TypeDef type in mod.GetTypes())
-                {
-                    WriteTypeMapping(assemblyNode, type);
-                }
+                assemblyNode.SetAttribute("name", assName);
                 root.AppendChild(assemblyNode);
-            }
-
-            var sortedAsses = GetSortedValueList(_assemblies, (a, b) => a.assName.CompareTo(b.assName));
-            foreach (RenameMappingAssembly ass in sortedAsses)
-            {
-                if (_modRenames.Keys.Any(m => m.Assembly.Name == ass.assName))
+                if (mod != null)
                 {
-                    continue;
+                    var types = mod.GetTypes().ToDictionary(t => _typeRenames.TryGetValue(t, out var rec) ? rec.oldName : t.FullName, t => t);
+                    var sortedTypes = new SortedDictionary<string, TypeDef>(types);
+                    foreach (TypeDef type in sortedTypes.Values)
+                    {
+                        WriteTypeMapping(assemblyNode, type);
+                    }
                 }
-                var assemblyNode = doc.CreateElement("assembly");
-                assemblyNode.SetAttribute("name", ass.assName);
-
-                var sortedTypes = GetSortedValueList(ass.types, (a, b) => a.oldFullName.CompareTo(b.oldFullName));
-                foreach (var type in sortedTypes)
+                else
                 {
-                    WriteTypeMapping(assemblyNode, type.oldFullName, type);
+                    RenameMappingAssembly ass = _assemblies[assName];
+
+                    var sortedTypes = GetSortedValueList(ass.types, (a, b) => a.oldFullName.CompareTo(b.oldFullName));
+                    foreach (var type in sortedTypes)
+                    {
+                        WriteTypeMapping(assemblyNode, type.oldFullName, type);
+                    }
                 }
-                root.AppendChild(assemblyNode);
             }
             Directory.CreateDirectory(Path.GetDirectoryName(_mappingFile));
             doc.Save(_mappingFile);
