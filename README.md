@@ -65,5 +65,6 @@ Obfuz 采用 MIT 许可证发布，欢迎自由使用、修改和分发。
 如有问题、建议或错误报告，请在用以下方式联系我们：
 
 - GitHub 上提交 Issue
-- 邮件联系维护者：`obfuz@code-philosophy.com`
-- 加入 **Luban&Obfuz交流群**，QQ群号： 692890842
+- 邮件联系维护者：`obfuz#code-philosophy.com`
+- QQ群 **Obfuz交流群**： 1048396510
+- discord频道 `https://discord.gg/bFXhmrUw8c`

@@ -65,5 +65,6 @@ Obfuz is released under the MIT License. Feel free to use, modify, and distribut
 For questions, suggestions, or bug reports, please reach us through:
 
 - Submit an Issue on GitHub
-- Email the maintainer: [obfuz@code-philosophy.com]
-- Join the ​​Luban & Obfuz Discussion Group​​ on QQ: 692890842
+- Email the maintainer: `obfuz#code-philosophy.com`
+- Obfuz QQ Group: 1048396510
+- Discord channel: `https://discord.gg/bFXhmrUw8c`
