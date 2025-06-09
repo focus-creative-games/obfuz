@@ -92,12 +92,12 @@ namespace Obfuz
                 "PlaybackEngines/AndroidPlayer/Variations/il2cpp/Managed",
 #elif UNITY_IOS
                 "PlaybackEngines/iOSSupport/Variations/il2cpp/Managed",
-#elif UNITY_WEBGL
-                "PlaybackEngines/WebGLSupport/Variations/nondevelopment/Data/Managed",
 #elif UNITY_MINIGAME || UNITY_WEIXINMINIGAME
                 "PlaybackEngines/WeixinMiniGameSupport/Variations/il2cpp/Managed",
 #elif UNITY_OPENHARMONY
                 "PlaybackEngines/OpenHarmonyPlayer/Variations/il2cpp/Managed",
+#elif UNITY_WEBGL
+                "PlaybackEngines/WebGLSupport/Variations/nondevelopment/Data/Managed",
 #elif UNITY_TVOS
                 "PlaybackEngines/AppleTVSupport/Variations/il2cpp/Managed",
 #elif UNITY_WSA
