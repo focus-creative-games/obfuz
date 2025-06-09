@@ -11,6 +11,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
         private readonly Dictionary<object, INameScope> _nameScopes = new Dictionary<object, INameScope>();
 
         private readonly object _namespaceScope = new object();
+        private readonly object _typeNameScope = new object();
 
         protected abstract INameScope CreateNameScope();
 
@@ -26,7 +27,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public void AddPreservedName(TypeDef typeDef, string name)
         {
-            GetNameScope(typeDef.Module).AddPreservedName(name);
+            GetNameScope(_typeNameScope).AddPreservedName(name);
         }
 
         public void AddPreservedName(MethodDef methodDef, string name)
@@ -75,7 +76,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public string GetNewName(TypeDef typeDef, string originalName)
         {
-            return GetDefaultNewName(typeDef.Module, originalName);
+            return GetDefaultNewName(_typeNameScope, originalName);
         }
 
         public string GetNewName(MethodDef methodDef, string originalName)
