@@ -3,6 +3,7 @@ using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.EncryptionVM;
 using Obfuz.ObfusPasses.CleanUp;
+using Obfuz.ObfusPasses.Instinct;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.Unity;
 using Obfuz.Utils;
@@ -42,6 +43,7 @@ namespace Obfuz
             _assemblyResolver = new CombinedAssemblyResolver(new PathAssemblyResolver(_coreSettings.assemblySearchPaths.ToArray()), new UnityProjectManagedAssemblyResolver(_coreSettings.buildTarget));
             _passPolicy = new ConfigurablePassPolicy(_coreSettings.assembliesToObfuscate, _coreSettings.enabledObfuscationPasses, _coreSettings.obfuscationPassRuleConfigFiles);
 
+            _pipeline1.AddPass(new InstinctPass());
             foreach (var pass in _coreSettings.obfuscationPasses)
             {
                 if (pass is SymbolObfusPass symbolObfusPass)
