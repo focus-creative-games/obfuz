@@ -99,7 +99,7 @@ namespace Obfuz
 #elif UNITY_OPENHARMONY
                 "PlaybackEngines/OpenHarmonyPlayer/Variations/il2cpp/Managed",
 #elif UNITY_TVOS
-                "PlaybackEngines\AppleTVSupport/Variations/il2cpp/Managed",
+                "PlaybackEngines/AppleTVSupport/Variations/il2cpp/Managed",
 #elif UNITY_WSA
                 "PlaybackEngines/WSASupport/Variations/il2cpp/Managed",
 #elif UNITY_LUMIN
