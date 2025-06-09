@@ -117,9 +117,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         }
                     }
                 }
+                typeMethods.flatMethods.Add(method);
             }
 
-            typeMethods.flatMethods.AddRange(interfaceMethods);
             foreach (MethodDef method in typeDef.Methods)
             {
                 if (!method.IsVirtual)
