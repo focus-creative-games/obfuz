@@ -376,7 +376,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             var root = doc.CreateElement("mapping");
             doc.AppendChild(root);
 
-            var totalAssNames = _modRenames.Keys.Select(m => m.Assembly.Name.ToString()).Concat(_assemblies.Keys).ToHashSet().ToList();
+            var totalAssNames = new HashSet<string>(_modRenames.Keys.Select(m => m.Assembly.Name.ToString()).Concat(_assemblies.Keys)).ToList();
             totalAssNames.Sort((a, b) => a.CompareTo(b));
             foreach (string assName in totalAssNames)
             {
@@ -389,7 +389,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     var types = mod.GetTypes().ToDictionary(t => _typeRenames.TryGetValue(t, out var rec) ? rec.oldName : t.FullName, t => t);
                     if (_assemblies.TryGetValue(assName, out var ass))
                     {
-                        var totalTypeNames = types.Keys.Concat(ass.types.Keys).ToHashSet().ToList();
+                        var totalTypeNames = new HashSet<string>(types.Keys.Concat(ass.types.Keys)).ToList();
                         totalTypeNames.Sort((a, b) => a.CompareTo((b)));
                         foreach (string typeName in totalTypeNames)
                         {
