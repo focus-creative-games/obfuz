@@ -87,7 +87,7 @@ namespace Obfuz.ObfusPasses.Instinct
                 return false;
             }
             MethodDef methodDef = method.ResolveMethodDef();
-            if (methodDef == null || methodDef.DeclaringType.FullName != "Obfuz.ObfuscationInstincts" || methodDef.DeclaringType.DefinitionAssembly.Name != ConstValues.ObfuzRuntimeAssemblyName)
+            if (methodDef == null || methodDef.DeclaringType.Name != "ObfuscationInstincts" || methodDef.DeclaringType.DefinitionAssembly.Name != ConstValues.ObfuzRuntimeAssemblyName)
             {
                 return false;
             }
