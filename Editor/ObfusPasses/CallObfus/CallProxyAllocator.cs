@@ -284,7 +284,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 var ret = Instruction.Create(OpCodes.Ret);
 
                 // sort methods by signature to ensure stable order
-                dispatchMethod.methods.Sort((a, b) => a.id.CompareTo(b.id));
+                //dispatchMethod.methods.Sort((a, b) => a.id.CompareTo(b.id));
                 foreach (CallInfo ci in dispatchMethod.methods)
                 {
                     var callTargetMethod = Instruction.Create(ci.callVir ? OpCodes.Callvirt : OpCodes.Call, ci.method);
