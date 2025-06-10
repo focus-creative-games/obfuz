@@ -11,7 +11,12 @@ namespace Obfuz.Utils
             return hash1 * 1566083941 + hash2;
         }
 
-        public static int ComputeHash(List<TypeSig> sigs)
+        public static int ComputeHash(TypeSig sig)
+        {
+            return TypeEqualityComparer.Instance.GetHashCode(sig);
+        }
+
+        public static int ComputeHash(IList<TypeSig> sigs)
         {
             int hash = 135781321;
             TypeEqualityComparer tc = TypeEqualityComparer.Instance;

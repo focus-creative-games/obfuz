@@ -77,6 +77,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         class CallInfo
         {
+            public string id;
             public IMethod method;
             public bool callVir;
         }
@@ -114,13 +115,39 @@ namespace Obfuz.ObfusPasses.CallObfus
             return typeDef;
         }
 
-        private MethodDef CreateDispatchMethodInfo(MethodSig methodSig)
+        private readonly HashSet<string> _uniqueMethodNames = new HashSet<string>();
+
+
+        private string ToUniqueMethodName(string originalName)
+        {
+            if (_uniqueMethodNames.Add(originalName))
+            {
+                return originalName;
+            }
+            for (int index = 1; ; index++)
+            {
+                string uniqueName = $"{originalName}${index}";
+                if (_uniqueMethodNames.Add(uniqueName))
+                {
+                    return uniqueName;
+                }
+            }
+        }
+
+        private string CreateDispatchMethodName(MethodSig methodSig, int index)
+        {
+            // use a stable name for the dispatch method, so that we can reuse it across different modules
+            // this is important for cross-module calls
+            return ToUniqueMethodName($"{ConstValues.ObfuzInternalSymbolNamePrefix}Dispatch_{HashUtil.ComputeHash(methodSig.Params) & 0xFFFF}_{HashUtil.ComputeHash(methodSig.RetType) & 0xFFFFFF}");
+        }
+
+        private MethodDef CreateDispatchMethodInfo(MethodSig methodSig, int index)
         {
             if (_proxyTypeDef == null)
             {
                 _proxyTypeDef = CreateProxyTypeDef();
             }
-            MethodDef methodDef = new MethodDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall$Dispatch${_proxyTypeDef.Methods.Count}", methodSig,
+            MethodDef methodDef = new MethodDefUser(CreateDispatchMethodName(methodSig, index), methodSig,
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
                 MethodAttributes.Static | MethodAttributes.Public);
             methodDef.DeclaringType = _proxyTypeDef;
@@ -172,7 +199,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 var newDispatchMethodInfo = new DispatchMethodInfo
                 {
-                    methodDef = CreateDispatchMethodInfo(methodSig),
+                    methodDef = CreateDispatchMethodInfo(methodSig, dispatchMethods.Count),
                 };
                 dispatchMethods.Add(newDispatchMethodInfo);
             }
@@ -209,7 +236,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                     salt = salt,
                     encryptedIndex = encryptedIndex,
                 };
-                methodDispatcher.methods.Add(new CallInfo { method = method, callVir = callVir });
+                methodDispatcher.methods.Add(new CallInfo { id = $"{method}{(callVir ? "" : "v")}",  method = method, callVir = callVir });
                 _methodProxys.Add(key, proxyInfo);
             }
             return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex, proxyInfo.index);
@@ -222,6 +249,19 @@ namespace Obfuz.ObfusPasses.CallObfus
                 throw new Exception("Already done");
             }
             _done = true;
+            if (_proxyTypeDef == null)
+            {
+                return;
+            }
+
+            // for stable order, we sort methods by name
+            var methodWithNamePairList = _proxyTypeDef.Methods.Select(m => (m, m.ToString())).ToList();
+            methodWithNamePairList.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+            _proxyTypeDef.Methods.Clear();
+            foreach (var methodPair in methodWithNamePairList)
+            {
+                methodPair.Item1.DeclaringType = _proxyTypeDef;
+            }
 
             foreach (DispatchMethodInfo dispatchMethod in _dispatchMethods.Values.SelectMany(ms => ms))
             {
@@ -242,6 +282,9 @@ namespace Obfuz.ObfusPasses.CallObfus
                 var switchInst = Instruction.Create(OpCodes.Switch, switchCases);
                 ins.Add(switchInst);
                 var ret = Instruction.Create(OpCodes.Ret);
+
+                // sort methods by signature to ensure stable order
+                dispatchMethod.methods.Sort((a, b) => a.id.CompareTo(b.id));
                 foreach (CallInfo ci in dispatchMethod.methods)
                 {
                     var callTargetMethod = Instruction.Create(ci.callVir ? OpCodes.Callvirt : OpCodes.Call, ci.method);
