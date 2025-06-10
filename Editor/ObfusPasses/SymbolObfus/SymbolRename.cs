@@ -580,7 +580,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                                 }
                             }
                         }
-                        if (newVirtualMethodName == null || conflict || _nameMaker.IsNamePreserved(group, newVirtualMethodName))
+                        if (newVirtualMethodName == null || conflict /*|| _nameMaker.IsNamePreserved(group, newVirtualMethodName)*/)
                         {
                             newVirtualMethodName = _nameMaker.GetNewName(group, method.Name);
                         }
