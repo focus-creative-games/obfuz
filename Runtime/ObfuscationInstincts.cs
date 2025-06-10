@@ -27,5 +27,14 @@ namespace Obfuz
         {
             return typeof(T).Name;
         }
+
+        /// <summary>
+        /// register original type name to type mapping.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static void RegisterReflectionType<T>()
+        {
+            ObfuscationTypeMapper.RegisterType<T>(typeof(T).FullName);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using System;
+using System.Reflection;
 using UnityEngine.Assertions;
 
 namespace Obfuz.Emit
@@ -143,6 +144,9 @@ namespace Obfuz.Emit
             _verifySecretKey = mod.Import(typeof(AssetUtility).GetMethod("VerifySecretKey", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_verifySecretKey, "VerifySecretKey not found");
 
+            _obfuscationTypeMapperRegisterType = mod.Import(typeof(ObfuscationTypeMapper).GetMethod("RegisterType", 1, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null));
+            Assert.IsNotNull(_obfuscationTypeMapperRegisterType, "ObfuscationTypeMapper.RegisterType not found");
+
             _staticDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultStaticEncryptionScope>));
             _dynamicDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultDynamicEncryptionScope>));
             if (_encryptionScopeProvider.IsDynamicSecretAssembly(mod))
@@ -168,6 +172,8 @@ namespace Obfuz.Emit
         private IMethod _initializeArray;
         private IMethod _verifySecretKey;
 
+        private IMethod _obfuscationTypeMapperRegisterType;
+
         public IMethod CastIntAsFloat => _castIntAsFloat;
         public IMethod CastLongAsDouble => _castLongAsDouble;
         public IMethod CastFloatAsInt => _castFloatAsInt;
@@ -176,6 +182,8 @@ namespace Obfuz.Emit
         public IMethod InitializedArray => _initializeArray;
 
         public IMethod VerifySecretKey => _verifySecretKey;
+
+        public IMethod ObfuscationTypeMapperRegisterType => _obfuscationTypeMapperRegisterType;
 
         public IMethod EncryptBlock => _defaultEncryptionServiceMetadataImporter.EncryptBlock;
         public IMethod DecryptBlock => _defaultEncryptionServiceMetadataImporter.DecryptBlock;

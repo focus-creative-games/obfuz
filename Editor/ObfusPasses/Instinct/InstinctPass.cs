@@ -25,7 +25,6 @@ namespace Obfuz.ObfusPasses.Instinct
 
         public override void Start()
         {
-            var ctx = ObfuscationPassContext.Current;
         }
 
         public override void Stop()
@@ -92,11 +91,15 @@ namespace Obfuz.ObfusPasses.Instinct
                 return false;
             }
 
+            ObfuscationPassContext ctx = ObfuscationPassContext.Current;
+            var importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(callingMethod.Module, ctx.encryptionScopeProvider);
+
             string methodName = methodDef.Name;
             switch (methodName)
             {
                 case "FullNameOf":
                 case "NameOf":
+                case "RegisterReflectionType":
                 {
                     MethodSpec methodSpec = (MethodSpec)method;
                     GenericInstMethodSig gims = methodSpec.GenericInstMethodSig;
@@ -114,6 +117,14 @@ namespace Obfuz.ObfusPasses.Instinct
                         {
                             string typeName = GetTypeName(type);
                             outputInstructions.Add(Instruction.Create(OpCodes.Ldstr, typeName));
+                            break;
+                        }
+                        case "RegisterReflectionType":
+                        {
+                            string typeFullName = GetTypeFullName(type);
+                            outputInstructions.Add(Instruction.Create(OpCodes.Ldstr, typeFullName));
+                            var finalMethod = new MethodSpecUser((IMethodDefOrRef)importer.ObfuscationTypeMapperRegisterType, gims);
+                            outputInstructions.Add(Instruction.Create(OpCodes.Call, finalMethod));
                             break;
                         }
                         default: throw new NotSupportedException($"Unsupported instinct method: {methodDef.FullName}");
