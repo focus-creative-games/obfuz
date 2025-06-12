@@ -144,7 +144,7 @@ namespace Obfuz.Emit
             _verifySecretKey = mod.Import(typeof(AssetUtility).GetMethod("VerifySecretKey", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_verifySecretKey, "VerifySecretKey not found");
 
-            _obfuscationTypeMapperRegisterType = mod.Import(typeof(ObfuscationTypeMapper).GetMethod("RegisterType", 1, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null));
+            _obfuscationTypeMapperRegisterType = mod.Import(typeof(ObfuscationTypeMapper).GetMethod("RegisterType", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null));
             Assert.IsNotNull(_obfuscationTypeMapperRegisterType, "ObfuscationTypeMapper.RegisterType not found");
 
             _staticDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultStaticEncryptionScope>));
