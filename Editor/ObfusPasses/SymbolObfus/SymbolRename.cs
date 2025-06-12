@@ -23,6 +23,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private List<ModuleDef> _toObfuscatedModules;
         private List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
         private HashSet<ModuleDef> _toObfuscatedModuleSet;
+        private HashSet<ModuleDef> _nonObfuscatedButReferencingObfuscatedModuleSet;
         private IObfuscationPolicy _renamePolicy;
         private INameMaker _nameMaker;
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
@@ -67,6 +68,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _toObfuscatedModules = ctx.modulesToObfuscate;
             _obfuscatedAndNotObfuscatedModules = ctx.allObfuscationRelativeModules;
             _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
+            _nonObfuscatedButReferencingObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.allObfuscationRelativeModules.Where(m => !_toObfuscatedModuleSet.Contains(m)));
 
             var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate, _obfuscationRuleFiles);
             var totalRenamePolicies = new List<IObfuscationPolicy>
@@ -551,7 +553,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 VirtualMethodGroup group = _virtualMethodGroupCalculator.GetMethodGroup(method);
                 if (!groupNeedRenames.TryGetValue(group, out var needRename))
                 {
-                    if (!group.methods.Any(m => _toObfuscatedModuleSet.Contains(m.DeclaringType.Module)))
+                    var rootBeInheritedTypes = group.GetRootBeInheritedTypes();
+                    // - if the group contains no obfuscated methods
+                    // - if the group contains method defined in non-obfuscated module but referencing obfuscated module and virtual method in obfuscated type overrides virtual method from non-obfuscated type
+                    if (!group.methods.Any(m => _toObfuscatedModuleSet.Contains(m.DeclaringType.Module)) || group.methods.Any(m => _nonObfuscatedButReferencingObfuscatedModuleSet.Contains(m.Module) && rootBeInheritedTypes.Contains(m.DeclaringType)))
                     {
                         needRename = false;
                     }

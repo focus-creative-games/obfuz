@@ -11,6 +11,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private HashSet<TypeDef> _nameScopes;
 
+        private HashSet<TypeDef> _rootNameScope;
+
         public HashSet<TypeDef> GetNameConflictTypeScopes()
         {
             if (_nameScopes != null)
@@ -29,6 +31,25 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
             }
             return _nameScopes;
+        }
+
+        public HashSet<TypeDef> GetRootBeInheritedTypes()
+        {
+            if (_rootNameScope != null)
+            {
+                return _rootNameScope;
+            }
+            _rootNameScope = new HashSet<TypeDef>();
+            var nameScopes = GetNameConflictTypeScopes();
+            foreach (var type in nameScopes)
+            {
+                TypeDef parentType = MetaUtil.GetBaseTypeDef(type);
+                if (parentType == null || !nameScopes.Contains(parentType))
+                {
+                    _rootNameScope.Add(type);
+                }
+            }
+            return _rootNameScope;
         }
 
         public IEnumerable<TypeDef> GetNameDeclaringTypeScopes()
