@@ -225,6 +225,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             TypeDef typeDef = fieldDef.DeclaringType;
             if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
             {
+                if (typeDef.IsEnum)
+                {
+                    return false;
+                }
                 if (fieldDef.IsPublic && !fieldDef.IsStatic)
                 {
                     return false;
