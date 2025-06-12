@@ -96,12 +96,13 @@ namespace Obfuz.Data
         {
             if (_holderTypeDef == null || _holderTypeDef.Fields.Count >= maxFieldCount)
             {
-                _module.EnableTypeDefFindCache = false;
-                ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
-                _holderTypeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ConstFieldHolder${_holderTypeDefs.Count}", objectTypeRef);
-                _module.Types.Add(_holderTypeDef);
-                _holderTypeDefs.Add(_holderTypeDef);
-                _module.EnableTypeDefFindCache = true;
+                using (var scope = new DisableTypeDefFindCacheScope(_module))
+                {
+                    ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
+                    _holderTypeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ConstFieldHolder${_holderTypeDefs.Count}", objectTypeRef);
+                    _module.Types.Add(_holderTypeDef);
+                    _holderTypeDefs.Add(_holderTypeDef);
+                }
             }
 
             var field = new FieldDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}RVA_Value{_holderTypeDef.Fields.Count}", new FieldSig(GetTypeSigOfValue(value)), FieldAttributes.Static | FieldAttributes.Public | FieldAttributes.InitOnly);

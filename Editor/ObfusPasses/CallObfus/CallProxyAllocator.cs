@@ -107,12 +107,13 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef CreateProxyTypeDef()
         {
-            var typeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
-            typeDef.Attributes = TypeAttributes.NotPublic | TypeAttributes.Sealed;
-            _module.EnableTypeDefFindCache = false;
-            _module.Types.Add(typeDef);
-            _module.EnableTypeDefFindCache = true;
-            return typeDef;
+            using (var scope = new DisableTypeDefFindCacheScope(_module))
+            {
+                var typeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
+                typeDef.Attributes = TypeAttributes.NotPublic | TypeAttributes.Sealed;
+                _module.Types.Add(typeDef);
+                return typeDef;
+            }
         }
 
         private readonly HashSet<string> _uniqueMethodNames = new HashSet<string>();

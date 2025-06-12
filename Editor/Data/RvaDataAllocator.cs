@@ -88,16 +88,12 @@ namespace Obfuz.Data
         {
             if (_rvaTypeDef == null)
             {
-                _module.EnableTypeDefFindCache = false;
-                //_rvaTypeDef = _module.Find("$ObfuzRVA$", true);
-                //if (_rvaTypeDef != null)
-                //{
-                //    throw new Exception($"can't obfuscate a obfuscated assembly");
-                //}
-                ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
-                _rvaTypeDef = new TypeDefUser("$Obfuz$RVA$", objectTypeRef);
-                _module.Types.Add(_rvaTypeDef);
-                _module.EnableTypeDefFindCache = true;
+                using (var scope = new DisableTypeDefFindCacheScope(_module))
+                {
+                    ITypeDefOrRef objectTypeRef = _module.Import(typeof(object));
+                    _rvaTypeDef = new TypeDefUser("$Obfuz$RVA$", objectTypeRef);
+                    _module.Types.Add(_rvaTypeDef);
+                }
             }
 
 
@@ -114,14 +110,18 @@ namespace Obfuz.Data
             size = (size + 15) & ~15; // align to 6 bytes
             if (_dataHolderTypeBySizes.TryGetValue(size, out var type))
                 return type;
-            var dataHolderType = new TypeDefUser($"$ObfuzRVA$DataHolder{size}", _module.Import(typeof(ValueType)));
-            dataHolderType.Attributes = TypeAttributes.Public | TypeAttributes.Sealed;
-            dataHolderType.Layout = TypeAttributes.ExplicitLayout;
-            dataHolderType.PackingSize = 1;
-            dataHolderType.ClassSize = (uint)size;
-            _dataHolderTypeBySizes.Add(size, dataHolderType);
-            _module.Types.Add(dataHolderType);
-            return dataHolderType;
+
+            using (var scope = new DisableTypeDefFindCacheScope(_module))
+            {
+                var dataHolderType = new TypeDefUser($"$ObfuzRVA$DataHolder{size}", _module.Import(typeof(ValueType)));
+                dataHolderType.Attributes = TypeAttributes.Public | TypeAttributes.Sealed;
+                dataHolderType.Layout = TypeAttributes.ExplicitLayout;
+                dataHolderType.PackingSize = 1;
+                dataHolderType.ClassSize = (uint)size;
+                _dataHolderTypeBySizes.Add(size, dataHolderType);
+                _module.Types.Add(dataHolderType);
+                return dataHolderType;
+            }
         }
 
         private static int AlignTo(int size, int alignment)
