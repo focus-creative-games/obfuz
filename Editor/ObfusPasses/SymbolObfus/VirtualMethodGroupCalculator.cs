@@ -48,11 +48,142 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             public HashSet<MethodDef> flatMethods = new HashSet<MethodDef>();
 
 
+            private bool IsFinalTypeSig(TypeSig type)
+            {
+                switch (type.ElementType)
+                {
+                    case ElementType.Void:
+                    case ElementType.Boolean:
+                    case ElementType.Char:
+                    case ElementType.I1:
+                    case ElementType.I2:
+                    case ElementType.I4:
+                    case ElementType.I8:
+                    case ElementType.U1:
+                    case ElementType.U2:
+                    case ElementType.U4:
+                    case ElementType.U8:
+                    case ElementType.R4:
+                    case ElementType.R8:
+                    case ElementType.String:
+                    case ElementType.Object:
+                    case ElementType.Class:
+                    case ElementType.ValueType:
+                    return true;
+                    default: return false;
+                }
+            }
+
+            private bool IsVarType(TypeSig t)
+            {
+                return t.ElementType == ElementType.MVar || t.ElementType == ElementType.Var;
+            }
+
+            private bool IsClassOrValueType(TypeSig t)
+            {
+                return t.ElementType == ElementType.Class || t.ElementType == ElementType.ValueType;
+            }
+
+            private bool IsLooseTypeSigMatch(TypeSig t1, TypeSig t2)
+            {
+                t1 = t1.RemovePinnedAndModifiers();
+                t2 = t2.RemovePinnedAndModifiers();
+
+                if (t1.ElementType != t2.ElementType)
+                {
+                    return IsVarType(t1) || IsVarType(t2);
+                }
+                
+                switch (t1.ElementType)
+                {
+                    case ElementType.Void:
+                    case ElementType.Boolean:
+                    case ElementType.Char:
+                    case ElementType.I1:
+                    case ElementType.I2:
+                    case ElementType.I4:
+                    case ElementType.I8:
+                    case ElementType.U1:
+                    case ElementType.U2:
+                    case ElementType.U4:
+                    case ElementType.U8:
+                    case ElementType.R4:
+                    case ElementType.R8:
+                    case ElementType.I:
+                    case ElementType.U:
+                    case ElementType.R:
+                    case ElementType.String:
+                    case ElementType.Object:
+                    case ElementType.TypedByRef:
+                    return true;
+                    case ElementType.Class:
+                    case ElementType.ValueType:
+                    {
+                        return t1.AssemblyQualifiedName == t2.AssemblyQualifiedName;
+                    }
+                    case ElementType.Ptr:
+                    case ElementType.ByRef:
+                    case ElementType.SZArray:
+                    {
+                        break;
+                    }
+                    case ElementType.Array:
+                    {
+                        var a1 = (ArraySig)t1;
+                        var a2 = (ArraySig)t2;
+                        if (a1.Rank != a2.Rank)
+                        {
+                            return false;
+                        }
+                        break;
+                    }
+                    case ElementType.Var:
+                    case ElementType.MVar:
+                    {
+                        //var v1 = (GenericSig)t1;
+                        //var v2 = (GenericSig)t2;
+                        //return v1.Number == v2.Number;
+                        return true;
+                    }
+                    default: return true;
+                }
+                if (t1.Next != null && t2.Next != null)
+                {
+                    return IsLooseTypeSigMatch(t1.Next, t2.Next);
+                }
+                return true;
+            }
+
+            private bool IsLooseMatch(MethodDef method1, MethodDef method2)
+            {
+                if (method1.Name != method2.Name)
+                {
+                    return false;
+                }
+                if (method1.GetParamCount() != method2.GetParamCount())
+                {
+                    return false;
+                }
+                if (!IsLooseTypeSigMatch(method1.ReturnType, method2.ReturnType))
+                {
+                    return false;
+                }
+                for (int i = 0, n = method1.GetParamCount(); i < n; i++)
+                {
+                    if (!IsLooseTypeSigMatch(method1.GetParam(i), method2.GetParam(i)))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
             public bool TryFindMatchVirtualMethod(MethodDef method, out MethodDef matchMethodDef)
             {
                 foreach (var parentOrInterfaceMethod in flatMethods)
                 {
-                    if (parentOrInterfaceMethod.Name == method.Name && parentOrInterfaceMethod.GetParamCount() == method.GetParamCount())
+                    if (IsLooseMatch(method, parentOrInterfaceMethod))
                     {
                         matchMethodDef = parentOrInterfaceMethod;
                         return true;
