@@ -27,12 +27,12 @@ namespace Obfuz.Unity
 
         public void OnBeforeRun(BuildReport report, UnityLinkerBuildPipelineData data)
         {
-            throw new NotImplementedException();
+
         }
 
         public void OnAfterRun(BuildReport report, UnityLinkerBuildPipelineData data)
         {
-            throw new NotImplementedException();
+
         }
 #endif
 
