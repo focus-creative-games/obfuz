@@ -15,6 +15,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
     public class SymbolRename
     {
         private readonly bool _useConsistentNamespaceObfuscation;
+        private readonly bool _detectReflectionCompatibility;
         private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
 
@@ -42,6 +43,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         public SymbolRename(SymbolObfuscationSettingsFacade settings)
         {
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
+            _detectReflectionCompatibility = settings.detectReflectionCompatibility;
             _mappingXmlPath = settings.symbolMappingFile;
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
             _renameRecordMap = new RenameRecordMap(settings.symbolMappingFile, settings.debug, settings.keepUnknownSymbolInSymbolMappingFile);
@@ -178,6 +180,11 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         {
             _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
             PrecomputeNeedRename();
+            if (_detectReflectionCompatibility)
+            {
+                var reflectionCompatibilityDetector = new ReflectionCompatibilityDetector(_obfuscatedAndNotObfuscatedModules, _renamePolicy);
+                reflectionCompatibilityDetector.Analyze();
+            }
             RenameTypes();
             RenameFields();
             RenameMethods();

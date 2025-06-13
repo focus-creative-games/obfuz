@@ -1,0 +1,285 @@
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace Obfuz.ObfusPasses.SymbolObfus
+{
+    public class ReflectionCompatibilityDetector
+    {
+        private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
+        private readonly IObfuscationPolicy _renamePolicy;
+
+        public ReflectionCompatibilityDetector(List<ModuleDef> obfuscatedAndNotObfuscatedModules, IObfuscationPolicy renamePolicy)
+        {
+            _obfuscatedAndNotObfuscatedModules = obfuscatedAndNotObfuscatedModules;
+            _renamePolicy = renamePolicy;
+        }
+
+        public void Analyze()
+        {
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
+            {
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        AnalyzeMethod(method);
+                    }
+                }
+            }
+        }
+
+        private MethodDef _curCallingMethod;
+        private IList<Instruction> _curInstructions;
+        private int _curInstIndex;
+
+        private void AnalyzeMethod(MethodDef method)
+        {
+            if (!method.HasBody)
+            {
+                return;
+            }
+            _curCallingMethod = method;
+            _curInstructions = method.Body.Instructions;
+            _curInstIndex = 0;
+            for (int n = _curInstructions.Count; _curInstIndex < n; _curInstIndex++)
+            {
+                var inst = _curInstructions[_curInstIndex];
+                switch (inst.OpCode.Code)
+                {
+                    case Code.Call:
+                    {
+                        AnalyzeCall(inst.Operand as IMethod);
+                        break;
+                    }
+                    case Code.Callvirt:
+                    {
+                        ITypeDefOrRef constrainedType = null;
+                        if (_curInstIndex > 0)
+                        {
+                            var prevInst = _curInstructions[_curInstIndex - 1];
+                            if (prevInst.OpCode.Code == Code.Constrained)
+                            {
+                                constrainedType = prevInst.Operand as ITypeDefOrRef;
+                            }
+                        }
+                        AnalyzeCallvir(inst.Operand as IMethod, constrainedType);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private ITypeDefOrRef FindLatestTypeOf(int backwardFindInstructionCount)
+        {
+            // find sequence ldtoken <type>; 
+            for (int i = 2; i <= backwardFindInstructionCount; i++)
+            {
+                int index = _curInstIndex - i;
+                if (index < 0)
+                {
+                    return null;
+                }
+                Instruction inst1 = _curInstructions[index];
+                Instruction inst2 = _curInstructions[index + 1];
+                if (inst1.OpCode.Code == Code.Ldtoken && inst2.OpCode.Code == Code.Call)
+                {
+                    if (!(inst1.Operand is ITypeDefOrRef typeDefOrRef))
+                    {
+                        continue;
+                    }
+                    IMethod method = inst2.Operand as IMethod;
+                    if (method.Name == "GetTypeFromHandle" && method.DeclaringType.FullName == "System.Type")
+                    {
+                        // Ldtoken <type>; Call System.Type.GetTypeFromHandle(System.RuntimeTypeHandle handle)
+                        return typeDefOrRef;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void AnalyzeCall(IMethod calledMethod)
+        {
+            TypeDef callType = calledMethod.DeclaringType.ResolveTypeDef();
+            if (callType == null)
+            {
+                return;
+            }
+            switch (callType.FullName)
+            {
+                case "System.Enum":
+                {
+                    AnalyzeEnum(calledMethod, callType);
+                    break;
+                }
+                case "System.Type":
+                {
+                    AnalyzeGetType(calledMethod, callType);
+                    break;
+                }
+                case "System.Reflection.Assembly":
+                {
+                    if (calledMethod.Name == "GetType")
+                    {
+                        AnalyzeGetType(calledMethod, callType);
+                    }
+                    break;
+                }
+            }
+        }
+
+        private void AnalyzeCallvir(IMethod calledMethod, ITypeDefOrRef constrainedType)
+        {
+            TypeDef callType = calledMethod.DeclaringType.ResolveTypeDef();
+            if (callType == null)
+            {
+                return;
+            }
+            string calledMethodName = calledMethod.Name;
+            switch (callType.FullName)
+            {
+                case "System.Object":
+                {
+                    if (calledMethodName == "ToString")
+                    {
+                        if (constrainedType != null)
+                        {
+                            TypeDef enumTypeDef = constrainedType.ResolveTypeDef();
+                            if (enumTypeDef != null && enumTypeDef.IsEnum && _renamePolicy.NeedRename(enumTypeDef))
+                            {
+                                Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.ToString() T:{enumTypeDef.FullName} is renamed.");
+                            }
+                        }
+                    }
+                    break;
+                }
+                case "System.Type":
+                {
+                    AnalyzeGetType(calledMethod, callType);
+                    break;
+                }
+            }
+        }
+
+        private TypeSig GetMethodGenericParameter(IMethod method)
+        {
+            if (method is MethodSpec ms)
+            {
+                return ms.GenericInstMethodSig.GenericArguments.FirstOrDefault();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private void AnalyzeEnum(IMethod method, TypeDef typeDef)
+        {
+            const int extraSearchInstructionCount = 3;
+            TypeDef parseType = GetMethodGenericParameter(method)?.ToTypeDefOrRef()?.ResolveTypeDef();
+            switch (method.Name)
+            {
+                case "Parse":
+                {
+                    if (parseType != null)
+                    {
+                        // Enum.Parse<T>(string name) or Enum.Parse<T>(string name, bool caseInsensitive)
+                        if (_renamePolicy.NeedRename(parseType))
+                        {
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> T:{parseType.FullName} is renamed.");
+                        }
+                    }
+                    else
+                    {
+                        // Enum.Parse(Type type, string name) or Enum.Parse(Type type, string name, bool ignoreCase)
+                        TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
+                        if (enumType != null && enumType.IsEnum && _renamePolicy.NeedRename(enumType))
+                        {
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse argument type:{enumType.FullName} is renamed.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse argument `type` should not be renamed.");
+                        }
+                    }
+                    break;
+                }
+                case "TryParse":
+                {
+                    if (parseType != null)
+                    {
+                        // Enum.TryParse<T>(string name, out T result) or Enum.TryParse<T>(string name, bool ignoreCase, out T result)
+                        if (_renamePolicy.NeedRename(parseType))
+                        {
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> T:{parseType.FullName} is renamed.");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("impossible");
+                    }
+                    break;
+                }
+                case "GetName":
+                {
+                    // Enum.GetName(Type type, object value)
+                    TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
+                    if (enumType != null && enumType.IsEnum && enumType.Fields.Any(f => _renamePolicy.NeedRename(f)))
+                    {
+                        Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetName field of type:{enumType.FullName} is renamed.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetName field of argument `type` should not be renamed.");
+                    }
+                    break;
+                }
+                case "GetNames":
+                {
+                    // Enum.GetNames(Type type)
+                    TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
+                    if (enumType != null && enumType.IsEnum && enumType.Fields.Any(f => _renamePolicy.NeedRename(f)))
+                    {
+                        Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetNams field of type:{enumType.FullName} is renamed.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetNames field of argument `type` should not be renamed.");
+                    }
+                    break;
+                }
+            }
+        }
+
+        private void AnalyzeGetType(IMethod method, TypeDef declaringType)
+        {
+            switch (method.Name)
+            {
+                case "GetType":
+                {
+                    Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Type.GetType argument `typeName` should not be renamed.");
+                    break;
+                }
+                case "GetField":
+                case "GetFields":
+                case "GetMethod":
+                case "GetMethods":
+                case "GetProperty":
+                case "GetProperties":
+                case "GetEvent":
+                case "GetEvents":
+                case "GetMembers":
+                {
+                    Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: called method:{method} the members of type should not be renamed.");
+                    break;
+                }
+            }
+        }
+    }
+}
