@@ -151,9 +151,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         if (constrainedType != null)
                         {
                             TypeDef enumTypeDef = constrainedType.ResolveTypeDef();
-                            if (enumTypeDef != null && enumTypeDef.IsEnum && _renamePolicy.NeedRename(enumTypeDef))
+                            if (enumTypeDef != null && enumTypeDef.IsEnum && enumTypeDef.Fields.Any(f => _renamePolicy.NeedRename(f)))
                             {
-                                Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.ToString() T:{enumTypeDef.FullName} is renamed.");
+                                Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: {enumTypeDef.FullName}.ToString() the enum members are renamed.");
                             }
                         }
                     }
