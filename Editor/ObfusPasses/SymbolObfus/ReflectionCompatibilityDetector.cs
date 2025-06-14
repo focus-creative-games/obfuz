@@ -134,6 +134,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
+
+        private bool IsAnyEnumItemRenamed(TypeDef typeDef)
+        {
+            return typeDef.Fields.Any(f => _renamePolicy.NeedRename(f));
+        }
+
         private void AnalyzeCallvir(IMethod calledMethod, ITypeDefOrRef constrainedType)
         {
             TypeDef callType = calledMethod.DeclaringType.ResolveTypeDef();
@@ -151,7 +157,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                         if (constrainedType != null)
                         {
                             TypeDef enumTypeDef = constrainedType.ResolveTypeDef();
-                            if (enumTypeDef != null && enumTypeDef.IsEnum && enumTypeDef.Fields.Any(f => _renamePolicy.NeedRename(f)))
+                            if (enumTypeDef != null && enumTypeDef.IsEnum && IsAnyEnumItemRenamed(enumTypeDef))
                             {
                                 Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: {enumTypeDef.FullName}.ToString() the enum members are renamed.");
                             }
@@ -190,22 +196,22 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     if (parseType != null)
                     {
                         // Enum.Parse<T>(string name) or Enum.Parse<T>(string name, bool caseInsensitive)
-                        if (_renamePolicy.NeedRename(parseType))
+                        if (IsAnyEnumItemRenamed(parseType))
                         {
-                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> T:{parseType.FullName} is renamed.");
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> field of T:{parseType.FullName} is renamed.");
                         }
                     }
                     else
                     {
                         // Enum.Parse(Type type, string name) or Enum.Parse(Type type, string name, bool ignoreCase)
                         TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
-                        if (enumType != null && enumType.IsEnum && _renamePolicy.NeedRename(enumType))
+                        if (enumType != null && enumType.IsEnum && IsAnyEnumItemRenamed(enumType))
                         {
-                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse argument type:{enumType.FullName} is renamed.");
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse field of argument type:{enumType.FullName} is renamed.");
                         }
                         else
                         {
-                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse argument `type` should not be renamed.");
+                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse field of argument `type` should not be renamed.");
                         }
                     }
                     break;
@@ -215,9 +221,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     if (parseType != null)
                     {
                         // Enum.TryParse<T>(string name, out T result) or Enum.TryParse<T>(string name, bool ignoreCase, out T result)
-                        if (_renamePolicy.NeedRename(parseType))
+                        if (IsAnyEnumItemRenamed(parseType))
                         {
-                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> T:{parseType.FullName} is renamed.");
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> field of T:{parseType.FullName} is renamed.");
                         }
                     }
                     else
@@ -230,7 +236,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     // Enum.GetName(Type type, object value)
                     TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
-                    if (enumType != null && enumType.IsEnum && enumType.Fields.Any(f => _renamePolicy.NeedRename(f)))
+                    if (enumType != null && enumType.IsEnum && IsAnyEnumItemRenamed(enumType))
                     {
                         Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetName field of type:{enumType.FullName} is renamed.");
                     }
@@ -244,9 +250,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     // Enum.GetNames(Type type)
                     TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
-                    if (enumType != null && enumType.IsEnum && enumType.Fields.Any(f => _renamePolicy.NeedRename(f)))
+                    if (enumType != null && enumType.IsEnum && IsAnyEnumItemRenamed(enumType))
                     {
-                        Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetNams field of type:{enumType.FullName} is renamed.");
+                        Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.GetNames field of type:{enumType.FullName} is renamed.");
                     }
                     else
                     {
