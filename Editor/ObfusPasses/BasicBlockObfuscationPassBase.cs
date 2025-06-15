@@ -10,6 +10,8 @@ namespace Obfuz.ObfusPasses
     {
         protected abstract bool NeedObfuscateMethod(MethodDef method);
 
+        protected virtual bool ComputeBlockInLoop => true;
+
         public override void Process()
         {
             var ctx = ObfuscationPassContext.Current;
@@ -48,7 +50,7 @@ namespace Obfuz.ObfusPasses
 
         private void ObfuscateData(MethodDef method)
         {
-            BasicBlockCollection bbc = new BasicBlockCollection(method);
+            BasicBlockCollection bbc = new BasicBlockCollection(method, ComputeBlockInLoop);
 
             IList<Instruction> instructions = method.Body.Instructions;
 
