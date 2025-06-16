@@ -182,7 +182,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             PrecomputeNeedRename();
             if (_detectReflectionCompatibility)
             {
-                var reflectionCompatibilityDetector = new ReflectionCompatibilityDetector(_obfuscatedAndNotObfuscatedModules, _renamePolicy);
+                var reflectionCompatibilityDetector = new ReflectionCompatibilityDetector(_toObfuscatedModules, _obfuscatedAndNotObfuscatedModules, _renamePolicy);
                 reflectionCompatibilityDetector.Analyze();
             }
             RenameTypes();

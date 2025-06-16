@@ -11,11 +11,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public class ReflectionCompatibilityDetector
     {
+        private readonly HashSet<ModuleDef> _assembliesToObfuscate;
         private readonly List<ModuleDef> _obfuscatedAndNotObfuscatedModules;
         private readonly IObfuscationPolicy _renamePolicy;
 
-        public ReflectionCompatibilityDetector(List<ModuleDef> obfuscatedAndNotObfuscatedModules, IObfuscationPolicy renamePolicy)
+        public ReflectionCompatibilityDetector(List<ModuleDef> assembliesToObfuscate, List<ModuleDef> obfuscatedAndNotObfuscatedModules, IObfuscationPolicy renamePolicy)
         {
+            _assembliesToObfuscate = new HashSet<ModuleDef>(assembliesToObfuscate);
             _obfuscatedAndNotObfuscatedModules = obfuscatedAndNotObfuscatedModules;
             _renamePolicy = renamePolicy;
         }
@@ -137,7 +139,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         private bool IsAnyEnumItemRenamed(TypeDef typeDef)
         {
-            return typeDef.Fields.Any(f => _renamePolicy.NeedRename(f));
+            return _assembliesToObfuscate.Contains(typeDef.Module) && typeDef.Fields.Any(f => _renamePolicy.NeedRename(f));
         }
 
         private void AnalyzeCallvir(IMethod calledMethod, ITypeDefOrRef constrainedType)
