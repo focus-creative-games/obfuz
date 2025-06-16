@@ -190,17 +190,25 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private void AnalyzeEnum(IMethod method, TypeDef typeDef)
         {
             const int extraSearchInstructionCount = 3;
-            TypeDef parseType = GetMethodGenericParameter(method)?.ToTypeDefOrRef()?.ResolveTypeDef();
+            TypeSig parseTypeSig = GetMethodGenericParameter(method);
+            TypeDef parseType = parseTypeSig?.ToTypeDefOrRef().ResolveTypeDef();
             switch (method.Name)
             {
                 case "Parse":
                 {
-                    if (parseType != null)
+                    if (parseTypeSig != null)
                     {
                         // Enum.Parse<T>(string name) or Enum.Parse<T>(string name, bool caseInsensitive)
-                        if (IsAnyEnumItemRenamed(parseType))
+                        if (parseType != null)
                         {
-                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> field of T:{parseType.FullName} is renamed.");
+                            if (IsAnyEnumItemRenamed(parseType))
+                            {
+                                Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> field of T:{parseType.FullName} is renamed.");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.Parse<T> field of T should not be renamed.");
                         }
                     }
                     else
@@ -220,12 +228,19 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
                 case "TryParse":
                 {
-                    if (parseType != null)
+                    if (parseTypeSig != null)
                     {
                         // Enum.TryParse<T>(string name, out T result) or Enum.TryParse<T>(string name, bool ignoreCase, out T result)
-                        if (IsAnyEnumItemRenamed(parseType))
+                        if (parseType != null)
                         {
-                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> field of T:{parseType.FullName} is renamed.");
+                            if (IsAnyEnumItemRenamed(parseType))
+                            {
+                                Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> field of T:{parseType.FullName} is renamed.");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse<T> field of T should not be renamed.");
                         }
                     }
                     else
