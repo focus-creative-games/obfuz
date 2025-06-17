@@ -47,5 +47,15 @@
         {
             return ((long)NextInt() << 32) | (uint)NextInt();
         }
+
+        public float NextFloat()
+        {
+            return (float)((double)NextInt() / int.MaxValue);
+        }
+
+        public bool NextInPercentage(float percentage)
+        {
+            return NextFloat() < percentage;
+        }
     }
 }

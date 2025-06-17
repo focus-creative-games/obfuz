@@ -1,4 +1,6 @@
-﻿namespace Obfuz
+﻿using System;
+
+namespace Obfuz
 {
 
     public static class EncryptionService<T> where T : IEncryptionScope
@@ -85,25 +87,25 @@
 
         public static int DecryptFromRvaInt(byte[] data, int offset, int ops, int salt)
         {
-            int encryptedValue = ConstUtility.GetInt(data, offset);
+            int encryptedValue = BitConverter.ToInt32(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 
         public static long DecryptFromRvaLong(byte[] data, int offset, int ops, int salt)
         {
-            long encryptedValue = ConstUtility.GetLong(data, offset);
+            long encryptedValue = BitConverter.ToInt64(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 
         public static float DecryptFromRvaFloat(byte[] data, int offset, int ops, int salt)
         {
-            float encryptedValue = ConstUtility.GetFloat(data, offset);
+            float encryptedValue = BitConverter.ToSingle(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 
         public static double DecryptFromRvaDouble(byte[] data, int offset, int ops, int salt)
         {
-            double encryptedValue = ConstUtility.GetDouble(data, offset);
+            double encryptedValue = BitConverter.ToDouble(data, offset);
             return Decrypt(encryptedValue, ops, salt);
         }
 

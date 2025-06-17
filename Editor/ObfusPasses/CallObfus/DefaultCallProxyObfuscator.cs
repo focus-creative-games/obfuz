@@ -31,7 +31,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Obfuscate(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool needCacheCall, List<Instruction> obfuscatedInstructions)
         {
 
-            MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod));
+            MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod, null));
             ProxyCallMethodData proxyCallMethodData = _proxyCallAllocator.Allocate(callerMethod.Module, calledMethod, callVir);
             DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(callerMethod.Module, _encryptionScopeProvider);
 

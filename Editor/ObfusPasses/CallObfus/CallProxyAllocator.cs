@@ -157,7 +157,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private MethodSig CreateDispatchMethodSig(IMethod method)
         {
-            MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method));
+            MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method, null));
             //MethodSig methodSig = MetaUtil.GetInflatedMethodSig(method).Clone();
             //methodSig.Params
             switch (MetaUtil.GetThisArgType(method))

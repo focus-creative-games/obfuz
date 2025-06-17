@@ -147,6 +147,95 @@ namespace Obfuz.Emit
             _obfuscationTypeMapperRegisterType = mod.Import(typeof(ObfuscationTypeMapper).GetMethod("RegisterType", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null));
             Assert.IsNotNull(_obfuscationTypeMapperRegisterType, "ObfuscationTypeMapper.RegisterType not found");
 
+            var exprUtilityType = typeof(ExprUtility);
+            _addInt = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_addInt, "ExprUtility.Add(int, int) not found");
+            _addLong = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_addLong, "ExprUtility.Add(long, long) not found");
+            _addFloat = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(float), typeof(float) }));
+            Assert.IsNotNull(_addFloat, "ExprUtility.Add(float, float) not found");
+            _addDouble = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(double), typeof(double) }));
+            Assert.IsNotNull(_addDouble, "ExprUtility.Add(double, double) not found");
+            _subtractInt = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_subtractInt, "ExprUtility.Subtract(int, int) not found");
+            _subtractLong = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_subtractLong, "ExprUtility.Subtract(long, long) not found");
+            _subtractFloat = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(float), typeof(float) }));
+            Assert.IsNotNull(_subtractFloat, "ExprUtility.Subtract(float, float) not found");
+            _subtractDouble = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(double), typeof(double) }));
+            Assert.IsNotNull(_subtractDouble, "ExprUtility.Subtract(double, double) not found");
+            _multiplyInt = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_multiplyInt, "ExprUtility.Multiply(int, int) not found");
+            _multiplyLong = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_multiplyLong, "ExprUtility.Multiply(long, long) not found");
+            _multiplyFloat = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(float), typeof(float) }));
+            Assert.IsNotNull(_multiplyFloat, "ExprUtility.Multiply(float, float) not found");
+            _multiplyDouble = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(double), typeof(double) }));
+            Assert.IsNotNull(_multiplyDouble, "ExprUtility.Multiply(double, double) not found");
+            _divideInt = mod.Import(exprUtilityType.GetMethod("Divide", new[] {typeof(int), typeof(int) }));
+            Assert.IsNotNull(_divideInt, "ExprUtility.Divide(int, int) not found");
+            _divideLong = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_divideLong);
+            _divideFloat = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(float), typeof(float) }));
+            Assert.IsNotNull(_divideFloat, "ExprUtility.Divide(float, float) not found");
+            _divideDouble = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(double), typeof(double) }));
+            Assert.IsNotNull(_divideDouble, "ExprUtility.Divide(double, double) not found");
+            _divideUnInt = mod.Import(exprUtilityType.GetMethod("DivideUn", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_divideUnInt, "ExprUtility.DivideUn(int, int) not found");
+            _divideUnLong = mod.Import(exprUtilityType.GetMethod("DivideUn", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_divideUnLong, "ExprUtility.DivideUn(long, long) not found");
+            _remInt = mod.Import(exprUtilityType.GetMethod("Rem", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_remInt, "ExprUtility.Rem(int, int) not found");
+            _remLong = mod.Import(exprUtilityType.GetMethod("Rem", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_remLong, "ExprUtility.Rem(long, long) not found");
+            _remFloat = mod.Import(exprUtilityType.GetMethod("Rem", new[] { typeof(float), typeof(float) }));
+            Assert.IsNotNull(_remFloat, "ExprUtility.Rem(float, float) not found");
+            _remDouble = mod.Import(exprUtilityType.GetMethod("Rem", new[] { typeof(double), typeof(double) }));
+            Assert.IsNotNull(_remDouble, "ExprUtility.Rem(double, double) not found");
+            _remUnInt = mod.Import(exprUtilityType.GetMethod("RemUn", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_remUnInt, "ExprUtility.RemUn(int, int) not found");
+            _remUnLong = mod.Import(exprUtilityType.GetMethod("RemUn", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_remUnLong, "ExprUtility.RemUn(long, long) not found");
+            _negInt = mod.Import(exprUtilityType.GetMethod("Negate", new[] { typeof(int) }));
+            Assert.IsNotNull(_negInt, "ExprUtility.Negate(int) not found");
+            _negLong = mod.Import(exprUtilityType.GetMethod("Negate", new[] { typeof(long) }));
+            Assert.IsNotNull(_negLong, "ExprUtility.Negate(long) not found");
+            _negFloat = mod.Import(exprUtilityType.GetMethod("Negate", new[] { typeof(float) }));
+            Assert.IsNotNull(_negFloat, "ExprUtility.Negate(float) not found");
+            _negDouble = mod.Import(exprUtilityType.GetMethod("Negate", new[] { typeof(double) }));
+            Assert.IsNotNull(_negDouble, "ExprUtility.Negate(double) not found");
+
+            _andInt = mod.Import(exprUtilityType.GetMethod("And", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_andInt, "ExprUtility.And(int, int) not found");
+            _andLong = mod.Import(exprUtilityType.GetMethod("And", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_andLong, "ExprUtility.And(long, long) not found");
+            _orInt = mod.Import(exprUtilityType.GetMethod("Or", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_orInt, "ExprUtility.Or(int, int) not found");
+            _orLong = mod.Import(exprUtilityType.GetMethod("Or", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_orLong, "ExprUtility.Or(long, long) not found");
+            _xorInt = mod.Import(exprUtilityType.GetMethod("Xor", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_xorInt, "ExprUtility.Xor(int, int) not found");
+            _xorLong = mod.Import(exprUtilityType.GetMethod("Xor", new[] { typeof(long), typeof(long) }));
+            Assert.IsNotNull(_xorLong, "ExprUtility.Xor(long, long) not found");
+            _notInt = mod.Import(exprUtilityType.GetMethod("Not", new[] { typeof(int) }));
+            Assert.IsNotNull(_notInt, "ExprUtility.Not(int) not found");
+            _notLong = mod.Import(exprUtilityType.GetMethod("Not", new[] { typeof(long) }));
+            Assert.IsNotNull(_notLong, "ExprUtility.Not(long) not found");
+
+            _shlInt = mod.Import(exprUtilityType.GetMethod("ShiftLeft", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_shlInt, "ExprUtility.ShiftLeft(int, int) not found");
+            _shlLong = mod.Import(exprUtilityType.GetMethod("ShiftLeft", new[] { typeof(long), typeof(int) }));
+            Assert.IsNotNull(_shlLong, "ExprUtility.ShiftLeft(long, int) not found");
+            _shrInt = mod.Import(exprUtilityType.GetMethod("ShiftRight", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_shrInt, "ExprUtility.ShiftRight(int, int) not found");
+            _shrLong = mod.Import(exprUtilityType.GetMethod("ShiftRight", new[] { typeof(long), typeof(int) }));
+            Assert.IsNotNull(_shrLong, "ExprUtility.ShiftRight(long, int) not found");
+            _shrUnInt = mod.Import(exprUtilityType.GetMethod("ShiftRightUn", new[] { typeof(int), typeof(int) }));
+            Assert.IsNotNull(_shrUnInt, "ExprUtility.ShiftRightUn(int, int) not found");
+            _shrUnLong = mod.Import(exprUtilityType.GetMethod("ShiftRightUn", new[] { typeof(long), typeof(int) }));
+            Assert.IsNotNull(_shrUnLong, "ExprUtility.ShiftRightUn(long, int) not found");
+
+
             _staticDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultStaticEncryptionScope>));
             _dynamicDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultDynamicEncryptionScope>));
             if (_encryptionScopeProvider.IsDynamicSecretAssembly(mod))
@@ -173,6 +262,51 @@ namespace Obfuz.Emit
         private IMethod _verifySecretKey;
 
         private IMethod _obfuscationTypeMapperRegisterType;
+
+        private IMethod _addInt;
+        private IMethod _addLong;
+        private IMethod _addFloat;
+        private IMethod _addDouble;
+        private IMethod _subtractInt;
+        private IMethod _subtractLong;
+        private IMethod _subtractFloat;
+        private IMethod _subtractDouble;
+        private IMethod _multiplyInt;
+        private IMethod _multiplyLong;
+        private IMethod _multiplyFloat;
+        private IMethod _multiplyDouble;
+        private IMethod _divideInt;
+        private IMethod _divideLong;
+        private IMethod _divideFloat;
+        private IMethod _divideDouble;
+        private IMethod _divideUnInt;
+        private IMethod _divideUnLong;
+        private IMethod _remInt;
+        private IMethod _remLong;
+        private IMethod _remFloat;
+        private IMethod _remDouble;
+        private IMethod _remUnInt;
+        private IMethod _remUnLong;
+        private IMethod _negInt;
+        private IMethod _negLong;
+        private IMethod _negFloat;
+        private IMethod _negDouble;
+
+        private IMethod _andInt;
+        private IMethod _andLong;
+        private IMethod _orInt;
+        private IMethod _orLong;
+        private IMethod _xorInt;
+        private IMethod _xorLong;
+        private IMethod _notInt;
+        private IMethod _notLong;
+
+        private IMethod _shlInt;
+        private IMethod _shlLong;
+        private IMethod _shrInt;
+        private IMethod _shrLong;
+        private IMethod _shrUnInt;
+        private IMethod _shrUnLong;
 
         public IMethod CastIntAsFloat => _castIntAsFloat;
         public IMethod CastLongAsDouble => _castLongAsDouble;
@@ -209,5 +343,50 @@ namespace Obfuz.Emit
         public IMethod DecryptFromRvaString => _defaultEncryptionServiceMetadataImporter.DecryptFromRvaString;
 
         public IMethod DecryptInitializeArray => _defaultEncryptionServiceMetadataImporter.DecryptInitializeArray;
+
+        public IMethod AddInt => _addInt;
+        public IMethod AddLong => _addLong;
+        public IMethod AddFloat => _addFloat;
+        public IMethod AddDouble => _addDouble;
+        public IMethod SubtractInt => _subtractInt;
+        public IMethod SubtractLong => _subtractLong;
+        public IMethod SubtractFloat => _subtractFloat;
+        public IMethod SubtractDouble => _subtractDouble;
+        public IMethod MultiplyInt => _multiplyInt;
+        public IMethod MultiplyLong => _multiplyLong;
+        public IMethod MultiplyFloat => _multiplyFloat;
+        public IMethod MultiplyDouble => _multiplyDouble;
+        public IMethod DivideInt => _divideInt;
+        public IMethod DivideLong => _divideLong;
+        public IMethod DivideFloat => _divideFloat;
+        public IMethod DivideDouble => _divideDouble;
+        public IMethod DivideUnInt => _divideUnInt;
+        public IMethod DivideUnLong => _divideUnLong;
+        public IMethod RemInt => _remInt;
+        public IMethod RemLong => _remLong;
+        public IMethod RemFloat => _remFloat;
+        public IMethod RemDouble => _remDouble;
+        public IMethod RemUnInt => _remUnInt;
+        public IMethod RemUnLong => _remUnLong;
+        public IMethod NegInt => _negInt;
+        public IMethod NegLong => _negLong;
+        public IMethod NegFloat => _negFloat;
+        public IMethod NegDouble => _negDouble;
+        public IMethod AndInt => _andInt;
+        public IMethod AndLong => _andLong;
+        public IMethod OrInt => _orInt;
+        public IMethod OrLong => _orLong;
+        public IMethod XorInt => _xorInt;
+        public IMethod XorLong => _xorLong;
+        public IMethod NotInt => _notInt;
+        public IMethod NotLong => _notLong;
+        public IMethod ShlInt => _shlInt;
+        public IMethod ShlLong => _shlLong;
+        public IMethod ShrInt => _shrInt;
+        public IMethod ShrLong => _shrLong;
+        public IMethod ShrUnInt => _shrUnInt;
+        public IMethod ShrUnLong => _shrUnLong;
+
+
     }
 }

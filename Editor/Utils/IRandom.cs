@@ -9,5 +9,9 @@
         int NextInt();
 
         long NextLong();
+
+        float NextFloat();
+
+        bool NextInPercentage(float percentage);
     }
 }

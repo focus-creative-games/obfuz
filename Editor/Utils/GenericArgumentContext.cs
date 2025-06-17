@@ -7,8 +7,8 @@ namespace Obfuz.Utils
 {
     public sealed class GenericArgumentContext
     {
-        List<TypeSig> typeArgsStack;
-        List<TypeSig> methodArgsStack;
+        public readonly List<TypeSig> typeArgsStack;
+        public readonly List<TypeSig> methodArgsStack;
 
         public GenericArgumentContext(IList<TypeSig> typeArgsStack, IList<TypeSig> methodArgsStack)
         {
@@ -100,6 +100,10 @@ namespace Obfuz.Utils
 
         private TypeSig Resolve(List<TypeSig> args, uint number)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
             return args[(int)number];
         }
     }

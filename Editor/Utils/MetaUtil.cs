@@ -518,11 +518,20 @@ namespace Obfuz.Utils
 
         public static TypeSig Inflate(TypeSig sig, GenericArgumentContext ctx)
         {
-            if (!sig.ContainsGenericParameter)
+            if (ctx == null || !sig.ContainsGenericParameter)
             {
                 return sig;
             }
             return ctx.Resolve(sig);
+        }
+
+        public static IList<TypeSig> TryInflate(IList<TypeSig> sig, GenericArgumentContext ctx)
+        {
+            if (sig == null || ctx == null)
+            {
+                return sig;
+            }
+            return sig.Select(s => Inflate(s, ctx)).ToList() ?? null;
         }
 
 
@@ -564,7 +573,29 @@ namespace Obfuz.Utils
             throw new NotSupportedException($"type:{type}");
         }
 
-        public static MethodSig GetInflatedMethodSig(IMethod method)
+        public static GenericArgumentContext GetInflatedMemberRefGenericArgument(IMemberRefParent type, GenericArgumentContext ctx)
+        {
+            if (type is TypeDef typeDef)
+            {
+                return null;
+            }
+            if (type is TypeRef typeRef)
+            {
+                return null;
+            }
+            if (type is TypeSpec typeSpec)
+            {
+                GenericInstSig genericInstSig = typeSpec.TypeSig.ToGenericInstSig();
+                if (genericInstSig == null)
+                {
+                    return ctx;
+                }
+                return new GenericArgumentContext(TryInflate(genericInstSig.GenericArguments, ctx), null);
+            }
+            throw new NotSupportedException($"type:{type}");
+        }
+
+        public static MethodSig GetInflatedMethodSig(IMethod method, GenericArgumentContext ctx)
         {
             if (method is MethodDef methodDef)
             {
@@ -572,22 +603,38 @@ namespace Obfuz.Utils
             }
             if (method is MemberRef memberRef)
             {
-                return InflateMethodSig(memberRef.MethodSig, new GenericArgumentContext(GetGenericArguments(memberRef.Class), null));
+                return InflateMethodSig(memberRef.MethodSig, GetInflatedMemberRefGenericArgument(memberRef.Class, ctx));
             }
             if (method is MethodSpec methodSpec)
             {
                 var genericInstMethodSig = methodSpec.GenericInstMethodSig;
                 if (methodSpec.Method is MethodDef methodDef2)
                 {
-                    return InflateMethodSig(methodDef2.MethodSig, new GenericArgumentContext(null, genericInstMethodSig.GenericArguments));
+                    return InflateMethodSig(methodDef2.MethodSig, new GenericArgumentContext(null, TryInflate(genericInstMethodSig.GenericArguments, ctx)));
                 }
                 if (methodSpec.Method is MemberRef memberRef2)
                 {
-                    return InflateMethodSig(memberRef2.MethodSig, new GenericArgumentContext(GetGenericArguments(memberRef2.Class), genericInstMethodSig.GenericArguments));
+                    return InflateMethodSig(memberRef2.MethodSig, new GenericArgumentContext(
+                        GetInflatedMemberRefGenericArgument(memberRef2.Class, ctx)?.typeArgsStack,
+                        TryInflate(genericInstMethodSig.GenericArguments, ctx)));
                 }
 
             }
             throw new NotSupportedException($" method: {method}");
+        }
+
+        public static TypeSig InflateFieldSig(IField field, GenericArgumentContext ctx)
+        {
+            if (field is FieldDef fieldDef)
+            {
+                return fieldDef.FieldType;
+            }
+            if (field is MemberRef memberRef)
+            {
+                return Inflate(memberRef.FieldSig.Type, new GenericArgumentContext(TryInflate(GetGenericArguments(memberRef.Class), ctx), null));
+            }
+
+            throw new Exception($"unknown field:{field}");
         }
 
         public static ThisArgType GetThisArgType(IMethod method)

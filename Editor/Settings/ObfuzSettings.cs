@@ -34,6 +34,9 @@ namespace Obfuz.Settings
         [Tooltip("call obfuscation settings")]
         public CallObfuscationSettings callObfusSettings;
 
+        [Tooltip("expression obfuscation settings")]
+        public ExprObfuscationSettings exprObfusSettings;
+
         public string ObfuzRootDir => $"Library/Obfuz";
 
         public string GetObfuscatedAssemblyOutputPath(BuildTarget target)

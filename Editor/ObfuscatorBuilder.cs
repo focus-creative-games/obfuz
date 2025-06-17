@@ -173,13 +173,13 @@ namespace Obfuz
             {
                 builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings.ToFacade()));
             }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
+            {
+                builder.AddPass(new ExprObfusPass(settings.exprObfusSettings.ToFacade()));
+            }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallObfus))
             {
                 builder.AddPass(new CallObfusPass(settings.callObfusSettings.ToFacade()));
-            }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
-            {
-                builder.AddPass(new ExprObfusPass());
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {

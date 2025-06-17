@@ -104,6 +104,7 @@ namespace Obfuz.Emit
                         {
                             splitPoints.Add(nextInst);
                         }
+                        splitPoints.Add((Instruction)curInst.Operand);
                         break;
                     }
                     case FlowControl.Cond_Branch:
