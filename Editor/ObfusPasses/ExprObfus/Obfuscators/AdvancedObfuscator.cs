@@ -155,7 +155,7 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
         //}
 
 
-        private bool GenerateIdentityTransformForArgument(Instruction inst, EvalDataType op, List<Instruction> outputInsts, ObfusMethodContext ctx)
+        protected bool GenerateIdentityTransformForArgument(Instruction inst, EvalDataType op, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
             IRandom random = ctx.localRandom;
             ModuleConstFieldAllocator constFieldAllocator = ctx.constFieldAllocator;
