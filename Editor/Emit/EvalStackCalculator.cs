@@ -5,7 +5,6 @@ using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Properties;
 using UnityEngine.Assertions;
 
 namespace Obfuz.Emit
@@ -236,8 +235,9 @@ namespace Obfuz.Emit
             var gac = new GenericArgumentContext(methodTypeGenericArgument, methodMethodGenericArgument);
 
             var blockWalkStack = new Stack<BasicBlock>(_basicBlocks.Blocks.Reverse());
-            while (blockWalkStack.TryPop(out BasicBlock block))
+            while (blockWalkStack.Count > 0)
             {
+                BasicBlock block = blockWalkStack.Pop();
                 EvalStackState state = blockEvalStackStates[block];
                 if (state.visited)
                     continue;
