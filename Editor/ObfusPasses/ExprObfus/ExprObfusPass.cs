@@ -20,18 +20,24 @@ namespace Obfuz.ObfusPasses.ExprObfus
         public EncryptionScopeInfo encryptionScope;
         public DefaultMetadataImporter importer;
         public ModuleConstFieldAllocator constFieldAllocator;
+        public float obfuscationPercentage;
     }
 
     class ExprObfusPass : ObfuscationMethodPassBase
     {
         private readonly ExprObfuscationSettingsFacade _settings;
-        private readonly IObfuscator _obfuscator;
+        private readonly IObfuscator _basicObfuscator;
+        private readonly IObfuscator _advancedObfuscator;
+        private readonly IObfuscator _mostAdvancedObfuscator;
+
         private IObfuscationPolicy _obfuscationPolicy;
 
         public ExprObfusPass(ExprObfuscationSettingsFacade settings)
         {
             _settings = settings;
-            _obfuscator = CreateObfuscator(_settings.obfuscationLevel);
+            _basicObfuscator = new BasicObfuscator();
+            _advancedObfuscator = new AdvancedObfuscator();
+            _mostAdvancedObfuscator = new MostAdvancedObfuscator();
         }
 
         public override ObfuscationPassType Type => ObfuscationPassType.ExprObfus;
@@ -44,14 +50,14 @@ namespace Obfuz.ObfusPasses.ExprObfus
                 _settings.ruleFiles);
         }
 
-        private IObfuscator CreateObfuscator(ObfuscationLevel level)
+        private IObfuscator GetObfuscator(ObfuscationLevel level)
         {
             switch (level)
             {
-                case ObfuscationLevel.None: return new NoneObfuscator();
-                case ObfuscationLevel.Basic:return new BasicObfuscator();
-                case ObfuscationLevel.Advanced: return new AdvancedObfuscator();
-                case ObfuscationLevel.MostAdvanced: return new MostAdvancedObfuscator();
+                case ObfuscationLevel.None: return null;
+                case ObfuscationLevel.Basic: return _basicObfuscator;
+                case ObfuscationLevel.Advanced: return _advancedObfuscator;
+                case ObfuscationLevel.MostAdvanced: return _mostAdvancedObfuscator;
                 default: throw new System.ArgumentOutOfRangeException(nameof(level), level, "Unknown obfuscation level");
             }
         }
@@ -63,18 +69,19 @@ namespace Obfuz.ObfusPasses.ExprObfus
 
         protected override bool NeedObfuscateMethod(MethodDef method)
         {
-            return _settings.obfuscationLevel != ObfuscationLevel.None && _obfuscationPolicy.NeedObfuscate(method);
+            return _obfuscationPolicy.NeedObfuscate(method);
         }
 
-        protected  bool TryObfuscateInstruction(InstructionParameterInfo pi, Instruction inst, List<Instruction> outputInstructions, ObfusMethodContext ctx)
+        protected  bool TryObfuscateInstruction(IObfuscator obfuscator, InstructionParameterInfo pi, Instruction inst, List<Instruction> outputInstructions, ObfusMethodContext ctx)
         {
             //Debug.Log($"Obfuscating instruction: {inst} in method: {ctx.method.FullName}");
-            var localRandom = ctx.localRandom;
+            IRandom localRandom = ctx.localRandom;
+            float obfuscationPercentage = ctx.obfuscationPercentage;
             switch (inst.OpCode.Code)
             {
                 case Code.Neg:
                 {
-                    return localRandom.NextInPercentage(_settings.obfuscationPercentage) && _obfuscator.ObfuscateBasicUnaryOp(inst, pi.op1, pi.retType, outputInstructions, ctx);
+                    return localRandom.NextInPercentage(obfuscationPercentage) && obfuscator.ObfuscateBasicUnaryOp(inst, pi.op1, pi.retType, outputInstructions, ctx);
                 }
                 case Code.Add:
                 case Code.Sub:
@@ -84,23 +91,23 @@ namespace Obfuz.ObfusPasses.ExprObfus
                 case Code.Rem:
                 case Code.Rem_Un:
                 {
-                    return localRandom.NextInPercentage(_settings.obfuscationPercentage) && _obfuscator.ObfuscateBasicBinOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
+                    return localRandom.NextInPercentage(obfuscationPercentage) && obfuscator.ObfuscateBasicBinOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
                 }
                 case Code.And:
                 case Code.Or:
                 case Code.Xor:
                 {
-                    return localRandom.NextInPercentage(_settings.obfuscationPercentage) && _obfuscator.ObfuscateBinBitwiseOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
+                    return localRandom.NextInPercentage(obfuscationPercentage) && obfuscator.ObfuscateBinBitwiseOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
                 }
                 case Code.Not:
                 {
-                    return localRandom.NextInPercentage(_settings.obfuscationPercentage) && _obfuscator.ObfuscateUnaryBitwiseOp(inst, pi.op1, pi.retType, outputInstructions, ctx);
+                    return localRandom.NextInPercentage(obfuscationPercentage) && obfuscator.ObfuscateUnaryBitwiseOp(inst, pi.op1, pi.retType, outputInstructions, ctx);
                 }
                 case Code.Shl:
                 case Code.Shr:
                 case Code.Shr_Un:
                 {
-                    return localRandom.NextInPercentage(_settings.obfuscationPercentage) && _obfuscator.ObfuscateBitShiftOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
+                    return localRandom.NextInPercentage(obfuscationPercentage) && obfuscator.ObfuscateBitShiftOp(inst, pi.op1, pi.op2, pi.retType, outputInstructions, ctx);
                 }
             }
             return false;
@@ -116,14 +123,18 @@ namespace Obfuz.ObfusPasses.ExprObfus
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
             var calc = new EvalStackCalculator(method);
             var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
+            var ruleData = _obfuscationPolicy.GetObfuscationRuleData(method);
+            var obfuscator = GetObfuscator(ruleData.obfuscationLevel);
             var obfusMethodCtx = new ObfusMethodContext
             {
                 method = method,
                 evalStackCalculator = calc,
                 localVariableAllocator = new LocalVariableAllocator(method),
                 encryptionScope = encryptionScope,
+                constFieldAllocator = ctx.constFieldAllocator.GetModuleAllocator(method.Module),
                 localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method)),
                 importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, ctx.encryptionScopeProvider),
+                obfuscationPercentage = ruleData.obfuscationPercentage,
             };
             for (int i = 0; i < instructions.Count; i++)
             {
@@ -132,7 +143,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
                 if (calc.TryGetParameterInfo(inst, out InstructionParameterInfo pi))
                 {
                     outputInstructions.Clear();
-                    if (TryObfuscateInstruction(pi, inst, outputInstructions, obfusMethodCtx))
+                    if (TryObfuscateInstruction(obfuscator, pi, inst, outputInstructions, obfusMethodCtx))
                     {
                         // current instruction may be the target of control flow instruction, so we can't remove it directly.
                         // we replace it with nop now, then remove it in CleanUpInstructionPass

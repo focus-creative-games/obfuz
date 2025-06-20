@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Obfuz.Utils;
 using Obfuz.Data;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 {
@@ -89,6 +90,7 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
                             // y = -x = (x * a + b) * (-ra) + b * ra;
                             int a = random.NextInt() | 0x1;
                             int ra = MathUtil.ModInverse32(a);
+                            Assert.AreEqual(1, a * ra);
                             int b = random.NextInt();
                             int b_ra = b * ra;
                             float constProbability = 0.5f;
@@ -107,6 +109,7 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
                             // y = -x = (x * a + b) * (-ra) + b * ra;
                             long a = random.NextLong() | 0x1L;
                             long ra = MathUtil.ModInverse64(a);
+                            Assert.AreEqual(1L, a * ra);
                             long b = random.NextLong();
                             long b_ra = b * ra;
                             float constProbability = 0.5f;

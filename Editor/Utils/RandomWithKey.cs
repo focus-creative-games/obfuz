@@ -50,7 +50,7 @@
 
         public float NextFloat()
         {
-            return (float)((double)NextInt() / int.MaxValue);
+            return (float)((double)(uint)NextInt() / uint.MaxValue);
         }
 
         public bool NextInPercentage(float percentage)

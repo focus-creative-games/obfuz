@@ -294,7 +294,7 @@ namespace Obfuz.Data
             _moduleEntityManager = moduleEntityManager;
         }
 
-        private ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
+        public ModuleConstFieldAllocator GetModuleAllocator(ModuleDef mod)
         {
             return _moduleEntityManager.GetEntity<ModuleConstFieldAllocator>(mod, () => new ModuleConstFieldAllocator(_encryptionScopeProvider, _rvaDataAllocator, _moduleEntityManager));
         }
