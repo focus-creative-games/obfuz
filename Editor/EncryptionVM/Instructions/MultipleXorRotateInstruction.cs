@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Obfuz.Utils;
+using System.Collections.Generic;
 
 namespace Obfuz.EncryptionVM.Instructions
 {
@@ -17,7 +18,7 @@ namespace Obfuz.EncryptionVM.Instructions
         public MultipleXorRotateInstruction(int multipleValue, int index1, int xorValue, int rotateBitNum)
         {
             _multipleValue = multipleValue;
-            _revertMultipleValue = (int)MultipleInstruction.ModInverseOdd((uint)multipleValue);
+            _revertMultipleValue = MathUtil.ModInverse32(multipleValue);
             _index1 = index1;
             _rotateBitNum = rotateBitNum;
             _xorValue = xorValue;

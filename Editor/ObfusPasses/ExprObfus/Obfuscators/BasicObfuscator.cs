@@ -14,20 +14,6 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
     class BasicObfuscator : ObfuscatorBase
     {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly GroupByModuleEntityManager _moduleEntityManager;
-
-        public BasicObfuscator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager)
-        {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _moduleEntityManager = moduleEntityManager;
-        }
-
-        private DefaultMetadataImporter GetModuleMetadataImporter(ModuleDef module)
-        {
-            return _moduleEntityManager.GetDefaultModuleMetadataImporter(module, _encryptionScopeProvider);
-        }
-
         private IMethod GetMethod(DefaultMetadataImporter importer, Code code, EvalDataType op1)
         {
             switch (code)
@@ -183,10 +169,9 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
             }
         }
 
-        public override bool ObfuscateBasicUnaryOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts)
+        public override bool ObfuscateBasicUnaryOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method.Module);
-            IMethod opMethod = GetMethod(importer, inst.OpCode.Code, op);
+            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op);
             if (opMethod == null)
             {
                 return false;
@@ -195,44 +180,14 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
             return true;
         }
 
-        public override bool ObfuscateBasicBinOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts)
-        {
-            if (op1 != op2)
-            {
-                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
-                return false;
-            }
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method.Module);
-            IMethod opMethod = GetMethod(importer, inst.OpCode.Code, op1);
-            if (opMethod == null)
-            {
-                return false;
-            }
-            outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
-            return true;
-        }
-
-        public override bool ObfuscateUnaryBitwiseOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts)
-        {
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method.Module);
-            IMethod opMethod = GetMethod(importer, inst.OpCode.Code, op);
-            if (opMethod == null)
-            {
-                return false;
-            }
-            outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
-            return true;
-        }
-
-        public override bool ObfuscateBinBitwiseOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts)
+        public override bool ObfuscateBasicBinOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
             if (op1 != op2)
             {
                 Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method.Module);
-            IMethod opMethod = GetMethod(importer, inst.OpCode.Code, op1);
+            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
             if (opMethod == null)
             {
                 return false;
@@ -241,15 +196,41 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
             return true;
         }
 
-        public override bool ObfuscateBitShiftOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts)
+        public override bool ObfuscateUnaryBitwiseOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
+        {
+            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op);
+            if (opMethod == null)
+            {
+                return false;
+            }
+            outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
+            return true;
+        }
+
+        public override bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
+        {
+            if (op1 != op2)
+            {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
+                return false;
+            }
+            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
+            if (opMethod == null)
+            {
+                return false;
+            }
+            outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
+            return true;
+        }
+
+        public override bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
             if (op2 != EvalDataType.Int32)
             {
                 Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with operand type {op2}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method.Module);
-            IMethod opMethod = GetMethod(importer, inst.OpCode.Code, op1);
+            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
             if (opMethod == null)
             {
                 return false;

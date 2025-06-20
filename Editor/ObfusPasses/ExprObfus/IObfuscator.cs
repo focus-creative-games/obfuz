@@ -7,23 +7,23 @@ namespace Obfuz.ObfusPasses.ExprObfus
 {
     interface IObfuscator
     {
-        bool ObfuscateBasicUnaryOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        bool ObfuscateBasicUnaryOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
 
-        bool ObfuscateBasicBinOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        bool ObfuscateBasicBinOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
 
-        bool ObfuscateUnaryBitwiseOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        bool ObfuscateUnaryBitwiseOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
 
-        bool ObfuscateBinBitwiseOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
 
-        bool ObfuscateBitShiftOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
     }
 
     abstract class ObfuscatorBase : IObfuscator
     {
-        public abstract bool ObfuscateBasicUnaryOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
-        public abstract bool ObfuscateBasicBinOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
-        public abstract bool ObfuscateUnaryBitwiseOp(MethodDef method, Instruction inst, EvalDataType op, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
-        public abstract bool ObfuscateBinBitwiseOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
-        public abstract bool ObfuscateBitShiftOp(MethodDef method, Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, LocalVariableAllocator localVariableAllocator, List<Instruction> outputInsts);
+        public abstract bool ObfuscateBasicUnaryOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
+        public abstract bool ObfuscateBasicBinOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
+        public abstract bool ObfuscateUnaryBitwiseOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
+        public abstract bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
+        public abstract bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Conf;
+using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -23,12 +24,15 @@ namespace Obfuz.ObfusPasses.ExprObfus
     {
         class ObfuscationRule : IRule<ObfuscationRule>
         {
-            public bool? obfuscate;
+            public ObfuscationLevel? obfuscationLevel;
+            public float? obfuscationPercentage;
 
             public void InheritParent(ObfuscationRule parentRule)
             {
-                if (obfuscate == null)
-                    obfuscate = parentRule.obfuscate;
+                if (obfuscationLevel == null)
+                    obfuscationLevel = parentRule.obfuscationLevel;
+                if (obfuscationPercentage == null)
+                    obfuscationPercentage = parentRule.obfuscationPercentage;
             }
         }
 
@@ -46,7 +50,8 @@ namespace Obfuz.ObfusPasses.ExprObfus
 
         private static readonly ObfuscationRule s_default = new ObfuscationRule()
         {
-            obfuscate = false,
+            obfuscationLevel = ObfuscationLevel.None,
+            obfuscationPercentage = 0.5f,
         };
 
         private readonly XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule> _xmlParser;
@@ -66,12 +71,21 @@ namespace Obfuz.ObfusPasses.ExprObfus
             _xmlParser.InheritParentRules(s_default);
         }
 
+        private ObfuscationLevel ParseObfuscationLevel(string str)
+        {
+            return (ObfuscationLevel)Enum.Parse(typeof(ObfuscationLevel), str);
+        }
+
         private ObfuscationRule ParseObfuscationRule(string configFile, XmlElement ele)
         {
             var rule = new ObfuscationRule();
-            if (ele.HasAttribute("obfuscate"))
+            if (ele.HasAttribute("obfuscationLevel"))
             {
-                rule.obfuscate = ConfigUtil.ParseBool(ele.GetAttribute("obfuscate"));
+                rule.obfuscationLevel = ParseObfuscationLevel(ele.GetAttribute("obfuscationLevel"));
+            }
+            if (ele.HasAttribute("obfuscationPercentage"))
+            {
+                rule.obfuscationPercentage = float.Parse(ele.GetAttribute("obfuscationPercentage"));
             }
             return rule;
         }
@@ -89,7 +103,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
         public override bool NeedObfuscate(MethodDef method)
         {
             ObfuscationRule rule = GetMethodObfuscationRule(method);
-            return rule.obfuscate == true;
+            return rule.obfuscationLevel.Value > ObfuscationLevel.None;
         }
     }
 }
