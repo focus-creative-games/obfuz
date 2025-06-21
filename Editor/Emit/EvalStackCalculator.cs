@@ -693,7 +693,6 @@ namespace Obfuz.Emit
                         case Code.Ldflda:
                         case Code.Ldsflda:
                         {
-                            Assert.IsTrue(stackSize > 0);
                             PushStack(newPushedDatas, EvalDataType.I);
                             break;
                         }
