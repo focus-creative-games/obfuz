@@ -65,8 +65,8 @@ namespace Obfuz.ObfusPasses.ExprObfus
 
         private static readonly ObfuscationRule s_default = new ObfuscationRule()
         {
-            obfuscationLevel = ObfuscationLevel.None,
-            obfuscationPercentage = 0.5f,
+            obfuscationLevel = ObfuscationLevel.Basic,
+            obfuscationPercentage = 0.3f,
         };
 
         private ObfuscationRule _global;
