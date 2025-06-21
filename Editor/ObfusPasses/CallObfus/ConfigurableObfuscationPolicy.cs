@@ -78,7 +78,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             disableObfuscation = false,
             obfuscateCallInLoop = true,
             cacheCallIndexInLoop = true,
-            cacheCallIndexNotLoop = false,
+            cacheCallIndexNotLoop = true,
         };
 
         private readonly XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule> _configParser;
