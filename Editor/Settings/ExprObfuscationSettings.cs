@@ -20,7 +20,7 @@ namespace Obfuz.Settings
         {
             return new ExprObfuscationSettingsFacade
             {
-                ruleFiles = new List<string>(ruleFiles),
+                ruleFiles = new List<string>(ruleFiles ?? Array.Empty<string>()),
             };
         }
     }

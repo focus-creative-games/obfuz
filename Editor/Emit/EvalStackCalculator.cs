@@ -39,6 +39,7 @@ namespace Obfuz.Emit
         private readonly MethodDef _method;
         private readonly BasicBlockCollection _basicBlocks;
         private readonly Dictionary<Instruction, InstructionParameterInfo> _instructionParameterInfos = new Dictionary<Instruction, InstructionParameterInfo>();
+        private readonly Dictionary<Instruction, EvalDataType> _evalStackTopDataTypeAfterInstructions = new Dictionary<Instruction, EvalDataType>();
 
         public EvalStackCalculator(MethodDef method)
         {
@@ -51,6 +52,11 @@ namespace Obfuz.Emit
         public bool TryGetParameterInfo(Instruction inst, out InstructionParameterInfo info)
         {
             return _instructionParameterInfos.TryGetValue(inst, out info);
+        }
+
+        public bool TryGetPushResult(Instruction inst, out EvalDataType result)
+        {
+            return _evalStackTopDataTypeAfterInstructions.TryGetValue(inst, out result);
         }
 
         class EvalStackState
@@ -860,6 +866,10 @@ namespace Obfuz.Emit
                         stackDatas.RemoveRange(stackDatas.Count - pops, pops);
                         stackDatas.AddRange(newPushedDatas);
                         Assert.AreEqual(stackSize + pushed - pops, stackDatas.Count);
+                    }
+                    if (pushed > 0 && stackDatas.Count > 0)
+                    {
+                        _evalStackTopDataTypeAfterInstructions[inst] = stackDatas.Last();
                     }
                 }
                 foreach (BasicBlock outBb in block.outBlocks)

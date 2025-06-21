@@ -160,7 +160,7 @@ namespace Obfuz
                     obfuscatedAssemblyOutputPath = settings.GetObfuscatedAssemblyOutputPath(target),
                     obfuscatedAssemblyTempOutputPath = settings.GetObfuscatedAssemblyTempOutputPath(target),
                     enabledObfuscationPasses = settings.obfuscationPassSettings.enabledPasses,
-                    obfuscationPassRuleConfigFiles = settings.obfuscationPassSettings.ruleFiles.ToList(),
+                    obfuscationPassRuleConfigFiles = settings.obfuscationPassSettings.ruleFiles?.ToList() ?? new List<string>(),
                     obfuscationPasses = new List<IObfuscationPass>(),
                 },
             };

@@ -25,7 +25,7 @@ namespace Obfuz.Settings
         {
             return new FieldEncryptionSettingsFacade
             {
-                ruleFiles = ruleFiles.ToList(),
+                ruleFiles = ruleFiles?.ToList() ?? new List<string>(),
                 encryptionLevel = encryptionLevel,
             };
         }

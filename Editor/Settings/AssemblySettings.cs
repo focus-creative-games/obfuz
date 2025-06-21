@@ -23,7 +23,7 @@ namespace Obfuz.Settings
 
         public List<string> GetAssembliesToObfuscate()
         {
-            var asses = new List<string>(assembliesToObfuscate);
+            var asses = new List<string>(assembliesToObfuscate ?? Array.Empty<string>());
             if (obfuscateObfuzRuntime && !asses.Contains(ConstValues.ObfuzRuntimeAssemblyName))
             {
                 asses.Add(ConstValues.ObfuzRuntimeAssemblyName);
@@ -34,7 +34,7 @@ namespace Obfuz.Settings
         public List<string> GetObfuscationRelativeAssemblyNames()
         {
             var asses = GetAssembliesToObfuscate();
-            asses.AddRange(nonObfuscatedButReferencingObfuscatedAssemblies);
+            asses.AddRange(nonObfuscatedButReferencingObfuscatedAssemblies ?? Array.Empty<string>());
             return asses;
         }
     }

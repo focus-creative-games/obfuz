@@ -29,7 +29,7 @@ namespace Obfuz.Settings
         {
             return new CallObfuscationSettingsFacade
             {
-                ruleFiles = ruleFiles.ToList(),
+                ruleFiles = ruleFiles?.ToList() ?? new List<string>(),
                 obfuscationLevel = obfuscationLevel,
                 maxProxyMethodCountPerDispatchMethod = maxProxyMethodCountPerDispatchMethod,
             };
