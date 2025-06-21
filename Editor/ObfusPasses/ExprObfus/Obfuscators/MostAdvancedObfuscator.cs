@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet.Emit;
 using Obfuz.Emit;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 {
@@ -10,7 +11,11 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBasicUnaryOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!GenerateIdentityTransformForArgument(inst, op, outputInsts, ctx))
+            if (!base.ObfuscateBasicUnaryOp(inst, op, ret, outputInsts, ctx))
+            {
+                return false;
+            }
+            if (outputInsts.Last().OpCode.Code != inst.OpCode.Code)
             {
                 return false;
             }
@@ -20,7 +25,11 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBasicBinOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx))
+            if (!base.ObfuscateBasicBinOp(inst, op1, op2, ret, outputInsts, ctx))
+            {
+                return false;
+            }
+            if (outputInsts.Last().OpCode.Code != inst.OpCode.Code)
             {
                 return false;
             }
@@ -30,7 +39,12 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateUnaryBitwiseOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!GenerateIdentityTransformForArgument(inst, op, outputInsts, ctx))
+            if (!base.ObfuscateUnaryBitwiseOp(inst, op, ret, outputInsts, ctx))
+            {
+                return false;
+            }
+
+            if (outputInsts.Last().OpCode.Code != inst.OpCode.Code)
             {
                 return false;
             }
@@ -40,7 +54,11 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx))
+            if (!base.ObfuscateBinBitwiseOp(inst, op1, op2, ret, outputInsts, ctx))
+            {
+                return false;
+            }
+            if (outputInsts.Last().OpCode.Code != inst.OpCode.Code)
             {
                 return false;
             }
@@ -50,7 +68,11 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx))
+            if (!base.ObfuscateBitShiftOp(inst, op1, op2, ret,outputInsts, ctx))
+            {
+                return false;
+            }
+            if (outputInsts.Last().OpCode.Code != inst.OpCode.Code)
             {
                 return false;
             }

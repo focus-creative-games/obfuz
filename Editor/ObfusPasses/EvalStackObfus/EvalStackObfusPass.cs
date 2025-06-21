@@ -72,7 +72,7 @@ namespace Obfuz.ObfusPasses.EvalStackObfus
 
         protected override void ObfuscateData(MethodDef method)
         {
-            Debug.Log($"Obfuscating method: {method.FullName} with EvalStackObfusPass");
+            //Debug.Log($"Obfuscating method: {method.FullName} with EvalStackObfusPass");
             IList<Instruction> instructions = method.Body.Instructions;
             var outputInstructions = new List<Instruction>();
             var totalFinalInstructions = new List<Instruction>();

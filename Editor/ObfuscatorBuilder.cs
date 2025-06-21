@@ -170,6 +170,10 @@ namespace Obfuz
             {
                 builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings.ToFacade()));
             }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
+            {
+                builder.AddPass(new ExprObfusPass(settings.exprObfusSettings.ToFacade()));
+            }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.EvalStackObfus))
             {
                 builder.AddPass(new EvalStackObfusPass(settings.evalStackObfusSettings.ToFacade()));
@@ -177,10 +181,6 @@ namespace Obfuz
             if (obfuscationPasses.HasFlag(ObfuscationPassType.FieldEncrypt))
             {
                 builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings.ToFacade()));
-            }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.ExprObfus))
-            {
-                builder.AddPass(new ExprObfusPass(settings.exprObfusSettings.ToFacade()));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallObfus))
             {
