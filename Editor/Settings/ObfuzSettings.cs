@@ -28,6 +28,9 @@ namespace Obfuz.Settings
         [Tooltip("const encryption settings")]
         public ConstEncryptionSettings constEncryptSettings;
 
+        [Tooltip("eval stack obfuscation settings")]
+        public EvalStackObfuscationSettings evalStackObfusSettings;
+
         [Tooltip("field encryption settings")]
         public FieldEncryptionSettings fieldEncryptSettings;
 

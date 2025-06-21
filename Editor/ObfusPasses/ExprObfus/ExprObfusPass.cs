@@ -115,7 +115,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
 
         protected override void ObfuscateData(MethodDef method)
         {
-            Debug.Log($"Obfuscating method: {method.FullName} with ExprObfusPass");
+            //Debug.Log($"Obfuscating method: {method.FullName} with ExprObfusPass");
             IList<Instruction> instructions = method.Body.Instructions;
             var outputInstructions = new List<Instruction>();
             var totalFinalInstructions = new List<Instruction>();

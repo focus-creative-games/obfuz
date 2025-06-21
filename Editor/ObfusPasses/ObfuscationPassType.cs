@@ -14,11 +14,12 @@ namespace Obfuz.ObfusPasses
         CallObfus = 0x200,
         ExprObfus = 0x400,
         ControlFlowObfus = 0x800,
+        EvalStackObfus = 0x1000,
 
-        AllObfus = SymbolObfus | CallObfus | ExprObfus | ControlFlowObfus,
+        AllObfus = SymbolObfus | CallObfus | ExprObfus | ControlFlowObfus | EvalStackObfus,
         AllEncrypt = ConstEncrypt | FieldEncrypt,
 
-        MethodBodyObfusOrEncrypt = ConstEncrypt | CallObfus | ExprObfus | ControlFlowObfus,
+        MethodBodyObfusOrEncrypt = ConstEncrypt | CallObfus | ExprObfus | ControlFlowObfus | EvalStackObfus,
 
         All = ~0,
     }

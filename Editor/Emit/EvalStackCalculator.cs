@@ -651,7 +651,7 @@ namespace Obfuz.Emit
                         }
                         case Code.Isinst:
                         {
-                            PushStack(newPushedDatas, EvalDataType.Int32);
+                            PushStack(newPushedDatas, EvalDataType.Ref);
                             break;
                         }
                         case Code.Unbox:
