@@ -212,11 +212,21 @@ namespace Obfuz.Emit
                         }
                         break;
                     }
+                    case FlowControl.Call:
+                    case FlowControl.Next:
+                    {
+                        if (nextBlock != null)
+                        {
+                            curBlock.AddTargetBasicBlock(nextBlock);
+                        }
+                        break;
+                    }
                     case FlowControl.Return:
                     case FlowControl.Throw:
                     {
                         break;
                     }
+                    default: throw new NotSupportedException($"Unsupported flow control: {lastInst.OpCode.FlowControl} in method {method.FullName}");
                 }
             }
         }

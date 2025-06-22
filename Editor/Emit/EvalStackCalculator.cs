@@ -3,6 +3,7 @@ using dnlib.DotNet.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine.Assertions;
 
@@ -50,20 +51,33 @@ namespace Obfuz.Emit
         }
     }
 
+
+    class EvalStackState
+    {
+        public bool visited;
+
+        public readonly List<EvalDataTypeWithSig> inputStackDatas = new List<EvalDataTypeWithSig>();
+        public readonly List<EvalDataTypeWithSig> runStackDatas = new List<EvalDataTypeWithSig>();
+    }
+
     class EvalStackCalculator
     {
         private readonly MethodDef _method;
         private readonly BasicBlockCollection _basicBlocks;
         private readonly Dictionary<Instruction, InstructionParameterInfo> _instructionParameterInfos = new Dictionary<Instruction, InstructionParameterInfo>();
         private readonly Dictionary<Instruction, EvalDataType> _evalStackTopDataTypeAfterInstructions = new Dictionary<Instruction, EvalDataType>();
+        private readonly Dictionary<BasicBlock, EvalStackState> _blockEvalStackStates;
 
         public EvalStackCalculator(MethodDef method)
         {
             _method = method;
             _basicBlocks = new BasicBlockCollection(method, false);
+            _blockEvalStackStates = _basicBlocks.Blocks.ToDictionary(b => b, b => new EvalStackState());
 
             SimulateRunAllBlocks();
         }
+
+        public BasicBlockCollection BasicBlockCollection => _basicBlocks;
 
         public bool TryGetParameterInfo(Instruction inst, out InstructionParameterInfo info)
         {
@@ -75,12 +89,9 @@ namespace Obfuz.Emit
             return _evalStackTopDataTypeAfterInstructions.TryGetValue(inst, out result);
         }
 
-        class EvalStackState
+        public EvalStackState GetEvalStackState(BasicBlock basicBlock)
         {
-            public bool visited;
-
-            public readonly List<EvalDataTypeWithSig> inputStackDatas = new List<EvalDataTypeWithSig>();
-            public readonly List<EvalDataTypeWithSig> runStackDatas = new List<EvalDataTypeWithSig>();
+            return _blockEvalStackStates[basicBlock];
         }
 
         private void PushStack(List<EvalDataTypeWithSig> datas, TypeSig type)
@@ -163,6 +174,8 @@ namespace Obfuz.Emit
                 }
                 case ElementType.Var:
                 case ElementType.MVar:
+                PushStack(datas, new EvalDataTypeWithSig(EvalDataType.ValueType, type));
+                break;
                 case ElementType.ValueArray:
                 case ElementType.R:
                 case ElementType.CModOpt:
@@ -191,6 +204,11 @@ namespace Obfuz.Emit
         private void PushStack(List<EvalDataTypeWithSig> datas, EvalDataTypeWithSig type)
         {
             datas.Add(type);
+        }
+
+        private void PushStackObject(List<EvalDataTypeWithSig> datas)
+        {
+            datas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, _method.Module.CorLibTypes.Object));
         }
 
         private EvalDataType CalcBasicBinOpRetType(EvalDataType op1, EvalDataType op2)
@@ -252,7 +270,6 @@ namespace Obfuz.Emit
 
         private void SimulateRunAllBlocks()
         {
-            Dictionary<BasicBlock, EvalStackState> blockEvalStackStates = _basicBlocks.Blocks.ToDictionary(b => b, b => new EvalStackState());
             bool methodHasReturnValue = _method.ReturnType.RemovePinnedAndModifiers().ElementType != ElementType.Void;
 
             CilBody body = _method.Body;
@@ -260,15 +277,23 @@ namespace Obfuz.Emit
             {
                 foreach (ExceptionHandler handler in body.ExceptionHandlers)
                 {
-                    if (handler.IsCatch)
-                    {
-                        BasicBlock bb = _basicBlocks.GetBasicBlockByInstruction(handler.HandlerStart);
-                        blockEvalStackStates[bb].runStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, null)); // Exception object is pushed onto the stack.
-                    }
-                    else if (handler.IsFilter)
+                    if (handler.IsFilter)
                     {
                         BasicBlock bb = _basicBlocks.GetBasicBlockByInstruction(handler.FilterStart);
-                        blockEvalStackStates[bb].runStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, null)); // Exception object is pushed onto the stack.
+                        var inputStackDatas = _blockEvalStackStates[bb].inputStackDatas;
+                        if (inputStackDatas.Count == 0)
+                        {
+                            inputStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, handler.CatchType.ToTypeSig()));
+                        }
+                    }
+                    if (handler.IsCatch || handler.IsFilter)
+                    {
+                        BasicBlock bb = _basicBlocks.GetBasicBlockByInstruction(handler.HandlerStart);
+                        var inputStackDatas = _blockEvalStackStates[bb].inputStackDatas;
+                        if (inputStackDatas.Count == 0)
+                        {
+                            inputStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, handler.CatchType.ToTypeSig()));
+                        }
                     }
                 }
             }
@@ -281,12 +306,13 @@ namespace Obfuz.Emit
                 ? (IList<TypeSig>)_method.GenericParameters.Select(p => (TypeSig)new GenericMVar(p.Number)).ToList()
                 : null;
             var gac = new GenericArgumentContext(methodTypeGenericArgument, methodMethodGenericArgument);
+            var corLibTypes = _method.Module.CorLibTypes;
 
             var blockWalkStack = new Stack<BasicBlock>(_basicBlocks.Blocks.Reverse());
             while (blockWalkStack.Count > 0)
             {
                 BasicBlock block = blockWalkStack.Pop();
-                EvalStackState state = blockEvalStackStates[block];
+                EvalStackState state = _blockEvalStackStates[block];
                 if (state.visited)
                     continue;
                 state.visited = true;
@@ -350,7 +376,7 @@ namespace Obfuz.Emit
                         }
                         case Code.Ldnull:
                         {
-                            PushStack(newPushedDatas, EvalDataType.I);
+                            PushStackObject(newPushedDatas);
                             break;
                         }
                         case Code.Ldc_I4_M1:
@@ -493,7 +519,7 @@ namespace Obfuz.Emit
                         case Code.Ldind_Ref:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            PushStackObject(newPushedDatas);
                             break;
                         }
                         case Code.Ldind_R4:
@@ -676,7 +702,7 @@ namespace Obfuz.Emit
                         }
                         case Code.Ldstr:
                         {
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, corLibTypes.String));
                             break;
                         }
                         case Code.Newobj:
@@ -692,7 +718,10 @@ namespace Obfuz.Emit
                         }
                         case Code.Isinst:
                         {
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            Assert.IsTrue(stackSize > 0);
+                            var obj = stackDatas[stackSize - 1];
+                            Assert.IsTrue(obj.type == EvalDataType.Ref);
+                            PushStack(newPushedDatas, obj);
                             break;
                         }
                         case Code.Unbox:
@@ -710,7 +739,7 @@ namespace Obfuz.Emit
                         case Code.Box:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            PushStackObject(newPushedDatas);
                             break;
                         }
                         case Code.Throw:
@@ -745,7 +774,7 @@ namespace Obfuz.Emit
                         case Code.Newarr:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            PushStack(newPushedDatas, new SZArraySig(((ITypeDefOrRef)inst.Operand).ToTypeSig()));
                             break;
                         }
                         case Code.Ldlen:
@@ -798,7 +827,7 @@ namespace Obfuz.Emit
                         case Code.Ldelem_Ref:
                         {
                             Assert.IsTrue(stackSize >= 2);
-                            PushStack(newPushedDatas, EvalDataType.Ref);
+                            PushStackObject(newPushedDatas);
                             break;
                         }
                         case Code.Ldelem:
@@ -914,7 +943,7 @@ namespace Obfuz.Emit
                 }
                 foreach (BasicBlock outBb in block.outBlocks)
                 {
-                    EvalStackState outState = blockEvalStackStates[outBb];
+                    EvalStackState outState = _blockEvalStackStates[outBb];
                     if (outState.visited)
                     {
                         if (stackDatas.Count != outState.inputStackDatas.Count)

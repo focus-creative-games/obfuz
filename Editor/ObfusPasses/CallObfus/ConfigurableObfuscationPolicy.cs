@@ -253,7 +253,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             if (!_methodRuleCache.TryGetValue(method, out var rule))
             {
-                rule = _configParser.GetMethodRule(method, s_default);
+                rule = _configParser.GetMethodRule(method, _global);
                 _methodRuleCache[method] = rule;
             }
             return rule;

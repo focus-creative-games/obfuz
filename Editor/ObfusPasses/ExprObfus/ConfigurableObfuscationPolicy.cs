@@ -126,7 +126,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
         {
             if (!_methodRuleCache.TryGetValue(method, out var rule))
             {
-                rule = _xmlParser.GetMethodRule(method, s_default);
+                rule = _xmlParser.GetMethodRule(method, _global);
                 _methodRuleCache[method] = rule;
             }
             return rule;

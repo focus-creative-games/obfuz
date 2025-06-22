@@ -14,6 +14,12 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
         public EncryptionScopeInfo encryptionScope;
         public DefaultMetadataImporter importer;
         public ModuleConstFieldAllocator constFieldAllocator;
+        public int minInstructionCountOfBasicBlockToObfuscate;
+
+        public IRandom CreateRandom()
+        {
+            return encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method));
+        }
     }
 
     internal class ControlFlowObfusPass : ObfuscationMethodPassBase
@@ -54,7 +60,6 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             //Debug.Log($"Obfuscating method: {method.FullName} with EvalStackObfusPass");
 
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
-            var calc = new BasicBlockCollection(method, false);
             var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
             var ruleData = _obfuscationPolicy.GetObfuscationRuleData(method);
             var localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method));
@@ -66,8 +71,9 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 constFieldAllocator = ctx.constFieldAllocator.GetModuleAllocator(method.Module),
                 localRandom = localRandom,
                 importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, ctx.encryptionScopeProvider),
+                minInstructionCountOfBasicBlockToObfuscate = _settings.minInstructionCountOfBasicBlockToObfuscate,
             };
-            _obfuscator.Obfuscate(calc, obfusMethodCtx);
+            _obfuscator.Obfuscate(method, obfusMethodCtx);
         }
     }
 }

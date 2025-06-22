@@ -1,7 +1,9 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 
 namespace Obfuz.Utils
 {
+
     internal static class MathUtil
     {
         //public static int ModInverseOdd32(int sa)
