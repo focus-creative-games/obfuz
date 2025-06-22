@@ -1,6 +1,4 @@
-﻿using dnlib.DotNet;
-using dnlib.DotNet.Emit;
-using Obfuz.Emit;
+﻿using dnlib.DotNet.Emit;
 using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.EvalStackObfus

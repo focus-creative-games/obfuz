@@ -1,12 +1,9 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz.Editor;
-using Obfuz.Emit;
-using Obfuz.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Security;
 using System.Text;
 using UnityEngine.Assertions;
 
@@ -40,7 +37,7 @@ namespace Obfuz.ObfusPasses.Instinct
         private string GetTypeName(TypeSig type)
         {
             type = type.RemovePinnedAndModifiers();
-            switch(type.ElementType)
+            switch (type.ElementType)
             {
                 case ElementType.Class:
                 case ElementType.ValueType:

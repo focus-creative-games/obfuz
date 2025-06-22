@@ -1,6 +1,5 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using dnlib.DotNet.Writer;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -153,7 +152,7 @@ namespace Obfuz.Emit
             datas.Add(type);
         }
 
-        private  EvalDataType CalcBasicBinOpRetType(List<EvalDataType> datas, EvalDataType op1, EvalDataType op2)
+        private EvalDataType CalcBasicBinOpRetType(List<EvalDataType> datas, EvalDataType op1, EvalDataType op2)
         {
             switch (op1)
             {
@@ -174,7 +173,7 @@ namespace Obfuz.Emit
                         case EvalDataType.Int32: return EvalDataType.Int64;
                         case EvalDataType.Int64:
                         case EvalDataType.I:
-                            return EvalDataType.Int64;
+                        return EvalDataType.Int64;
                         default: throw new Exception($"Unsupported operand type: {op2} for {op1} in binary operation.");
                     }
                 }

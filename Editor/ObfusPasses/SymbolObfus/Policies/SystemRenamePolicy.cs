@@ -2,7 +2,6 @@
 using Obfuz.Editor;
 using Obfuz.Utils;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 {

@@ -6,8 +6,6 @@ using Obfuz.ObfusPasses.ExprObfus.Obfuscators;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 namespace Obfuz.ObfusPasses.ExprObfus
 {
@@ -72,7 +70,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
             return _obfuscationPolicy.NeedObfuscate(method);
         }
 
-        protected  bool TryObfuscateInstruction(IObfuscator obfuscator, InstructionParameterInfo pi, Instruction inst, List<Instruction> outputInstructions, ObfusMethodContext ctx)
+        protected bool TryObfuscateInstruction(IObfuscator obfuscator, InstructionParameterInfo pi, Instruction inst, List<Instruction> outputInstructions, ObfusMethodContext ctx)
         {
             //Debug.Log($"Obfuscating instruction: {inst} in method: {ctx.method.FullName}");
             IRandom localRandom = ctx.localRandom;

@@ -172,7 +172,7 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_multiplyFloat, "ExprUtility.Multiply(float, float) not found");
             _multiplyDouble = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(double), typeof(double) }));
             Assert.IsNotNull(_multiplyDouble, "ExprUtility.Multiply(double, double) not found");
-            _divideInt = mod.Import(exprUtilityType.GetMethod("Divide", new[] {typeof(int), typeof(int) }));
+            _divideInt = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_divideInt, "ExprUtility.Divide(int, int) not found");
             _divideLong = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(long), typeof(long) }));
             Assert.IsNotNull(_divideLong);

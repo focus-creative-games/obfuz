@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using Obfuz.Utils;
-using System;
 using System.Collections.Generic;
 
 namespace Obfuz.EncryptionVM.Instructions

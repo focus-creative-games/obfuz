@@ -2,6 +2,7 @@
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CallObfus;
 using Obfuz.ObfusPasses.ConstEncrypt;
+using Obfuz.ObfusPasses.ControlFlowObfus;
 using Obfuz.ObfusPasses.EvalStackObfus;
 using Obfuz.ObfusPasses.ExprObfus;
 using Obfuz.ObfusPasses.FieldEncrypt;
@@ -185,6 +186,10 @@ namespace Obfuz
             if (obfuscationPasses.HasFlag(ObfuscationPassType.CallObfus))
             {
                 builder.AddPass(new CallObfusPass(settings.callObfusSettings.ToFacade()));
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ControlFlowObfus))
+            {
+                builder.AddPass(new ControlFlowObfusPass(settings.controlFlowObfuscationSettings.ToFacade()));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {

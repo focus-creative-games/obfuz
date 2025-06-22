@@ -1,13 +1,8 @@
 ﻿using dnlib.DotNet.Emit;
-using dnlib.DotNet;
-using Obfuz.Emit;
-using System.Collections.Generic;
-using Obfuz.Utils;
 using Obfuz.Data;
-using UnityEngine;
-using UnityEngine.Assertions;
-using JetBrains.Annotations;
-using System;
+using Obfuz.Emit;
+using Obfuz.Utils;
+using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 {
@@ -104,12 +99,12 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            return GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx) || base.ObfuscateBinBitwiseOp(inst, op1 , op2, ret, outputInsts, ctx);
+            return GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx) || base.ObfuscateBinBitwiseOp(inst, op1, op2, ret, outputInsts, ctx);
         }
 
         public override bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            return GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx) || base.ObfuscateBitShiftOp(inst, op1, op2 , ret, outputInsts, ctx);
+            return GenerateIdentityTransformForArgument(inst, op2, outputInsts, ctx) || base.ObfuscateBitShiftOp(inst, op1, op2, ret, outputInsts, ctx);
         }
     }
 }

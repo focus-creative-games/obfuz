@@ -1,11 +1,7 @@
-﻿using dnlib.DotNet.Emit;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using Obfuz.Data;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Obfuz.Utils
 {

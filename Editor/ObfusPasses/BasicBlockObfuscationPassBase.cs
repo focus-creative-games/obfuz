@@ -2,7 +2,6 @@
 using dnlib.DotNet.Emit;
 using Obfuz.Emit;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Obfuz.ObfusPasses
 {

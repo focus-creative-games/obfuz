@@ -237,7 +237,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                     salt = salt,
                     encryptedIndex = encryptedIndex,
                 };
-                methodDispatcher.methods.Add(new CallInfo { id = $"{method}{(callVir ? "" : "v")}",  method = method, callVir = callVir });
+                methodDispatcher.methods.Add(new CallInfo { id = $"{method}{(callVir ? "" : "v")}", method = method, callVir = callVir });
                 _methodProxys.Add(key, proxyInfo);
             }
             return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex, proxyInfo.index);

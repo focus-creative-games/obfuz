@@ -1,12 +1,9 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Conf;
 using Obfuz.Settings;
-using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml;
-using UnityEditor.VersionControl;
 
 namespace Obfuz.ObfusPasses.ExprObfus
 {

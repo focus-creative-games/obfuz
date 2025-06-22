@@ -4,12 +4,7 @@ using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.Settings;
 using Obfuz.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace Obfuz.ObfusPasses.EvalStackObfus
 {

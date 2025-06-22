@@ -1,5 +1,4 @@
-﻿using dnlib.DotNet;
-using dnlib.DotNet.Emit;
+﻿using dnlib.DotNet.Emit;
 using Obfuz.Emit;
 using System.Collections.Generic;
 

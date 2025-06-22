@@ -68,7 +68,7 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (!base.ObfuscateBitShiftOp(inst, op1, op2, ret,outputInsts, ctx))
+            if (!base.ObfuscateBitShiftOp(inst, op1, op2, ret, outputInsts, ctx))
             {
                 return false;
             }

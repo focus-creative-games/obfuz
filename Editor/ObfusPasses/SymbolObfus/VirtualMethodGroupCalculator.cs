@@ -114,7 +114,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     return IsVarType(t1) || IsVarType(t2);
                 }
-                
+
                 switch (t1.ElementType)
                 {
                     case ElementType.Void:

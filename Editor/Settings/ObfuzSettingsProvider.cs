@@ -36,6 +36,7 @@ namespace Obfuz.Settings
         private SerializedProperty _fieldEncryptSettings;
         private SerializedProperty _callObfusSettings;
         private SerializedProperty _exprObfusSettings;
+        private SerializedProperty _controlFlowObfusSettings;
 
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
@@ -70,6 +71,7 @@ namespace Obfuz.Settings
             _exprObfusSettings = _serializedObject.FindProperty("exprObfusSettings");
             _fieldEncryptSettings = _serializedObject.FindProperty("fieldEncryptSettings");
             _callObfusSettings = _serializedObject.FindProperty("callObfusSettings");
+            _controlFlowObfusSettings = _serializedObject.FindProperty("controlFlowObfuscationSettings");
         }
 
         public override void OnGUI(string searchContext)
@@ -94,6 +96,7 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_exprObfusSettings);
             EditorGUILayout.PropertyField(_fieldEncryptSettings);
             EditorGUILayout.PropertyField(_callObfusSettings);
+            EditorGUILayout.PropertyField(_controlFlowObfusSettings);
 
 
             if (EditorGUI.EndChangeCheck())
