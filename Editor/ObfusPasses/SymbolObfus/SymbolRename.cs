@@ -14,6 +14,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 {
     public class SymbolRename
     {
+        private readonly bool _debug;
         private readonly bool _useConsistentNamespaceObfuscation;
         private readonly bool _detectReflectionCompatibility;
         private readonly List<string> _obfuscationRuleFiles;
@@ -42,6 +43,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
 
         public SymbolRename(SymbolObfuscationSettingsFacade settings)
         {
+            _debug = settings.debug;
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
             _detectReflectionCompatibility = settings.detectReflectionCompatibility;
             _mappingXmlPath = settings.symbolMappingFile;

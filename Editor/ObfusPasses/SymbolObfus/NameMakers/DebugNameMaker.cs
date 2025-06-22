@@ -4,25 +4,28 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
     public class DebugNameMaker : NameMakerBase
     {
-        private class TestNameScope : NameScopeBase
+        private class DebugNameScope : INameScope
         {
-            private int _nextIndex;
-            protected override void BuildNewName(StringBuilder nameBuilder, string originalName, string lastName)
+
+            public bool AddPreservedName(string name)
             {
-                if (string.IsNullOrEmpty(lastName))
-                {
-                    nameBuilder.Append($"${originalName}");
-                }
-                else
-                {
-                    nameBuilder.Append($"${originalName}{_nextIndex++}");
-                }
+                return true;
+            }
+
+            public string GetNewName(string originalName, bool reuse)
+            {
+                return $"${originalName}";
+            }
+
+            public bool IsNamePreserved(string name)
+            {
+                return false;
             }
         }
 
         protected override INameScope CreateNameScope()
         {
-            return new TestNameScope();
+            return new DebugNameScope();
         }
     }
 }
