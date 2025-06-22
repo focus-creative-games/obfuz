@@ -728,7 +728,7 @@ namespace Obfuz.Emit
                         {
                             IField field = (IField)inst.Operand;
                             TypeSig fieldType = MetaUtil.InflateFieldSig(field, gac);
-                            PushStack(newPushedDatas, field.FieldSig.GetFieldType());
+                            PushStack(newPushedDatas, fieldType);
                             break;
                         }
                         case Code.Ldflda:
