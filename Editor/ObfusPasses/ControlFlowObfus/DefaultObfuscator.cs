@@ -6,7 +6,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
     {
         public override bool Obfuscate(BasicBlockCollection basicBlocks, ObfusMethodContext ctx)
         {
-            throw new System.NotImplementedException();
+            return false;
         }
     }
 }
