@@ -233,6 +233,7 @@ namespace Obfuz.Emit
                     switch (op2)
                     {
                         case EvalDataType.Float: return EvalDataType.Float;
+                        case EvalDataType.Double: return EvalDataType.Double;
                         default: throw new Exception($"Unsupported operand type: {op2} for {op1} in binary operation.");
                     }
                 }
@@ -240,6 +241,7 @@ namespace Obfuz.Emit
                 {
                     switch (op2)
                     {
+                        case EvalDataType.Float:
                         case EvalDataType.Double: return EvalDataType.Double;
                         default: throw new Exception($"Unsupported operand type: {op2} for {op1} in binary operation.");
                     }
@@ -658,9 +660,8 @@ namespace Obfuz.Emit
                         }
                         case Code.Conv_R_Un:
                         {
-                            //PushStack(newDataTack, EvalDataType.Double);
-                            //break;
-                            throw new Exception($"unsupported opcode:{inst}");
+                            PushStack(newPushedDatas, EvalDataType.Double);
+                            break;
                         }
                         case Code.Cpobj:
                         case Code.Initobj:
