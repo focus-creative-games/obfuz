@@ -62,35 +62,6 @@ namespace Obfuz.ObfusPasses.CallObfus
             "System.Reflection.Assembly.GetEntryAssembly",
         };
 
-        private bool IsSpecialNotObfuscatedMethod(TypeDef typeDef, IMethod method)
-        {
-            if (typeDef.IsDelegate || typeDef.IsEnum)
-                return true;
-
-            string fullName = typeDef.FullName;
-            if (_specialTypeFullNames.Contains(fullName))
-            {
-                return true;
-            }
-            //if (fullName.StartsWith("System.Runtime.CompilerServices."))
-            //{
-            //    return true;
-            //}
-
-            string methodName = method.Name;
-            if (_specialMethodNames.Contains(methodName))
-            {
-                return true;
-            }
-
-            string methodFullName = $"{fullName}.{methodName}";
-            if (_specialMethodFullNames.Contains(methodFullName))
-            {
-                return true;
-            }
-            return false;
-        }
-
         private bool ComputeIsInWhiteList(IMethod calledMethod)
         {
             MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
