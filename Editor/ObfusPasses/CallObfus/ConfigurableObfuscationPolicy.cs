@@ -86,11 +86,12 @@ namespace Obfuz.ObfusPasses.CallObfus
         private ObfuscationRule _global;
         private readonly List<WhiteListAssembly> _whiteListAssemblies = new List<WhiteListAssembly>();
 
-        private readonly Dictionary<IMethod, bool> _whiteListMethodCache = new Dictionary<IMethod, bool>(MethodEqualityComparer.CompareDeclaringTypes);
+        private readonly CachedDictionary<IMethod, bool> _whiteListMethodCache;
         private readonly Dictionary<MethodDef, ObfuscationRule> _methodRuleCache = new Dictionary<MethodDef, ObfuscationRule>();
 
         public ConfigurableObfuscationPolicy(List<string> toObfuscatedAssemblyNames, List<string> xmlConfigFiles)
         {
+            _whiteListMethodCache = new CachedDictionary<IMethod, bool>(MethodEqualityComparer.CompareDeclaringTypes, this.ComputeIsInWhiteList);
             _configParser = new XmlAssemblyTypeMethodRuleParser<AssemblySpec, TypeSpec, MethodSpec, ObfuscationRule>(toObfuscatedAssemblyNames,
                 ParseObfuscationRule, ParseGlobalElement);
             LoadConfigs(xmlConfigFiles);
@@ -274,54 +275,6 @@ namespace Obfuz.ObfusPasses.CallObfus
             };
         }
 
-
-        private readonly HashSet<string> _specialTypeFullNames = new HashSet<string>
-        {
-            "System.Enum",
-            "System.Delegate",
-            "System.MulticastDelegate",
-            "Obfuz.EncryptionService`1",
-        };
-
-        private readonly HashSet<string> _specialMethodNames = new HashSet<string>
-        {
-            "GetEnumerator", // List<T>.Enumerator.GetEnumerator()
-            ".ctor", // constructor
-        };
-
-        private readonly HashSet<string> _specialMethodFullNames = new HashSet<string>
-        {
-            "System.Reflection.MethodBase.GetCurrentMethod",
-            "System.Reflection.Assembly.GetCallingAssembly",
-            "System.Reflection.Assembly.GetExecutingAssembly",
-            "System.Reflection.Assembly.GetEntryAssembly",
-        };
-
-        private bool IsSpecialNotObfuscatedMethod(TypeDef typeDef, IMethod method)
-        {
-            if (typeDef.IsDelegate || typeDef.IsEnum)
-                return true;
-
-            string fullName = typeDef.FullName;
-            if (_specialTypeFullNames.Contains(fullName))
-            {
-                return true;
-            }
-
-            string methodName = method.Name;
-            if (_specialMethodNames.Contains(methodName))
-            {
-                return true;
-            }
-
-            string methodFullName = $"{fullName}.{methodName}";
-            if (_specialMethodFullNames.Contains(methodFullName))
-            {
-                return true;
-            }
-            return false;
-        }
-
         private bool ComputeIsInWhiteList(IMethod calledMethod)
         {
             ITypeDefOrRef declaringType = calledMethod.DeclaringType;
@@ -346,11 +299,6 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
 
             TypeDef typeDef = declaringType.ResolveTypeDef();
-
-            if (IsSpecialNotObfuscatedMethod(typeDef, calledMethod))
-            {
-                return true;
-            }
 
             string assName = typeDef.Module.Assembly.Name;
             string typeFullName = typeDef.FullName;
@@ -381,42 +329,13 @@ namespace Obfuz.ObfusPasses.CallObfus
             return false;
         }
 
-        private bool IsInWhiteList(IMethod method)
-        {
-            if (!_whiteListMethodCache.TryGetValue(method, out var isWhiteList))
-            {
-                isWhiteList = ComputeIsInWhiteList(method);
-                _whiteListMethodCache.Add(method, isWhiteList);
-            }
-            return isWhiteList;
-        }
-
-        private bool IsTypeSelfAndParentPublic(TypeDef type)
-        {
-            if (type.DeclaringType != null && !IsTypeSelfAndParentPublic(type.DeclaringType))
-            {
-                return false;
-            }
-
-            return type.IsPublic;
-        }
-
         public override bool NeedObfuscateCalledMethod(MethodDef callerMethod, IMethod calledMethod, bool callVir, bool currentInLoop)
         {
-            if (IsInWhiteList(calledMethod))
+            if (_whiteListMethodCache.GetValue(calledMethod))
             {
                 return false;
             }
 
-            // mono has more strict access control, calls non-public method will raise exception.
-            if (PlatformUtil.IsMonoBackend())
-            {
-                MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
-                if (calledMethodDef != null && (!calledMethodDef.IsPublic || !IsTypeSelfAndParentPublic(calledMethodDef.DeclaringType)))
-                {
-                    return false;
-                }
-            }
             ObfuscationRule rule = GetMethodObfuscationRule(callerMethod);
             if (currentInLoop && rule.obfuscateCallInLoop == false)
             {
