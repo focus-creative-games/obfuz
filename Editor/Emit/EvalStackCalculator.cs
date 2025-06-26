@@ -253,7 +253,7 @@ namespace Obfuz.Emit
         private void SimulateRunAllBlocks()
         {
             Dictionary<BasicBlock, EvalStackState> blockEvalStackStates = _basicBlocks.Blocks.ToDictionary(b => b, b => new EvalStackState());
-            bool methodHasReturnValue = _method.ReturnType.ElementType != ElementType.Void;
+            bool methodHasReturnValue = _method.ReturnType.RemovePinnedAndModifiers().ElementType != ElementType.Void;
 
             CilBody body = _method.Body;
             if (body.HasExceptionHandlers)
