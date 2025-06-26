@@ -93,10 +93,10 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private bool ComputeIsInWhiteList(IMethod calledMethod)
         {
+            MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
             // mono has more strict access control, calls non-public method will raise exception.
             if (PlatformUtil.IsMonoBackend())
             {
-                MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
                 if (calledMethodDef != null && (!calledMethodDef.IsPublic || !IsTypeSelfAndParentPublic(calledMethodDef.DeclaringType)))
                 {
                     return true;
@@ -125,6 +125,12 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
 
             TypeDef typeDef = declaringType.ResolveTypeDef();
+
+            if (!_settings.obfuscateCallToMethodInMscorlib && typeDef.Module.IsCoreLibraryModule == true)
+            {
+                return true;
+            }
+
             if (typeDef.IsDelegate || typeDef.IsEnum)
                 return true;
 

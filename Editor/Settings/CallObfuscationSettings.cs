@@ -10,6 +10,7 @@ namespace Obfuz.Settings
         public List<string> ruleFiles;
         public int obfuscationLevel;
         public int maxProxyMethodCountPerDispatchMethod;
+        public bool obfuscateCallToMethodInMscorlib;
     }
 
     [Serializable]
@@ -22,6 +23,9 @@ namespace Obfuz.Settings
         [Tooltip("The maximum number of proxy methods that can be generated per dispatch method. This helps to limit the complexity of the generated code and improve performance.")]
         public int maxProxyMethodCountPerDispatchMethod = 100;
 
+        [Tooltip("Whether to obfuscate calls to methods in mscorlib. This can help to protect against reverse engineering, but may cause compatibility issues with some libraries.")]
+        public bool obfuscateCallToMethodInMscorlib;
+
         [Tooltip("rule config xml files")]
         public string[] ruleFiles;
 
@@ -32,6 +36,7 @@ namespace Obfuz.Settings
                 ruleFiles = ruleFiles?.ToList() ?? new List<string>(),
                 obfuscationLevel = obfuscationLevel,
                 maxProxyMethodCountPerDispatchMethod = maxProxyMethodCountPerDispatchMethod,
+                obfuscateCallToMethodInMscorlib = obfuscateCallToMethodInMscorlib,
             };
         }
     }
