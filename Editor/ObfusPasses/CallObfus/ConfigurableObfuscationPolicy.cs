@@ -275,26 +275,47 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
 
 
+        private readonly HashSet<string> _specialTypeFullNames = new HashSet<string>
+        {
+            "System.Enum",
+            "System.Delegate",
+            "System.MulticastDelegate",
+            "Obfuz.EncryptionService`1",
+        };
+
+        private readonly HashSet<string> _specialMethodNames = new HashSet<string>
+        {
+            "GetEnumerator", // List<T>.Enumerator.GetEnumerator()
+            ".ctor", // constructor
+        };
+
+        private readonly HashSet<string> _specialMethodFullNames = new HashSet<string>
+        {
+            "System.Reflection.MethodBase.GetCurrentMethod",
+            "System.Reflection.Assembly.GetCallingAssembly",
+            "System.Reflection.Assembly.GetExecutingAssembly",
+            "System.Reflection.Assembly.GetEntryAssembly",
+        };
+
         private bool IsSpecialNotObfuscatedMethod(TypeDef typeDef, IMethod method)
         {
             if (typeDef.IsDelegate || typeDef.IsEnum)
                 return true;
 
+            string fullName = typeDef.FullName;
+            if (_specialTypeFullNames.Contains(fullName))
+            {
+                return true;
+            }
+
             string methodName = method.Name;
-
-            // doesn't proxy call if the method is a constructor
-            if (methodName == ".ctor")
+            if (_specialMethodNames.Contains(methodName))
             {
                 return true;
             }
 
-            if (typeDef.Name == "EncryptionService`1")
-            {
-                return true;
-            }
-            // special handle
-            // don't proxy call for List<T>.Enumerator GetEnumerator()
-            if (methodName == "GetEnumerator")
+            string methodFullName = $"{fullName}.{methodName}";
+            if (_specialMethodFullNames.Contains(methodFullName))
             {
                 return true;
             }
