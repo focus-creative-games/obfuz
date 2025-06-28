@@ -57,6 +57,11 @@ namespace Obfuz.GarbageCodeGeneration
         {
             Debug.Log($"Generating garbage code with seed: {task.codeGenerationRandomSeed}, class count: {task.classCount}, method count per class: {task.methodCountPerClass}, types: {task.garbageCodeTypes}, output path: {task.outputPath}");
 
+            if (string.IsNullOrWhiteSpace(task.outputPath))
+            {
+                throw new Exception("outputPath of GarbageCodeGenerationTask is empty!");
+            }
+
             var generator = CreateSpecificCodeGenerator(task.garbageCodeTypes);
 
             var parameters = new GenerationParameters
@@ -67,7 +72,7 @@ namespace Obfuz.GarbageCodeGeneration
                 classCount = task.classCount,
                 methodCountPerClass = task.methodCountPerClass,
                 fieldCountPerClass = task.fieldCountPerClass,
-                outputPath = task.outputPath
+                outputPath = task.outputPath,
             };
             generator.Generate(parameters);
 
@@ -78,11 +83,9 @@ namespace Obfuz.GarbageCodeGeneration
         {
             switch (type)
             {
-                case GarbageCodeType.Config:
-                return new ConfigGarbageCodeGenerator();
-                // Add cases for other types as needed
-                default:
-                throw new NotSupportedException($"Garbage code type {type} is not supported.");
+                case GarbageCodeType.Config: return new ConfigGarbageCodeGenerator();
+                case GarbageCodeType.UI: return new UIGarbageCodeGenerator();
+                default: throw new NotSupportedException($"Garbage code type {type} is not supported.");
             }
         }
     }

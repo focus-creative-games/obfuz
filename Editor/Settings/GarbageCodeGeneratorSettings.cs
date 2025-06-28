@@ -20,7 +20,7 @@ namespace Obfuz.Settings
 
         public int classCount = 100;
 
-        public int methodCountPerClass = 30;
+        public int methodCountPerClass = 10;
 
         public int fieldCountPerClass = 50;
 
