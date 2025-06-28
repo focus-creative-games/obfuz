@@ -24,13 +24,14 @@
 
 - **Symbol Obfuscation**: Supports comprehensive configuration rules and incremental obfuscation for flexible and efficient code protection.
 - **Constant Obfuscation**: Obfuscates constants such as `int`, `long`, `float`, `double`, `string` and `array` to prevent reverse engineering.
-- **Local variable Obfuscation**: Obfuscates local variable to prevent reverse engineering.
 - **Variable Memory Encryption**: Encrypts variables in memory to enhance runtime security.
+- **Eval stack Obfuscation**: Obfuscates eval stack variable to prevent reverse engineering.
+- **Expression Obfuscation**: Obfuscate complex expressions for enhanced protection.
 - **Function Call Obfuscation**: Scrambles function call structures to increase cracking difficulty.
+- **Control Flow Obfuscation**: Disrupt code flow to deter reverse engineering.
 - **Randomized Encryption VM**: Generates randomized virtual machines to thwart decompilation and cracking tools.
 - **Static and Dynamic Decryption**: Combines static and dynamic decryption to resist offline static analysis.
-- **Expression Obfuscation**: Obfuscate complex expressions for enhanced protection.
-- **Control Flow Obfuscation**: Disrupt code flow to deter reverse engineering.
+- **Garbage Code Generation**​​: Supports various types of low-quality code generation to improve App Store and Google Play review pass rates
 - **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
 - **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
 - **DOTS Compatibility**: Works seamlessly across all DOTS versions with zero configuration required.
