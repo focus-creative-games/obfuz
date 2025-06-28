@@ -24,13 +24,13 @@ namespace Obfuz.Settings
 
         public int fieldCountPerClass = 50;
 
-        public GarbageCodeType garbageCodeTypes = GarbageCodeType.Config;
+        public GarbageCodeType garbageCodeType = GarbageCodeType.Config;
 
         public string outputPath = "Assets/Obfuz/GarbageCode";
     }
 
     [Serializable]
-    public class GarbageCodeGeneratorSettings
+    public class GarbageCodeGenerationSettings
     {
         public string codeGenerationSecret = "Garbage Code";
 

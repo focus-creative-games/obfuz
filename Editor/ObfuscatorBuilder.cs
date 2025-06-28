@@ -189,7 +189,7 @@ namespace Obfuz
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ControlFlowObfus))
             {
-                builder.AddPass(new ControlFlowObfusPass(settings.controlFlowObfuscationSettings.ToFacade()));
+                builder.AddPass(new ControlFlowObfusPass(settings.controlFlowObfusSettings.ToFacade()));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {

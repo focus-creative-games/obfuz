@@ -14,10 +14,10 @@ namespace Obfuz.GarbageCodeGeneration
     {
         private const int CodeGenerationSecretKeyLength = 1024;
 
-        private readonly GarbageCodeGeneratorSettings _settings;
+        private readonly GarbageCodeGenerationSettings _settings;
         private readonly int[] _intGenerationSecretKey;
 
-        public GarbageCodeGenerator(GarbageCodeGeneratorSettings settings)
+        public GarbageCodeGenerator(GarbageCodeGenerationSettings settings)
         {
             _settings = settings;
 
@@ -55,14 +55,14 @@ namespace Obfuz.GarbageCodeGeneration
 
         private void GenerateTask(GarbageCodeGenerationTask task)
         {
-            Debug.Log($"Generating garbage code with seed: {task.codeGenerationRandomSeed}, class count: {task.classCount}, method count per class: {task.methodCountPerClass}, types: {task.garbageCodeTypes}, output path: {task.outputPath}");
+            Debug.Log($"Generating garbage code with seed: {task.codeGenerationRandomSeed}, class count: {task.classCount}, method count per class: {task.methodCountPerClass}, types: {task.garbageCodeType}, output path: {task.outputPath}");
 
             if (string.IsNullOrWhiteSpace(task.outputPath))
             {
                 throw new Exception("outputPath of GarbageCodeGenerationTask is empty!");
             }
 
-            var generator = CreateSpecificCodeGenerator(task.garbageCodeTypes);
+            var generator = CreateSpecificCodeGenerator(task.garbageCodeType);
 
             var parameters = new GenerationParameters
             {

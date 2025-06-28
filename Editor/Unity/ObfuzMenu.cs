@@ -42,7 +42,7 @@ namespace Obfuz.Unity
         public static void GenerateGarbageCodes()
         {
             Debug.Log($"Generating garbage codes begin.");
-            GarbageCodeGeneratorSettings settings = ObfuzSettings.Instance.garbageCodeGeneratorSettings;
+            GarbageCodeGenerationSettings settings = ObfuzSettings.Instance.garbageCodeGenerationSettings;
             var generator = new GarbageCodeGenerator(settings);
             generator.Generate();
             AssetDatabase.Refresh();
@@ -53,7 +53,7 @@ namespace Obfuz.Unity
         public static void CleanGeneratedGarbageCodes()
         {
             Debug.Log($"Clean generated garbage codes begin.");
-            GarbageCodeGeneratorSettings settings = ObfuzSettings.Instance.garbageCodeGeneratorSettings;
+            GarbageCodeGenerationSettings settings = ObfuzSettings.Instance.garbageCodeGenerationSettings;
             var generator = new GarbageCodeGenerator(settings);
             generator.CleanCodes();
             AssetDatabase.Refresh();

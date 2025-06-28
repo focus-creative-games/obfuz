@@ -41,10 +41,10 @@ namespace Obfuz.Settings
         public ExprObfuscationSettings exprObfusSettings;
 
         [Tooltip("control flow obfuscation settings")]
-        public ControlFlowObfuscationSettings controlFlowObfuscationSettings;
+        public ControlFlowObfuscationSettings controlFlowObfusSettings;
 
         [Tooltip("garbage code generator settings")]
-        public GarbageCodeGeneratorSettings garbageCodeGeneratorSettings;
+        public GarbageCodeGenerationSettings garbageCodeGenerationSettings;
 
         public string ObfuzRootDir => $"Library/Obfuz";
 
