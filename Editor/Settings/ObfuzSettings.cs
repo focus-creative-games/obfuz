@@ -43,6 +43,9 @@ namespace Obfuz.Settings
         [Tooltip("control flow obfuscation settings")]
         public ControlFlowObfuscationSettings controlFlowObfuscationSettings;
 
+        [Tooltip("garbage code generator settings")]
+        public GarbageCodeGeneratorSettings garbageCodeGeneratorSettings;
+
         public string ObfuzRootDir => $"Library/Obfuz";
 
         public string GetObfuscatedAssemblyOutputPath(BuildTarget target)

@@ -1,4 +1,5 @@
 using Obfuz.EncryptionVM;
+using Obfuz.GarbageCodeGeneration;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System.IO;
@@ -34,6 +35,16 @@ namespace Obfuz.Unity
             SaveKey(dynamicSecretBytes, settings.dynamicSecretKeyOutputPath);
             Debug.Log($"Save dynamic secret key to {settings.dynamicSecretKeyOutputPath}");
             AssetDatabase.Refresh();
+        }
+
+        [MenuItem("Obfuz/GenerateGarbageCodes", priority = 100)]
+        public static void GenerateGarbageCodes()
+        {
+            Debug.Log($"Generating garbage codes begin.");
+            GarbageCodeGeneratorSettings settings = ObfuzSettings.Instance.garbageCodeGeneratorSettings;
+            var generator = new GarbageCodeGenerator(settings);
+            generator.Generate();
+            Debug.Log($"Generating garbage codes end.");
         }
 
         private static void SaveKey(byte[] secret, string secretOutputPath)

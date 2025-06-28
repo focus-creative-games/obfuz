@@ -18,6 +18,8 @@
             _seed = seed;
         }
 
+        public int[] Key => _key;
+
         public int NextInt(int min, int max)
         {
             return min + NextInt(max - min);

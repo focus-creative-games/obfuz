@@ -1,0 +1,73 @@
+﻿using Obfuz.Settings;
+using Obfuz.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace Obfuz.GarbageCodeGeneration
+{
+
+    public class GarbageCodeGenerator
+    {
+        private const int CodeGenerationSecretKeyLength = 1024;
+
+        private readonly GarbageCodeGeneratorSettings _settings;
+        private readonly int[] _intGenerationSecretKey;
+
+        public GarbageCodeGenerator(GarbageCodeGeneratorSettings settings)
+        {
+            _settings = settings;
+
+            byte[] byteGenerationSecretKey = KeyGenerator.GenerateKey(settings.codeGenerationSecret, CodeGenerationSecretKeyLength);
+            _intGenerationSecretKey = KeyGenerator.ConvertToIntKey(byteGenerationSecretKey);
+        }
+
+        public void Generate()
+        {
+            GenerateTask(_settings.defaultTask);
+            if (_settings.additionalTasks != null && _settings.additionalTasks.Length > 0)
+            {
+                foreach (var task in _settings.additionalTasks)
+                {
+                    GenerateTask(task);
+                }
+            }
+        }
+
+        private void GenerateTask(GarbageCodeGenerationTask task)
+        {
+            Debug.Log($"Generating garbage code with seed: {task.codeGenerationRandomSeed}, class count: {task.classCount}, method count per class: {task.methodCountPerClass}, types: {task.garbageCodeTypes}, output path: {task.outputPath}");
+
+            var generator = CreateSpecificCodeGenerator(task.garbageCodeTypes);
+
+            var parameters = new GenerationParameters
+            {
+                random = new RandomWithKey(_intGenerationSecretKey, task.codeGenerationRandomSeed),
+                classNamespace = task.classNamespace,
+                classNamePrefix = task.classNamePrefix,
+                classCount = task.classCount,
+                methodCountPerClass = task.methodCountPerClass,
+                fieldCountPerClass = task.fieldCountPerClass,
+                outputPath = task.outputPath
+            };
+            generator.Generate(parameters);
+
+            Debug.Log($"Generate garbage code end.");
+        }
+
+        private ISpecificGarbageCodeGenerator CreateSpecificCodeGenerator(GarbageCodeType type)
+        {
+            switch (type)
+            {
+                case GarbageCodeType.Config:
+                return new ConfigGarbageCodeGenerator();
+                // Add cases for other types as needed
+                default:
+                throw new NotSupportedException($"Garbage code type {type} is not supported.");
+            }
+        }
+    }
+}

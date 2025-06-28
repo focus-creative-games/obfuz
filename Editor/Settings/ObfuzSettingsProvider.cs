@@ -38,6 +38,8 @@ namespace Obfuz.Settings
         private SerializedProperty _exprObfusSettings;
         private SerializedProperty _controlFlowObfusSettings;
 
+        private SerializedProperty _garbageCodeGeneratorSettings;
+
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
         }
@@ -72,6 +74,8 @@ namespace Obfuz.Settings
             _fieldEncryptSettings = _serializedObject.FindProperty("fieldEncryptSettings");
             _callObfusSettings = _serializedObject.FindProperty("callObfusSettings");
             _controlFlowObfusSettings = _serializedObject.FindProperty("controlFlowObfuscationSettings");
+
+            _garbageCodeGeneratorSettings = _serializedObject.FindProperty("garbageCodeGeneratorSettings");
         }
 
         public override void OnGUI(string searchContext)
@@ -98,6 +102,7 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_callObfusSettings);
             EditorGUILayout.PropertyField(_controlFlowObfusSettings);
 
+            EditorGUILayout.PropertyField(_garbageCodeGeneratorSettings);
 
             if (EditorGUI.EndChangeCheck())
             {
