@@ -24,7 +24,6 @@ namespace Obfuz.Settings
 
 
         private SerializedObject _serializedObject;
-        private SerializedProperty _enable;
         private SerializedProperty _buildPipelineSettings;
 
         private SerializedProperty _assemblySettings;
@@ -62,7 +61,6 @@ namespace Obfuz.Settings
             var setting = ObfuzSettings.Instance;
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
-            _enable = _serializedObject.FindProperty("enable");
             _buildPipelineSettings = _serializedObject.FindProperty("buildPipelineSettings");
 
             _assemblySettings = _serializedObject.FindProperty("assemblySettings");
@@ -91,7 +89,6 @@ namespace Obfuz.Settings
             _serializedObject.Update();
             EditorGUI.BeginChangeCheck();
 
-            EditorGUILayout.PropertyField(_enable);
             EditorGUILayout.PropertyField(_buildPipelineSettings);
 
             EditorGUILayout.PropertyField(_assemblySettings);

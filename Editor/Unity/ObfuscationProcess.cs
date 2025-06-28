@@ -70,7 +70,7 @@ namespace Obfuz.Unity
         private static void RunObfuscate(BuildFile[] files)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
-            if (!settings.enable)
+            if (!settings.buildPipelineSettings.enable)
             {
                 Debug.Log("Obfuscation is disabled.");
                 return;

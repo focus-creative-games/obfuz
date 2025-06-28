@@ -11,7 +11,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             var mcfc = new MethodControlFlowCalculator(method, ctx.CreateRandom(), ctx.constFieldAllocator, ctx.minInstructionCountOfBasicBlockToObfuscate);
             if (!mcfc.TryObfus())
             {
-                Debug.LogWarning($"not obfuscate method: {method.FullName}");
+                //Debug.LogWarning($"not obfuscate method: {method.FullName}");
                 return false;
             }
             return true;

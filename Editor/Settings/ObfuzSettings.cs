@@ -8,9 +8,6 @@ namespace Obfuz.Settings
 
     public class ObfuzSettings : ScriptableObject
     {
-        [Tooltip("enable Obfuz")]
-        public bool enable = true;
-
         [Tooltip("build pipeline settings")]
         public BuildPipelineSettings buildPipelineSettings;
 
