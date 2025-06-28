@@ -5,10 +5,14 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
+
     public class ObfuzSettings : ScriptableObject
     {
         [Tooltip("enable Obfuz")]
         public bool enable = true;
+
+        [Tooltip("build pipeline settings")]
+        public BuildPipelineSettings buildPipelineSettings;
 
         [Tooltip("assembly settings")]
         public AssemblySettings assemblySettings;

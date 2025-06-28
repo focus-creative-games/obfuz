@@ -25,6 +25,8 @@ namespace Obfuz.Settings
 
         private SerializedObject _serializedObject;
         private SerializedProperty _enable;
+        private SerializedProperty _buildPipelineSettings;
+
         private SerializedProperty _assemblySettings;
         private SerializedProperty _obfuscationPassSettings;
         private SerializedProperty _secretSettings;
@@ -61,6 +63,8 @@ namespace Obfuz.Settings
             _serializedObject?.Dispose();
             _serializedObject = new SerializedObject(setting);
             _enable = _serializedObject.FindProperty("enable");
+            _buildPipelineSettings = _serializedObject.FindProperty("buildPipelineSettings");
+
             _assemblySettings = _serializedObject.FindProperty("assemblySettings");
             _obfuscationPassSettings = _serializedObject.FindProperty("obfuscationPassSettings");
             _secretSettings = _serializedObject.FindProperty("secretSettings");
@@ -88,6 +92,8 @@ namespace Obfuz.Settings
             EditorGUI.BeginChangeCheck();
 
             EditorGUILayout.PropertyField(_enable);
+            EditorGUILayout.PropertyField(_buildPipelineSettings);
+
             EditorGUILayout.PropertyField(_assemblySettings);
             EditorGUILayout.PropertyField(_obfuscationPassSettings);
             EditorGUILayout.PropertyField(_secretSettings);

@@ -16,7 +16,7 @@ namespace Obfuz.Unity
 #if UNITY_2019_1_OR_NEWER
     public class ObfuscationProcess : IPostBuildPlayerScriptDLLs
     {
-        public int callbackOrder => 10000;
+        public int callbackOrder => ObfuzSettings.Instance.buildPipelineSettings.obfuscationProcessCallbackOrder;
 
         public static event Action<ObfuscationBeginEventArgs> OnObfuscationBegin;
 
