@@ -37,6 +37,22 @@ namespace Obfuz.GarbageCodeGeneration
             }
         }
 
+        public void CleanCodes()
+        {
+            Debug.Log($"Cleaning generated garbage codes begin.");
+            if (_settings.defaultTask != null)
+            {
+                FileUtil.RemoveDir(_settings.defaultTask.outputPath, true);
+            }
+            if (_settings.additionalTasks != null && _settings.additionalTasks.Length > 0)
+            {
+                foreach (var task in _settings.additionalTasks)
+                {
+                    FileUtil.RemoveDir(task.outputPath, true);
+                }
+            }
+        }
+
         private void GenerateTask(GarbageCodeGenerationTask task)
         {
             Debug.Log($"Generating garbage code with seed: {task.codeGenerationRandomSeed}, class count: {task.classCount}, method count per class: {task.methodCountPerClass}, types: {task.garbageCodeTypes}, output path: {task.outputPath}");

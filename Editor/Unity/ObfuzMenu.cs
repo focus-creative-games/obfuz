@@ -21,6 +21,7 @@ namespace Obfuz.Unity
             EncryptionVMSettings settings = ObfuzSettings.Instance.encryptionVMSettings;
             var generator = new VirtualMachineCodeGenerator(settings.codeGenerationSecretKey, settings.encryptionOpCodeCount);
             generator.Generate(settings.codeOutputPath);
+            AssetDatabase.Refresh();
         }
 
         [MenuItem("Obfuz/GenerateSecretKeyFile", priority = 63)]
@@ -37,14 +38,26 @@ namespace Obfuz.Unity
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Obfuz/GenerateGarbageCodes", priority = 100)]
+        [MenuItem("Obfuz/GarbageCode/GenerateCodes", priority = 100)]
         public static void GenerateGarbageCodes()
         {
             Debug.Log($"Generating garbage codes begin.");
             GarbageCodeGeneratorSettings settings = ObfuzSettings.Instance.garbageCodeGeneratorSettings;
             var generator = new GarbageCodeGenerator(settings);
             generator.Generate();
+            AssetDatabase.Refresh();
             Debug.Log($"Generating garbage codes end.");
+        }
+
+        [MenuItem("Obfuz/GarbageCode/CleanGeneratedCodes", priority = 101)]
+        public static void CleanGeneratedGarbageCodes()
+        {
+            Debug.Log($"Clean generated garbage codes begin.");
+            GarbageCodeGeneratorSettings settings = ObfuzSettings.Instance.garbageCodeGeneratorSettings;
+            var generator = new GarbageCodeGenerator(settings);
+            generator.CleanCodes();
+            AssetDatabase.Refresh();
+            Debug.Log($"Clean generated garbage codes end.");
         }
 
         private static void SaveKey(byte[] secret, string secretOutputPath)

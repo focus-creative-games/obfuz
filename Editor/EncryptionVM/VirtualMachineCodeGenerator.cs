@@ -52,7 +52,6 @@ namespace Obfuz.EncryptionVM
 
             File.WriteAllText(outputFile, code, Encoding.UTF8);
             Debug.Log($"Generate EncryptionVM code to {outputFile}");
-            UnityEditor.AssetDatabase.Refresh();
         }
 
         private string GenerateCode()
