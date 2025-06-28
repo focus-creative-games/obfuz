@@ -63,7 +63,7 @@ namespace Obfuz
             return new Obfuscator(this);
         }
 
-        public static List<string> BuildUnityAssemblySearchPaths()
+        public static List<string> BuildUnityAssemblySearchPaths(bool searchPathIncludeUnityEditorDll = false)
         {
             string applicationContentsPath = EditorApplication.applicationContentsPath;
             var searchPaths = new List<string>
@@ -114,7 +114,13 @@ namespace Obfuz
 #error "Unsupported platform, please report to us"
 #endif
                 };
-            var resultPaths = new List<string>();
+
+            if (searchPathIncludeUnityEditorDll)
+            {
+                searchPaths.Add("Managed/UnityEngine");
+            }
+
+                var resultPaths = new List<string>();
             foreach (var path in searchPaths)
             {
                 string candidatePath1 = Path.Combine(applicationContentsPath, path);
@@ -134,10 +140,10 @@ namespace Obfuz
             return resultPaths;
         }
 
-        public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation)
+        public static ObfuscatorBuilder FromObfuzSettings(ObfuzSettings settings, BuildTarget target, bool searchPathIncludeUnityEditorInstallLocation, bool searchPathIncludeUnityEditorDll = false)
         {
             List<string> searchPaths = searchPathIncludeUnityEditorInstallLocation ?
-                BuildUnityAssemblySearchPaths().Concat(settings.assemblySettings.additionalAssemblySearchPaths).ToList()
+                BuildUnityAssemblySearchPaths(searchPathIncludeUnityEditorDll).Concat(settings.assemblySettings.additionalAssemblySearchPaths).ToList()
                 : settings.assemblySettings.additionalAssemblySearchPaths.ToList();
             foreach (var path in searchPaths)
             {
