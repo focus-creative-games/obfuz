@@ -177,6 +177,11 @@ namespace Obfuz.Utils
             return false;
         }
 
+        public static bool IsSerializableType(TypeDef type)
+        {
+            return type.IsSerializable;
+        }
+
         public static bool IsScriptOrSerializableType(TypeDef type)
         {
             return type.IsSerializable || IsScriptType(type);

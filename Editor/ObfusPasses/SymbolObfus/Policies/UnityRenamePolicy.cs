@@ -123,14 +123,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 };
 
         private readonly CachedDictionary<TypeDef, bool> _computeDeclaringTypeDisableAllMemberRenamingCache;
-        private readonly CachedDictionary<TypeDef, bool> _isInheritScriptCache;
+        private readonly CachedDictionary<TypeDef, bool> _isSerializableCache;
         private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourCache;
         private readonly CachedDictionary<TypeDef, bool> _isScriptOrSerializableTypeCache;
 
         public UnityRenamePolicy()
         {
             _computeDeclaringTypeDisableAllMemberRenamingCache = new CachedDictionary<TypeDef, bool>(ComputeDeclaringTypeDisableAllMemberRenaming);
-            _isInheritScriptCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptType);
+            _isSerializableCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsSerializableType);
             _isInheritFromMonoBehaviourCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsInheritFromMonoBehaviour);
             _isScriptOrSerializableTypeCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptOrSerializableType);
         }
@@ -252,7 +252,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(PropertyDef propertyDef)
         {
             TypeDef typeDef = propertyDef.DeclaringType;
-            if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
+            if (_isSerializableCache.GetValue(typeDef))
             {
                 bool isGetterPublic = propertyDef.GetMethod != null && propertyDef.GetMethod.IsPublic && !propertyDef.GetMethod.IsStatic;
                 bool isSetterPublic = propertyDef.SetMethod != null && propertyDef.SetMethod.IsPublic && !propertyDef.SetMethod.IsStatic;
