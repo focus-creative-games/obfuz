@@ -270,7 +270,7 @@ namespace Obfuz.Emit
 
         private void SimulateRunAllBlocks()
         {
-            bool methodHasReturnValue = _method.ReturnType.RemovePinnedAndModifiers().ElementType != ElementType.Void;
+            bool methodHasReturnValue = !MetaUtil.IsVoidType(_method.ReturnType);
 
             CilBody body = _method.Body;
             if (body.HasExceptionHandlers)

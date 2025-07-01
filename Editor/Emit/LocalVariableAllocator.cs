@@ -11,6 +11,8 @@ namespace Obfuz.Emit
 
         private readonly List<Local> _allocatedVars = new List<Local>();
 
+        public IReadOnlyList<Local> AllocatedLocals => _allocatedVars;
+
 
         public ScopeLocalVariables(LocalVariableAllocator localVariableAllocator)
         {
@@ -62,6 +64,11 @@ namespace Obfuz.Emit
         public void ReturnLocal(Local local)
         {
             _freeLocals.Add(local);
+        }
+
+        public ScopeLocalVariables CreateScope()
+        {
+            return new ScopeLocalVariables(this);
         }
     }
 }

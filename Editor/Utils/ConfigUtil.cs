@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Obfuz.Settings;
+using System;
 
 namespace Obfuz.Utils
 {
@@ -67,6 +68,11 @@ namespace Obfuz.Utils
                 return null;
             }
             return double.Parse(str);
+        }
+
+        public static ObfuscationLevel ParseObfuscationLevel(string str)
+        {
+            return (ObfuscationLevel)Enum.Parse(typeof(ObfuscationLevel), str);
         }
     }
 }

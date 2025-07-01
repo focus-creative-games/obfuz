@@ -7,8 +7,15 @@ using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
+    class ObfusMethodContext
+    {
+        public MethodDef method;
+        public LocalVariableAllocator localVariableAllocator;
+        public IRandom localRandom;
+        public EncryptionScopeInfo encryptionScope;
+    }
 
-    public class CallObfusPass : BasicBlockObfuscationPassBase
+    public class CallObfusPass : ObfuscationMethodPassBase
     {
         private readonly CallObfuscationSettingsFacade _settings;
         private readonly SpecialWhiteListMethodCalculator _specialWhiteListMethodCache;
@@ -32,8 +39,72 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _dynamicProxyObfuscator = new DefaultCallProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _settings);
+            _dynamicProxyObfuscator = CreateObfuscator(ctx, _settings.proxyMode);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
+        }
+
+        private IObfuscator CreateObfuscator(ObfuscationPassContext ctx, ProxyMode mode)
+        {
+            switch (mode)
+            {
+                case ProxyMode.Dispatch:
+                return new DispatchProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _settings);
+                case ProxyMode.Delegate:
+                    return new DelegateProxyObfuscator(ctx.encryptionScopeProvider, ctx.moduleEntityManager, ctx.rvaDataAllocator, _settings);
+                default:
+                throw new System.NotSupportedException($"Unsupported proxy mode: {mode}");
+            }
+        }
+
+        protected override void ObfuscateData(MethodDef method)
+        {
+            BasicBlockCollection bbc = new BasicBlockCollection(method, false);
+
+            IList<Instruction> instructions = method.Body.Instructions;
+
+            var outputInstructions = new List<Instruction>();
+            var totalFinalInstructions = new List<Instruction>();
+
+            ObfuscationPassContext ctx = ObfuscationPassContext.Current;
+            var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
+            var localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method));
+            var omc = new ObfusMethodContext
+            {
+                method = method,
+                localVariableAllocator = new LocalVariableAllocator(method),
+                localRandom = localRandom,
+                encryptionScope = encryptionScope,
+            };
+            Instruction lastInst = null;
+            for (int i = 0; i < instructions.Count; i++)
+            {
+                Instruction inst = instructions[i];
+                BasicBlock block = bbc.GetBasicBlockByInstruction(inst);
+                outputInstructions.Clear();
+                if (TryObfuscateInstruction(method, lastInst, inst, outputInstructions, omc))
+                {
+                    // current instruction may be the target of control flow instruction, so we can't remove it directly.
+                    // we replace it with nop now, then remove it in CleanUpInstructionPass
+                    inst.OpCode = outputInstructions[0].OpCode;
+                    inst.Operand = outputInstructions[0].Operand;
+                    totalFinalInstructions.Add(inst);
+                    for (int k = 1; k < outputInstructions.Count; k++)
+                    {
+                        totalFinalInstructions.Add(outputInstructions[k]);
+                    }
+                }
+                else
+                {
+                    totalFinalInstructions.Add(inst);
+                }
+                lastInst = inst;
+            }
+
+            instructions.Clear();
+            foreach (var obInst in totalFinalInstructions)
+            {
+                instructions.Add(obInst);
+            }
         }
 
         protected override bool NeedObfuscateMethod(MethodDef method)
@@ -41,8 +112,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             return _dynamicProxyPolicy.NeedObfuscateCallInMethod(method);
         }
 
-        protected override bool TryObfuscateInstruction(MethodDef callerMethod, Instruction inst, BasicBlock block,
-            int instructionIndex, IList<Instruction> globalInstructions, List<Instruction> outputInstructions, List<Instruction> totalFinalInstructions)
+        private bool TryObfuscateInstruction(MethodDef callerMethod, Instruction lastInst, Instruction inst, List<Instruction> outputInstructions, ObfusMethodContext ctx)
         {
             IMethod calledMethod = inst.Operand as IMethod;
             if (calledMethod == null || !calledMethod.IsMethod)
@@ -64,7 +134,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 }
                 case Code.Callvirt:
                 {
-                    if (instructionIndex > 0 && globalInstructions[instructionIndex - 1].OpCode.Code == Code.Constrained)
+                    if (lastInst != null && lastInst.OpCode.Code == Code.Constrained)
                     {
                         return false;
                     }
@@ -81,15 +151,12 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
 
 
-            if (!_dynamicProxyPolicy.NeedObfuscateCalledMethod(callerMethod, calledMethod, callVir, block.inLoop))
+            if (!_dynamicProxyPolicy.NeedObfuscateCalledMethod(callerMethod, calledMethod, callVir))
             {
                 return false;
             }
 
-            ObfuscationCachePolicy cachePolicy = _dynamicProxyPolicy.GetMethodObfuscationCachePolicy(callerMethod);
-            bool cachedCallIndex = block.inLoop ? cachePolicy.cacheInLoop : cachePolicy.cacheNotInLoop;
-            _dynamicProxyObfuscator.Obfuscate(callerMethod, calledMethod, callVir, cachedCallIndex, outputInstructions);
-            return true;
+            return _dynamicProxyObfuscator.Obfuscate(callerMethod, calledMethod, callVir, outputInstructions);
         }
     }
 }

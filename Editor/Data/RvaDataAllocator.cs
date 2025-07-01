@@ -303,7 +303,7 @@ namespace Obfuz.Data
             }
         }
 
-        public void Done()
+        public override void Done()
         {
             if (_done)
             {

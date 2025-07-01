@@ -7,11 +7,15 @@ namespace Obfuz.Emit
     public interface IGroupByModuleEntity
     {
         void Init(ModuleDef mod);
+
+        void Done();
     }
 
     public abstract class GroupByModuleEntityBase : IGroupByModuleEntity
     {
         public abstract void Init(ModuleDef mod);
+
+        public abstract void Done();
     }
 
     public class GroupByModuleEntityManager
@@ -53,6 +57,16 @@ namespace Obfuz.Emit
                 }
             }
             return managers;
+        }
+
+        public void Done<T>() where T : IGroupByModuleEntity
+        {
+            var managers = GetEntities<T>();
+            foreach (var manager in managers)
+            {
+                manager.Done();
+            }
+            _moduleEntityManagers.Remove((default(ModuleDef), typeof(T)));
         }
 
         public DefaultMetadataImporter GetDefaultModuleMetadataImporter(ModuleDef module, EncryptionScopeProvider encryptionScopeProvider)

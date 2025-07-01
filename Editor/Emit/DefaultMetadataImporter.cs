@@ -248,6 +248,11 @@ namespace Obfuz.Emit
             }
         }
 
+        public override void Done()
+        {
+
+        }
+
         public EncryptionServiceMetadataImporter GetEncryptionServiceMetadataImporterOfModule(ModuleDef mod)
         {
             return _encryptionScopeProvider.IsDynamicSecretAssembly(mod) ? _dynamicDefaultEncryptionServiceMetadataImporter : _staticDefaultEncryptionServiceMetadataImporter;

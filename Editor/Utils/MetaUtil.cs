@@ -28,6 +28,10 @@ namespace Obfuz.Utils
             return ("", fullName.Substring(index + 1));
         }
 
+        public static bool IsVoidType(TypeSig type)
+        {
+            return type.RemovePinnedAndModifiers().ElementType == ElementType.Void;
+        }
 
         public static TypeDef GetBaseTypeDef(TypeDef type)
         {

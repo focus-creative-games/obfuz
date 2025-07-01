@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Conf;
 using Obfuz.Settings;
+using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -97,17 +98,12 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             }
         }
 
-        private ObfuscationLevel ParseObfuscationLevel(string str)
-        {
-            return (ObfuscationLevel)Enum.Parse(typeof(ObfuscationLevel), str);
-        }
-
         private ObfuscationRule ParseObfuscationRule(string configFile, XmlElement ele)
         {
             var rule = new ObfuscationRule();
             if (ele.HasAttribute("obfuscationLevel"))
             {
-                rule.obfuscationLevel = ParseObfuscationLevel(ele.GetAttribute("obfuscationLevel"));
+                rule.obfuscationLevel = ConfigUtil.ParseObfuscationLevel(ele.GetAttribute("obfuscationLevel"));
             }
             return rule;
         }

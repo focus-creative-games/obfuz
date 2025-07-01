@@ -6,14 +6,15 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     public interface IObfuscator
     {
-        void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, bool needCacheCall, List<Instruction> obfuscatedInstructions);
+        bool Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
 
         void Done();
     }
 
     public abstract class ObfuscatorBase : IObfuscator
     {
-        public abstract void Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, bool needCacheCall, List<Instruction> obfuscatedInstructions);
+        public abstract bool Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions);
+
         public abstract void Done();
     }
 }

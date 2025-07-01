@@ -12,6 +12,7 @@ using TypeAttributes = dnlib.DotNet.TypeAttributes;
 
 namespace Obfuz.ObfusPasses.CallObfus
 {
+
     public struct ProxyCallMethodData
     {
         public readonly MethodDef proxyMethod;
@@ -30,7 +31,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
     }
 
-    class ModuleCallProxyAllocator : IGroupByModuleEntity
+    class ModuleDispatchProxyAllocator : IGroupByModuleEntity
     {
         private ModuleDef _module;
         private readonly EncryptionScopeProvider _encryptionScopeProvider;
@@ -39,29 +40,6 @@ namespace Obfuz.ObfusPasses.CallObfus
         private EncryptionScopeInfo _encryptionScope;
         private bool _done;
 
-        class MethodKey : IEquatable<MethodKey>
-        {
-            public readonly IMethod _method;
-            public readonly bool _callVir;
-            private readonly int _hashCode;
-
-            public MethodKey(IMethod method, bool callVir)
-            {
-                _method = method;
-                _callVir = callVir;
-                _hashCode = HashUtil.CombineHash(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method), callVir ? 1 : 0);
-            }
-
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
-
-            public bool Equals(MethodKey other)
-            {
-                return MethodEqualityComparer.CompareDeclaringTypes.Equals(_method, other._method) && _callVir == other._callVir;
-            }
-        }
 
         class MethodProxyInfo
         {
@@ -93,7 +71,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleCallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, CallObfuscationSettingsFacade settings)
+        public ModuleDispatchProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, CallObfuscationSettingsFacade settings)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _settings = settings;
@@ -298,33 +276,33 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
     }
 
-    public class CallProxyAllocator
+    public class DispatchProxyAllocator
     {
         private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private GroupByModuleEntityManager _moduleEntityManager;
         private readonly CallObfuscationSettingsFacade _settings;
 
-        public CallProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, CallObfuscationSettingsFacade settings)
+        public DispatchProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, CallObfuscationSettingsFacade settings)
         {
             _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
             _settings = settings;
         }
 
-        private ModuleCallProxyAllocator GetModuleAllocator(ModuleDef mod)
+        private ModuleDispatchProxyAllocator GetModuleAllocator(ModuleDef mod)
         {
-            return _moduleEntityManager.GetEntity<ModuleCallProxyAllocator>(mod, () => new ModuleCallProxyAllocator(_encryptionScopeProvider, _settings));
+            return _moduleEntityManager.GetEntity<ModuleDispatchProxyAllocator>(mod, () => new ModuleDispatchProxyAllocator(_encryptionScopeProvider, _settings));
         }
 
         public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
         {
-            ModuleCallProxyAllocator allocator = GetModuleAllocator(mod);
+            ModuleDispatchProxyAllocator allocator = GetModuleAllocator(mod);
             return allocator.Allocate(method, callVir);
         }
 
         public void Done()
         {
-            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleCallProxyAllocator>())
+            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleDispatchProxyAllocator>())
             {
                 allocator.Done();
             }
