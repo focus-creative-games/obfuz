@@ -12,16 +12,16 @@ namespace Obfuz.ObfusPasses.CallObfus
 
     public class DelegateProxyObfuscator : ObfuscatorBase
     {
-        private readonly DelegateProxyAllocator _delegateProxyAllocator;
+        private readonly GroupByModuleEntityManager _entityManager;
 
-        public DelegateProxyObfuscator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, RvaDataAllocator rvaDataAllocator, CallObfuscationSettingsFacade settings)
+        public DelegateProxyObfuscator(GroupByModuleEntityManager moduleEntityManager)
         {
-            _delegateProxyAllocator = new DelegateProxyAllocator(encryptionScopeProvider, moduleEntityManager, rvaDataAllocator, settings);
+            _entityManager = moduleEntityManager;
         }
 
         public override void Done()
         {
-            _delegateProxyAllocator.Done();
+            _entityManager.Done<DelegateProxyAllocator>();
         }
 
         private MethodSig CreateProxyMethodSig(ModuleDef module, IMethod method)
@@ -47,7 +47,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         public override bool Obfuscate(MethodDef callingMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions)
         {
-            ModuleDelegateProxyAllocator allocator = _delegateProxyAllocator.GetModuleAllocator(callingMethod.Module);
+            DelegateProxyAllocator allocator = _entityManager.GetEntity<DelegateProxyAllocator>(callingMethod.Module);
             LocalVariableAllocator localVarAllocator = new LocalVariableAllocator(callingMethod);
             MethodSig methodSig = CreateProxyMethodSig(callingMethod.Module, calledMethod);
             DelegateProxyMethodData proxyData = allocator.Allocate(calledMethod, callVir, methodSig);

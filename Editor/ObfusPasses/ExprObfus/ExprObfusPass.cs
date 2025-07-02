@@ -17,7 +17,7 @@ namespace Obfuz.ObfusPasses.ExprObfus
         public IRandom localRandom;
         public EncryptionScopeInfo encryptionScope;
         public DefaultMetadataImporter importer;
-        public ModuleConstFieldAllocator constFieldAllocator;
+        public ConstFieldAllocator constFieldAllocator;
         public float obfuscationPercentage;
     }
 
@@ -120,7 +120,9 @@ namespace Obfuz.ObfusPasses.ExprObfus
 
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
             var calc = new EvalStackCalculator(method);
-            var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
+
+            GroupByModuleEntityManager moduleEntityManager = ctx.moduleEntityManager;
+            var encryptionScope = moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
             var ruleData = _obfuscationPolicy.GetObfuscationRuleData(method);
             var obfuscator = GetObfuscator(ruleData.obfuscationLevel);
             var obfusMethodCtx = new ObfusMethodContext
@@ -129,9 +131,9 @@ namespace Obfuz.ObfusPasses.ExprObfus
                 evalStackCalculator = calc,
                 localVariableAllocator = new LocalVariableAllocator(method),
                 encryptionScope = encryptionScope,
-                constFieldAllocator = ctx.constFieldAllocator.GetModuleAllocator(method.Module),
+                constFieldAllocator = moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module),
                 localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method)),
-                importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, ctx.encryptionScopeProvider),
+                importer = moduleEntityManager.GetEntity<DefaultMetadataImporter>(method.Module),
                 obfuscationPercentage = ruleData.obfuscationPercentage,
             };
             for (int i = 0; i < instructions.Count; i++)

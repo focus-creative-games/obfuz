@@ -11,30 +11,24 @@ namespace Obfuz.ObfusPasses.CallObfus
 
     public class DispatchProxyObfuscator : ObfuscatorBase
     {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly ConstFieldAllocator _constFieldAllocator;
-        private readonly DispatchProxyAllocator _proxyCallAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
 
-        public DispatchProxyObfuscator(EncryptionScopeProvider encryptionScopeProvider, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, CallObfuscationSettingsFacade settings)
+        public DispatchProxyObfuscator(GroupByModuleEntityManager moduleEntityManager)
         {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
-            _proxyCallAllocator = new DispatchProxyAllocator(encryptionScopeProvider, moduleEntityManager, settings);
         }
 
         public override void Done()
         {
-            _proxyCallAllocator.Done();
+            _moduleEntityManager.Done<ModuleDispatchProxyAllocator>();
         }
 
         public override bool Obfuscate(MethodDef callerMethod, IMethod calledMethod, bool callVir, List<Instruction> obfuscatedInstructions)
         {
-
+            ModuleDispatchProxyAllocator proxyCallAllocator = _moduleEntityManager.GetEntity<ModuleDispatchProxyAllocator>(callerMethod.Module);
             MethodSig sharedMethodSig = MetaUtil.ToSharedMethodSig(calledMethod.Module.CorLibTypes, MetaUtil.GetInflatedMethodSig(calledMethod, null));
-            ProxyCallMethodData proxyCallMethodData = _proxyCallAllocator.Allocate(callerMethod.Module, calledMethod, callVir);
-            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(callerMethod.Module, _encryptionScopeProvider);
+            ProxyCallMethodData proxyCallMethodData = proxyCallAllocator.Allocate(calledMethod, callVir);
+            DefaultMetadataImporter importer = proxyCallAllocator.GetDefaultModuleMetadataImporter();
 
             //if (needCacheCall)
             //{
@@ -49,7 +43,8 @@ namespace Obfuz.ObfusPasses.CallObfus
             //    obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, importer.DecryptInt));
             //}
 
-            FieldDef cacheField = _constFieldAllocator.Allocate(callerMethod.Module, proxyCallMethodData.index);
+            ConstFieldAllocator constFieldAllocator = proxyCallAllocator.GetEntity<ConstFieldAllocator>();
+            FieldDef cacheField = constFieldAllocator.Allocate(proxyCallMethodData.index);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Call, proxyCallMethodData.proxyMethod));
             return true;

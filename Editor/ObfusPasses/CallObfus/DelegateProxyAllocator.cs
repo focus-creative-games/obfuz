@@ -24,16 +24,10 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
     }
 
-    class ModuleDelegateProxyAllocator : IGroupByModuleEntity
+    class DelegateProxyAllocator : GroupByModuleEntityBase
     {
-        private readonly GroupByModuleEntityManager _moduleEntityManager;
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly RvaDataAllocator _rvaDataAllocator;
-        private readonly CallObfuscationSettingsFacade _settings;
         private readonly CachedDictionary<MethodSig, TypeDef> _delegateTypes;
         private readonly HashSet<string> _allocatedDelegateNames = new HashSet<string>();
-
-        private ModuleDef _module;
 
         private TypeDef _delegateInstanceHolderType;
         private bool _done;
@@ -53,19 +47,13 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
         private readonly Dictionary<MethodKey, CallInfo> _callMethods = new Dictionary<MethodKey, CallInfo>();
 
-        public ModuleDelegateProxyAllocator(GroupByModuleEntityManager moduleEntityManager, EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, CallObfuscationSettingsFacade settings)
+        public DelegateProxyAllocator()
         {
-            _moduleEntityManager = moduleEntityManager;
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _rvaDataAllocator = rvaDataAllocator;
-            _settings = settings;
             _delegateTypes = new CachedDictionary<MethodSig, TypeDef>(SignatureEqualityComparer.Instance, CreateDelegateForSignature);
         }
 
-        public void Init(ModuleDef mod)
+        public override void Init()
         {
-            _module = mod;
-
             _delegateInstanceHolderType = CreateDelegateInstanceHolderTypeDef();
         }
 
@@ -89,19 +77,20 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef CreateDelegateForSignature(MethodSig delegateInvokeSig)
         {
-            using (var scope = new DisableTypeDefFindCacheScope(_module))
+            ModuleDef mod = Module;
+            using (var scope = new DisableTypeDefFindCacheScope(mod))
             {
 
                 string typeName = AllocateDelegateTypeName(delegateInvokeSig);
-                _module.Import(typeof(MulticastDelegate));
+                mod.Import(typeof(MulticastDelegate));
 
-                TypeDef delegateType = new TypeDefUser("", typeName, _module.CorLibTypes.GetTypeRef("System", "MulticastDelegate"));
+                TypeDef delegateType = new TypeDefUser("", typeName, mod.CorLibTypes.GetTypeRef("System", "MulticastDelegate"));
                 delegateType.Attributes = TypeAttributes.Class | TypeAttributes.Sealed | TypeAttributes.Public;
-                _module.Types.Add(delegateType);
+                mod.Types.Add(delegateType);
 
                 MethodDef ctor = new MethodDefUser(
                     ".ctor",
-                    MethodSig.CreateInstance(_module.CorLibTypes.Void, _module.CorLibTypes.Object, _module.CorLibTypes.IntPtr),
+                    MethodSig.CreateInstance(mod.CorLibTypes.Void, mod.CorLibTypes.Object, mod.CorLibTypes.IntPtr),
                     MethodImplAttributes.Runtime,
                     MethodAttributes.RTSpecialName | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Public
                 );
@@ -121,12 +110,13 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef CreateDelegateInstanceHolderTypeDef()
         {
-            using (var scope = new DisableTypeDefFindCacheScope(_module))
+            ModuleDef mod = Module;
+            using (var scope = new DisableTypeDefFindCacheScope(mod))
             {
                 string typeName = "$Obfuz$DelegateInstanceHolder";
-                TypeDef holderType = new TypeDefUser("", typeName, _module.CorLibTypes.Object.ToTypeDefOrRef());
+                TypeDef holderType = new TypeDefUser("", typeName, mod.CorLibTypes.Object.ToTypeDefOrRef());
                 holderType.Attributes = TypeAttributes.Class | TypeAttributes.Public;
-                _module.Types.Add(holderType);
+                mod.Types.Add(holderType);
                 return holderType;
             }
         }
@@ -192,7 +182,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             return new DelegateProxyMethodData(callInfo.delegateInstanceField, callInfo.delegateInvokeMethod);
         }
 
-        public void Done()
+        public override void Done()
         {
             if (_done)
             {
@@ -200,12 +190,14 @@ namespace Obfuz.ObfusPasses.CallObfus
             }
             _done = true;
 
+            ModuleDef mod = Module;
+
             // for stable order, we sort methods by name
             List<CallInfo> callMethodList = _callMethods.Values.ToList();
             callMethodList.Sort((a, b) => a.key1.CompareTo(b.key1));
 
             var cctor = new MethodDefUser(".cctor",
-                MethodSig.CreateStatic(_module.CorLibTypes.Void),
+                MethodSig.CreateStatic(mod.CorLibTypes.Void),
                 MethodImplAttributes.IL | MethodImplAttributes.Managed,
                 MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName | MethodAttributes.Private);
             cctor.DeclaringType = _delegateInstanceHolderType;
@@ -219,7 +211,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             // arr[index] = d;
             int index = 0;
             ins.Add(Instruction.CreateLdcI4(callMethodList.Count));
-            ins.Add(Instruction.Create(OpCodes.Newarr, _module.CorLibTypes.Object));
+            ins.Add(Instruction.Create(OpCodes.Newarr, mod.CorLibTypes.Object));
             foreach (CallInfo ci in callMethodList)
             {
                 ci.index = index;
@@ -240,8 +232,9 @@ namespace Obfuz.ObfusPasses.CallObfus
             List<CallInfo> callMethodList2 = callMethodList.ToList();
             callMethodList2.Sort((a, b) => a.key2.CompareTo(b.key2));
 
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(_module);
-            DefaultMetadataImporter importer = _moduleEntityManager.GetDefaultModuleMetadataImporter(_module, _encryptionScopeProvider);
+            EncryptionScopeInfo encryptionScope = EncryptionScope;
+            DefaultMetadataImporter importer = this.GetDefaultModuleMetadataImporter();
+            RvaDataAllocator rvaDataAllocator = this.GetEntity<RvaDataAllocator>();
             foreach (CallInfo ci in callMethodList2)
             {
                 _delegateInstanceHolderType.Fields.Add(ci.delegateInstanceField);
@@ -254,7 +247,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 int salt = localRandom.NextInt();
 
                 int encryptedValue = encryptionScope.encryptor.Encrypt(ci.index, ops, salt);
-                RvaData rvaData = _rvaDataAllocator.Allocate(_module, encryptedValue);
+                RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
                 ins.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                 ins.Add(Instruction.CreateLdcI4(rvaData.offset));
                 ins.Add(Instruction.CreateLdcI4(ops));
@@ -266,35 +259,6 @@ namespace Obfuz.ObfusPasses.CallObfus
 
             ins.Add(Instruction.Create(OpCodes.Pop));
             ins.Add(Instruction.Create(OpCodes.Ret));
-        }
-    }
-
-    class DelegateProxyAllocator
-    {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly GroupByModuleEntityManager _moduleEntityManager;
-        private readonly CallObfuscationSettingsFacade _settings;
-        private readonly RvaDataAllocator _rvaDataAllocator;
-
-        public DelegateProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, RvaDataAllocator rvaDataAllocator, CallObfuscationSettingsFacade settings)
-        {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _moduleEntityManager = moduleEntityManager;
-            _rvaDataAllocator = rvaDataAllocator;
-            _settings = settings;
-        }
-
-        public ModuleDelegateProxyAllocator GetModuleAllocator(ModuleDef mod)
-        {
-            return _moduleEntityManager.GetEntity<ModuleDelegateProxyAllocator>(mod, () => new ModuleDelegateProxyAllocator(_moduleEntityManager, _encryptionScopeProvider, _rvaDataAllocator, _settings));
-        }
-
-        public void Done()
-        {
-            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleDelegateProxyAllocator>())
-            {
-                allocator.Done();
-            }
         }
     }
 }

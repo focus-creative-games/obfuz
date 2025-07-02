@@ -11,20 +11,13 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 {
     public class DefaultFieldEncryptor : FieldEncryptorBase
     {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly FieldEncryptionSettingsFacade _settings;
 
-        public DefaultFieldEncryptor(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, FieldEncryptionSettingsFacade settings)
+        public DefaultFieldEncryptor(GroupByModuleEntityManager moduleEntityManager, FieldEncryptionSettingsFacade settings)
         {
-            _encryptionScopeProvider = encryptionScopeProvider;
             _moduleEntityManager = moduleEntityManager;
             _settings = settings;
-        }
-
-        private DefaultMetadataImporter GetMetadataImporter(MethodDef method)
-        {
-            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, _encryptionScopeProvider);
         }
 
         class FieldEncryptInfo
@@ -77,7 +70,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
             {
                 return info;
             }
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(field.Module);
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(field.Module);
 
             IRandom random = CreateRandomForField(encryptionScope.localRandomCreator, field);
             IEncryptor encryptor = encryptionScope.encryptor;
@@ -99,7 +92,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
 
         public override void Encrypt(MethodDef method, FieldDef field, List<Instruction> outputInstructions, Instruction currentInstruction)
         {
-            DefaultMetadataImporter importer = GetMetadataImporter(method);
+            DefaultMetadataImporter importer = _moduleEntityManager.GetEntity<DefaultMetadataImporter>(method.Module);
             EncryptionServiceMetadataImporter encryptionServiceMetadataImporter = importer.GetEncryptionServiceMetadataImporterOfModule(field.Module);
             FieldEncryptInfo fei = GetFieldEncryptInfo(field);
             if (fei.fieldType == ElementType.I4 || fei.fieldType == ElementType.U4 || fei.fieldType == ElementType.R4)
@@ -154,7 +147,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         public override void Decrypt(MethodDef method, FieldDef field, List<Instruction> outputInstructions, Instruction currentInstruction)
         {
             outputInstructions.Add(currentInstruction.Clone());
-            DefaultMetadataImporter importer = GetMetadataImporter(method);
+            DefaultMetadataImporter importer = _moduleEntityManager.GetEntity<DefaultMetadataImporter>(method.Module);
             EncryptionServiceMetadataImporter encryptionServiceMetadataImporter = importer.GetEncryptionServiceMetadataImporterOfModule(field.Module);
             FieldEncryptInfo fei = GetFieldEncryptInfo(field);
             if (fei.fieldType == ElementType.I4 || fei.fieldType == ElementType.U4 || fei.fieldType == ElementType.R4)

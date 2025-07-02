@@ -7,7 +7,7 @@ namespace Obfuz.Utils
 {
     internal static class ConstObfusUtil
     {
-        public static void LoadConstInt(int a, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstInt(int a, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             Instruction inst;
             if (random.NextInPercentage(constProbability))
@@ -22,7 +22,7 @@ namespace Obfuz.Utils
             outputInsts.Add(inst);
         }
 
-        public static void LoadConstLong(long a, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstLong(long a, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             Instruction inst;
             if (random.NextInPercentage(constProbability))
@@ -37,7 +37,7 @@ namespace Obfuz.Utils
             outputInsts.Add(inst);
         }
 
-        public static void LoadConstFloat(float a, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstFloat(float a, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             Instruction inst;
             if (random.NextInPercentage(constProbability))
@@ -52,7 +52,7 @@ namespace Obfuz.Utils
             outputInsts.Add(inst);
         }
 
-        public static void LoadConstDouble(double a, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstDouble(double a, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             Instruction inst;
             if (random.NextInPercentage(constProbability))
@@ -68,7 +68,7 @@ namespace Obfuz.Utils
         }
 
 
-        public static void LoadConstTwoInt(int a, int b, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstTwoInt(int a, int b, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             if (random.NextInPercentage(constProbability))
             {
@@ -96,7 +96,7 @@ namespace Obfuz.Utils
             }
         }
 
-        public static void LoadConstTwoLong(long a, long b, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstTwoLong(long a, long b, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             if (random.NextInPercentage(constProbability))
             {
@@ -122,7 +122,7 @@ namespace Obfuz.Utils
             }
         }
 
-        public static void LoadConstTwoFloat(float a, float b, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstTwoFloat(float a, float b, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             if (random.NextInPercentage(constProbability))
             {
@@ -148,7 +148,7 @@ namespace Obfuz.Utils
             }
         }
 
-        public static void LoadConstTwoDouble(double a, double b, IRandom random, float constProbability, ModuleConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
+        public static void LoadConstTwoDouble(double a, double b, IRandom random, float constProbability, ConstFieldAllocator constFieldAllocator, List<Instruction> outputInsts)
         {
             if (random.NextInPercentage(constProbability))
             {

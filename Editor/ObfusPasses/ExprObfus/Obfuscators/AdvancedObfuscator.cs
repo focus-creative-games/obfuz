@@ -11,7 +11,7 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
         protected bool GenerateIdentityTransformForArgument(Instruction inst, EvalDataType op, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
             IRandom random = ctx.localRandom;
-            ModuleConstFieldAllocator constFieldAllocator = ctx.constFieldAllocator;
+            ConstFieldAllocator constFieldAllocator = ctx.constFieldAllocator;
             switch (op)
             {
                 case EvalDataType.Int32:

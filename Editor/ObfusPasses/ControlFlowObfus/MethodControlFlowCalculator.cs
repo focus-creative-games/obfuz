@@ -6,7 +6,6 @@ using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -155,11 +154,11 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
 
         private readonly MethodDef _method;
         private readonly IRandom _random;
-        private readonly ModuleConstFieldAllocator _constFieldAllocator;
+        private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly int _minInstructionCountOfBasicBlockToObfuscate;
         private readonly BasicBlockInfo _bbHead;
 
-        public MethodControlFlowCalculator(MethodDef method, IRandom random, ModuleConstFieldAllocator constFieldAllocator, int minInstructionCountOfBasicBlockToObfuscate)
+        public MethodControlFlowCalculator(MethodDef method, IRandom random, ConstFieldAllocator constFieldAllocator, int minInstructionCountOfBasicBlockToObfuscate)
         {
             _method = method;
             _random = random;

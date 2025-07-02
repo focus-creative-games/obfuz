@@ -64,9 +64,6 @@ namespace Obfuz
         public List<ModuleDef> allObfuscationRelativeModules;
         public ObfuzIgnoreScopeComputeCache obfuzIgnoreScopeComputeCache;
 
-        public EncryptionScopeProvider encryptionScopeProvider;
-        public ConstFieldAllocator constFieldAllocator;
-        public RvaDataAllocator rvaDataAllocator;
         public ObfuscationMethodWhitelist whiteList;
         public ConfigurablePassPolicy passPolicy;
     }

@@ -13,7 +13,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
         public IRandom localRandom;
         public EncryptionScopeInfo encryptionScope;
         public DefaultMetadataImporter importer;
-        public ModuleConstFieldAllocator constFieldAllocator;
+        public ConstFieldAllocator constFieldAllocator;
         public int minInstructionCountOfBasicBlockToObfuscate;
 
         public IRandom CreateRandom()
@@ -60,7 +60,8 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             //Debug.Log($"Obfuscating method: {method.FullName} with EvalStackObfusPass");
 
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
-            var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
+            GroupByModuleEntityManager moduleEntityManager = ctx.moduleEntityManager;
+            var encryptionScope = moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
             var ruleData = _obfuscationPolicy.GetObfuscationRuleData(method);
             var localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method));
             var obfusMethodCtx = new ObfusMethodContext
@@ -68,9 +69,9 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 method = method,
                 localVariableAllocator = new LocalVariableAllocator(method),
                 encryptionScope = encryptionScope,
-                constFieldAllocator = ctx.constFieldAllocator.GetModuleAllocator(method.Module),
+                constFieldAllocator = moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module),
                 localRandom = localRandom,
-                importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, ctx.encryptionScopeProvider),
+                importer = moduleEntityManager.GetEntity<DefaultMetadataImporter>(method.Module),
                 minInstructionCountOfBasicBlockToObfuscate = _settings.minInstructionCountOfBasicBlockToObfuscate,
             };
             _obfuscator.Obfuscate(method, obfusMethodCtx);

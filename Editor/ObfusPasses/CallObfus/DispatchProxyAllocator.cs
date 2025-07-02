@@ -31,14 +31,10 @@ namespace Obfuz.ObfusPasses.CallObfus
         }
     }
 
-    class ModuleDispatchProxyAllocator : IGroupByModuleEntity
+    class ModuleDispatchProxyAllocator : GroupByModuleEntityBase
     {
-        private ModuleDef _module;
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly CallObfuscationSettingsFacade _settings;
-
-        private EncryptionScopeInfo _encryptionScope;
         private bool _done;
+        private CallObfuscationSettingsFacade _settings;
 
 
         class MethodProxyInfo
@@ -71,25 +67,23 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private TypeDef _proxyTypeDef;
 
-        public ModuleDispatchProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, CallObfuscationSettingsFacade settings)
+        public ModuleDispatchProxyAllocator()
         {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _settings = settings;
         }
 
-        public void Init(ModuleDef mod)
+        public override void Init()
         {
-            _module = mod;
-            _encryptionScope = _encryptionScopeProvider.GetScope(mod);
+            _settings = CallObfusPass.CurrentSettings;
         }
 
         private TypeDef CreateProxyTypeDef()
         {
-            using (var scope = new DisableTypeDefFindCacheScope(_module))
+            ModuleDef mod = Module;
+            using (var scope = new DisableTypeDefFindCacheScope(mod))
             {
-                var typeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall", _module.CorLibTypes.Object.ToTypeDefOrRef());
+                var typeDef = new TypeDefUser($"{ConstValues.ObfuzInternalSymbolNamePrefix}ProxyCall", mod.CorLibTypes.Object.ToTypeDefOrRef());
                 typeDef.Attributes = TypeAttributes.NotPublic | TypeAttributes.Sealed;
-                _module.Types.Add(typeDef);
+                mod.Types.Add(typeDef);
                 return typeDef;
             }
         }
@@ -135,24 +129,25 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private MethodSig CreateDispatchMethodSig(IMethod method)
         {
-            MethodSig methodSig = MetaUtil.ToSharedMethodSig(_module.CorLibTypes, MetaUtil.GetInflatedMethodSig(method, null));
+            ModuleDef mod = Module;
+            MethodSig methodSig = MetaUtil.ToSharedMethodSig(mod.CorLibTypes, MetaUtil.GetInflatedMethodSig(method, null));
             //MethodSig methodSig = MetaUtil.GetInflatedMethodSig(method).Clone();
             //methodSig.Params
             switch (MetaUtil.GetThisArgType(method))
             {
                 case ThisArgType.Class:
                 {
-                    methodSig.Params.Insert(0, _module.CorLibTypes.Object);
+                    methodSig.Params.Insert(0, mod.CorLibTypes.Object);
                     break;
                 }
                 case ThisArgType.ValueType:
                 {
-                    methodSig.Params.Insert(0, _module.CorLibTypes.IntPtr);
+                    methodSig.Params.Insert(0, mod.CorLibTypes.IntPtr);
                     break;
                 }
             }
             // extra param for index
-            methodSig.Params.Add(_module.CorLibTypes.Int32);
+            methodSig.Params.Add(mod.CorLibTypes.Int32);
             return MethodSig.CreateStatic(methodSig.RetType, methodSig.Params.ToArray());
         }
 
@@ -163,7 +158,7 @@ namespace Obfuz.ObfusPasses.CallObfus
 
         private int GenerateEncryptOps(IRandom random)
         {
-            return EncryptionUtil.GenerateEncryptionOpCodes(random, _encryptionScope.encryptor, _settings.obfuscationLevel);
+            return EncryptionUtil.GenerateEncryptionOpCodes(random, EncryptionScope.encryptor, _settings.obfuscationLevel);
         }
 
         private DispatchMethodInfo GetDispatchMethod(IMethod method)
@@ -188,7 +183,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         private IRandom CreateRandomForMethod(IMethod method, bool callVir)
         {
             int seed = MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method);
-            return _encryptionScope.localRandomCreator(seed);
+            return EncryptionScope.localRandomCreator(seed);
         }
 
         public ProxyCallMethodData Allocate(IMethod method, bool callVir)
@@ -206,7 +201,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 IRandom localRandom = CreateRandomForMethod(method, callVir);
                 int encryptOps = GenerateEncryptOps(localRandom);
                 int salt = GenerateSalt(localRandom);
-                int encryptedIndex = _encryptionScope.encryptor.Encrypt(index, encryptOps, salt);
+                int encryptedIndex = EncryptionScope.encryptor.Encrypt(index, encryptOps, salt);
                 proxyInfo = new MethodProxyInfo()
                 {
                     proxyMethod = methodDispatcher.methodDef,
@@ -221,7 +216,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             return new ProxyCallMethodData(proxyInfo.proxyMethod, proxyInfo.encryptedOps, proxyInfo.salt, proxyInfo.encryptedIndex, proxyInfo.index);
         }
 
-        public void Done()
+        public override void Done()
         {
             if (_done)
             {
@@ -272,39 +267,6 @@ namespace Obfuz.ObfusPasses.CallObfus
                     ins.Add(Instruction.Create(OpCodes.Br, ret));
                 }
                 ins.Add(ret);
-            }
-        }
-    }
-
-    public class DispatchProxyAllocator
-    {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private GroupByModuleEntityManager _moduleEntityManager;
-        private readonly CallObfuscationSettingsFacade _settings;
-
-        public DispatchProxyAllocator(EncryptionScopeProvider encryptionScopeProvider, GroupByModuleEntityManager moduleEntityManager, CallObfuscationSettingsFacade settings)
-        {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _moduleEntityManager = moduleEntityManager;
-            _settings = settings;
-        }
-
-        private ModuleDispatchProxyAllocator GetModuleAllocator(ModuleDef mod)
-        {
-            return _moduleEntityManager.GetEntity<ModuleDispatchProxyAllocator>(mod, () => new ModuleDispatchProxyAllocator(_encryptionScopeProvider, _settings));
-        }
-
-        public ProxyCallMethodData Allocate(ModuleDef mod, IMethod method, bool callVir)
-        {
-            ModuleDispatchProxyAllocator allocator = GetModuleAllocator(mod);
-            return allocator.Allocate(method, callVir);
-        }
-
-        public void Done()
-        {
-            foreach (var allocator in _moduleEntityManager.GetEntities<ModuleDispatchProxyAllocator>())
-            {
-                allocator.Done();
             }
         }
     }

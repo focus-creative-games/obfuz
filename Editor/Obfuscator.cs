@@ -283,23 +283,22 @@ namespace Obfuz
             LoadAssemblies(assemblyCache, modulesToObfuscate, allObfuscationRelativeModules);
 
             EncryptionScopeProvider encryptionScopeProvider = CreateEncryptionScopeProvider();
-            var moduleEntityManager = new GroupByModuleEntityManager();
+            var moduleEntityManager = new GroupByModuleEntityManager()
+            {
+                EncryptionScopeProvider = encryptionScopeProvider,
+            };
             var obfuzIgnoreScopeComputeCache = new ObfuzIgnoreScopeComputeCache();
-            var rvaDataAllocator = new RvaDataAllocator(encryptionScopeProvider, moduleEntityManager);
-            var constFieldAllocator = new ConstFieldAllocator(encryptionScopeProvider, rvaDataAllocator, moduleEntityManager);
             _ctx = new ObfuscationPassContext
             {
                 coreSettings = _coreSettings,
                 assemblyCache = assemblyCache,
                 modulesToObfuscate = modulesToObfuscate,
                 allObfuscationRelativeModules = allObfuscationRelativeModules,
+
                 moduleEntityManager = moduleEntityManager,
 
-                encryptionScopeProvider = encryptionScopeProvider,
                 obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache,
 
-                rvaDataAllocator = rvaDataAllocator,
-                constFieldAllocator = constFieldAllocator,
                 whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache),
                 passPolicy = _passPolicy,
             };
@@ -345,8 +344,8 @@ namespace Obfuz
         {
             pipeline.Stop();
 
-            _ctx.constFieldAllocator.Done();
-            _ctx.rvaDataAllocator.Done();
+            _ctx.moduleEntityManager.Done<ConstFieldAllocator>();
+            _ctx.moduleEntityManager.Done<RvaDataAllocator>();
             WriteAssemblies();
         }
     }

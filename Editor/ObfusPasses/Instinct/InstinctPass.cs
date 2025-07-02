@@ -1,6 +1,7 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using Obfuz.Editor;
+using Obfuz.Emit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +90,7 @@ namespace Obfuz.ObfusPasses.Instinct
             }
 
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
-            var importer = ctx.moduleEntityManager.GetDefaultModuleMetadataImporter(callingMethod.Module, ctx.encryptionScopeProvider);
+            var importer = ctx.moduleEntityManager.GetEntity<DefaultMetadataImporter>(callingMethod.Module);
 
             string methodName = methodDef.Name;
             switch (methodName)

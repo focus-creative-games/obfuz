@@ -17,6 +17,8 @@ namespace Obfuz.ObfusPasses.CallObfus
 
     public class CallObfusPass : ObfuscationMethodPassBase
     {
+        public static CallObfuscationSettingsFacade CurrentSettings { get; private set; }
+
         private readonly CallObfuscationSettingsFacade _settings;
         private readonly SpecialWhiteListMethodCalculator _specialWhiteListMethodCache;
 
@@ -28,6 +30,8 @@ namespace Obfuz.ObfusPasses.CallObfus
         public CallObfusPass(CallObfuscationSettingsFacade settings)
         {
             _settings = settings;
+            CurrentSettings = settings;
+
             _specialWhiteListMethodCache = new SpecialWhiteListMethodCalculator(settings.obfuscateCallToMethodInMscorlib);
         }
 
@@ -48,9 +52,9 @@ namespace Obfuz.ObfusPasses.CallObfus
             switch (mode)
             {
                 case ProxyMode.Dispatch:
-                return new DispatchProxyObfuscator(ctx.encryptionScopeProvider, ctx.constFieldAllocator, ctx.moduleEntityManager, _settings);
+                    return new DispatchProxyObfuscator(ctx.moduleEntityManager);
                 case ProxyMode.Delegate:
-                    return new DelegateProxyObfuscator(ctx.encryptionScopeProvider, ctx.moduleEntityManager, ctx.rvaDataAllocator, _settings);
+                    return new DelegateProxyObfuscator(ctx.moduleEntityManager);
                 default:
                 throw new System.NotSupportedException($"Unsupported proxy mode: {mode}");
             }
@@ -66,7 +70,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             var totalFinalInstructions = new List<Instruction>();
 
             ObfuscationPassContext ctx = ObfuscationPassContext.Current;
-            var encryptionScope = ctx.encryptionScopeProvider.GetScope(method.Module);
+            var encryptionScope = ctx.moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
             var localRandom = encryptionScope.localRandomCreator(MethodEqualityComparer.CompareDeclaringTypes.GetHashCode(method));
             var omc = new ObfusMethodContext
             {

@@ -111,23 +111,20 @@ namespace Obfuz.Emit
 
     public class DefaultMetadataImporter : GroupByModuleEntityBase
     {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private EncryptionScopeInfo _encryptionScope;
         private EncryptionServiceMetadataImporter _defaultEncryptionServiceMetadataImporter;
 
 
         private EncryptionServiceMetadataImporter _staticDefaultEncryptionServiceMetadataImporter;
         private EncryptionServiceMetadataImporter _dynamicDefaultEncryptionServiceMetadataImporter;
 
-        public DefaultMetadataImporter(EncryptionScopeProvider encryptionScopeProvider)
+        public DefaultMetadataImporter()
         {
-            _encryptionScopeProvider = encryptionScopeProvider;
         }
 
-        public override void Init(ModuleDef mod)
+        public override void Init()
         {
-            _module = mod;
-            _encryptionScope = _encryptionScopeProvider.GetScope(mod);
+            ModuleDef mod = Module;
+
             var constUtilityType = typeof(ConstUtility);
 
             _castIntAsFloat = mod.Import(constUtilityType.GetMethod("CastIntAsFloat"));
@@ -238,7 +235,7 @@ namespace Obfuz.Emit
 
             _staticDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultStaticEncryptionScope>));
             _dynamicDefaultEncryptionServiceMetadataImporter = new EncryptionServiceMetadataImporter(mod, typeof(EncryptionService<DefaultDynamicEncryptionScope>));
-            if (_encryptionScopeProvider.IsDynamicSecretAssembly(mod))
+            if (EncryptionScopeProvider.IsDynamicSecretAssembly(mod))
             {
                 _defaultEncryptionServiceMetadataImporter = _dynamicDefaultEncryptionServiceMetadataImporter;
             }
@@ -255,7 +252,7 @@ namespace Obfuz.Emit
 
         public EncryptionServiceMetadataImporter GetEncryptionServiceMetadataImporterOfModule(ModuleDef mod)
         {
-            return _encryptionScopeProvider.IsDynamicSecretAssembly(mod) ? _dynamicDefaultEncryptionServiceMetadataImporter : _staticDefaultEncryptionServiceMetadataImporter;
+            return EncryptionScopeProvider.IsDynamicSecretAssembly(mod) ? _dynamicDefaultEncryptionServiceMetadataImporter : _staticDefaultEncryptionServiceMetadataImporter;
         }
 
         private ModuleDef _module;

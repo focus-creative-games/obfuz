@@ -24,7 +24,7 @@ namespace Obfuz.ObfusPasses.FieldEncrypt
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
-            _memoryEncryptor = new DefaultFieldEncryptor(ctx.encryptionScopeProvider, ctx.moduleEntityManager, _settings);
+            _memoryEncryptor = new DefaultFieldEncryptor(ctx.moduleEntityManager, _settings);
             _encryptionPolicy = new ConfigurableEncryptPolicy(ctx.obfuzIgnoreScopeComputeCache, ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
         }
 

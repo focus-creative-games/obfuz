@@ -12,17 +12,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 {
     public class DefaultConstEncryptor : IConstEncryptor
     {
-        private readonly EncryptionScopeProvider _encryptionScopeProvider;
-        private readonly RvaDataAllocator _rvaDataAllocator;
-        private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly GroupByModuleEntityManager _moduleEntityManager;
         private readonly ConstEncryptionSettingsFacade _settings;
 
-        public DefaultConstEncryptor(EncryptionScopeProvider encryptionScopeProvider, RvaDataAllocator rvaDataAllocator, ConstFieldAllocator constFieldAllocator, GroupByModuleEntityManager moduleEntityManager, ConstEncryptionSettingsFacade settings)
+        public DefaultConstEncryptor(GroupByModuleEntityManager moduleEntityManager, ConstEncryptionSettingsFacade settings)
         {
-            _encryptionScopeProvider = encryptionScopeProvider;
-            _rvaDataAllocator = rvaDataAllocator;
-            _constFieldAllocator = constFieldAllocator;
             _moduleEntityManager = moduleEntityManager;
             _settings = settings;
         }
@@ -44,20 +38,23 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         private DefaultMetadataImporter GetModuleMetadataImporter(MethodDef method)
         {
-            return _moduleEntityManager.GetDefaultModuleMetadataImporter(method.Module, _encryptionScopeProvider);
+            return _moduleEntityManager.GetEntity<DefaultMetadataImporter>(method.Module);
         }
 
         public void ObfuscateInt(MethodDef method, bool needCacheValue, int value, List<Instruction> obfuscatedInstructions)
         {
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(method.Module);
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
             IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
-            ModuleConstFieldAllocator moduleConstFieldAllocator = _constFieldAllocator.GetModuleAllocator(method.Module);
+            ConstFieldAllocator constFieldAllocator = _moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module);
+            RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(method.Module);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+
             switch (random.NextInt(5))
             {
                 case 0:
                 {
                     // = c = encrypted static field
-                    FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                    FieldDef cacheField = constFieldAllocator.Allocate(value);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                     break;
                 }
@@ -67,7 +64,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     int a = random.NextInt();
                     int b = value - a;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Add));
                     break;
                 }
@@ -78,7 +75,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     int ra = MathUtil.ModInverse32(a);
                     int b = ra * value;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Mul));
                     break;
                 }
@@ -88,7 +85,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     int a = random.NextInt();
                     int b = a ^ value;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoInt(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Xor));
                     break;
                 }
@@ -96,16 +93,14 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 {
                     if (needCacheValue)
                     {
-                        FieldDef cacheField = moduleConstFieldAllocator.Allocate(value);
+                        FieldDef cacheField = constFieldAllocator.Allocate(value);
                         obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                         return;
                     }
                     int ops = GenerateEncryptionOperations(encryptionScope, random);
                     int salt = GenerateSalt(random);
                     int encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
-                    RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
-
-                    DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+                    RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                     obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
                     obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -120,16 +115,18 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public void ObfuscateLong(MethodDef method, bool needCacheValue, long value, List<Instruction> obfuscatedInstructions)
         {
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(method.Module);
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
             IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
-            ModuleConstFieldAllocator moduleConstFieldAllocator = _constFieldAllocator.GetModuleAllocator(method.Module);
+            ConstFieldAllocator constFieldAllocator = _moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module);
+            RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(method.Module);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
 
             switch (random.NextInt(5))
             {
                 case 0:
                 {
                     // c = encrypted static field
-                    FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                    FieldDef cacheField = constFieldAllocator.Allocate(value);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                     break;
                 }
@@ -139,7 +136,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     long a = random.NextLong();
                     long b = value - a;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Add));
                     break;
                 }
@@ -150,7 +147,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     long ra = MathUtil.ModInverse64(a);
                     long b = ra * value;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Mul));
                     break;
                 }
@@ -160,7 +157,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     long a = random.NextLong();
                     long b = a ^ value;
                     float constProbability = 0.5f;
-                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, moduleConstFieldAllocator, obfuscatedInstructions);
+                    ConstObfusUtil.LoadConstTwoLong(a, b, random, constProbability, constFieldAllocator, obfuscatedInstructions);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Xor));
                     break;
                 }
@@ -168,7 +165,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 {
                     if (needCacheValue)
                     {
-                        FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                        FieldDef cacheField = constFieldAllocator.Allocate(value);
                         obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                         return;
                     }
@@ -176,9 +173,8 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                     int ops = GenerateEncryptionOperations(encryptionScope, random);
                     int salt = GenerateSalt(random);
                     long encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
-                    RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+                    RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
 
-                    DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
                     obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
                     obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
                     obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -193,21 +189,25 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public void ObfuscateFloat(MethodDef method, bool needCacheValue, float value, List<Instruction> obfuscatedInstructions)
         {
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
+            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
+            ConstFieldAllocator constFieldAllocator = _moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module);
+            RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(method.Module);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+
             if (needCacheValue)
             {
-                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                FieldDef cacheField = constFieldAllocator.Allocate(value);
                 obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                 return;
             }
 
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(method.Module);
-            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
+
             int ops = GenerateEncryptionOperations(encryptionScope, random);
             int salt = GenerateSalt(random);
             float encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
-            RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+            RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
 
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -217,21 +217,25 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public void ObfuscateDouble(MethodDef method, bool needCacheValue, double value, List<Instruction> obfuscatedInstructions)
         {
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
+            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
+            ConstFieldAllocator constFieldAllocator = _moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module);
+            RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(method.Module);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+
             if (needCacheValue)
             {
-                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                FieldDef cacheField = constFieldAllocator.Allocate(value);
                 obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                 return;
             }
 
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(method.Module);
-            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
+
             int ops = GenerateEncryptionOperations(encryptionScope, random);
             int salt = GenerateSalt(random);
             double encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
-            RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+            RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
 
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(ops));
@@ -264,7 +268,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
         {
             if (!_encryptedRvaFields.TryGetValue(fieldDef, out var encryptedRvaData))
             {
-                EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(fieldDef.Module);
+                EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(fieldDef.Module);
                 IRandom random = CreateRandomForValue(encryptionScope, FieldEqualityComparer.CompareDeclaringTypes.GetHashCode(fieldDef));
                 int ops = GenerateEncryptionOperations(encryptionScope, random);
                 int salt = GenerateSalt(random);
@@ -297,23 +301,26 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         public void ObfuscateString(MethodDef method, bool needCacheValue, string value, List<Instruction> obfuscatedInstructions)
         {
+            EncryptionScopeInfo encryptionScope = _moduleEntityManager.EncryptionScopeProvider.GetScope(method.Module);
+            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
+            ConstFieldAllocator constFieldAllocator = _moduleEntityManager.GetEntity<ConstFieldAllocator>(method.Module);
+            RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(method.Module);
+            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+
             if (needCacheValue)
             {
-                FieldDef cacheField = _constFieldAllocator.Allocate(method.Module, value);
+                FieldDef cacheField = constFieldAllocator.Allocate(value);
                 obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, cacheField));
                 return;
             }
 
-            EncryptionScopeInfo encryptionScope = _encryptionScopeProvider.GetScope(method.Module);
-            IRandom random = CreateRandomForValue(encryptionScope, value.GetHashCode());
             int ops = GenerateEncryptionOperations(encryptionScope, random);
             int salt = GenerateSalt(random);
             int stringByteLength = Encoding.UTF8.GetByteCount(value);
             byte[] encryptedValue = encryptionScope.encryptor.Encrypt(value, ops, salt);
             Assert.AreEqual(stringByteLength, encryptedValue.Length);
-            RvaData rvaData = _rvaDataAllocator.Allocate(method.Module, encryptedValue);
+            RvaData rvaData = rvaDataAllocator.Allocate(encryptedValue);
 
-            DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
             obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, rvaData.field));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(rvaData.offset));
             // should use stringByteLength, can't use rvaData.size, because rvaData.size is align to 4, it's not the actual length.
