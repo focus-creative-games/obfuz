@@ -31,6 +31,7 @@
 - **Control Flow Obfuscation**: Disrupt code flow to deter reverse engineering.
 - **Randomized Encryption VM**: Generates randomized virtual machines to thwart decompilation and cracking tools.
 - **Static and Dynamic Decryption**: Combines static and dynamic decryption to resist offline static analysis.
+ **Obfuscation Polymorphism**: Generates different obfuscated code by configuring different generation keys and randomization seeds.
 - **Garbage Code Generation**​​: Supports various types of low-quality code generation to improve App Store and Google Play review pass rates
 - **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
 - **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
