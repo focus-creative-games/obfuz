@@ -62,6 +62,13 @@ namespace Obfuz.Unity
 
                 writer.WriteStartDocument();
                 writer.WriteStartElement("linker");
+
+                // Preserve Obfuz.Runtime assembly
+                writer.WriteStartElement("assembly");
+                writer.WriteAttributeString("fullname", "Obfuz.Runtime");
+                writer.WriteAttributeString("preserve", "all");
+                writer.WriteEndElement();
+
                 foreach (string linkPath in linkXmlPaths)
                 {
                     TransformLinkXml(linkPath, symbolMapping, assembliesToObfuscated, writer);
