@@ -80,8 +80,8 @@ namespace Obfuz.Unity
             {
                 writer.Close();
             }
-            Debug.Log($"LinkXmlProcess write {linkXmlPath}");
-            return linkXmlPath;
+            Debug.Log($"LinkXmlProcess write {Path.GetFullPath(linkXmlPath)}");
+            return Path.GetFullPath(linkXmlPath);
         }
 
         private static void TransformLinkXml(string xmlFile, LiteSymbolMappingReader symbolMapping, HashSet<string> assembliesToObfuscated, XmlWriter writer)
