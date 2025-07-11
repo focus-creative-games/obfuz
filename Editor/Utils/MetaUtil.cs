@@ -886,7 +886,7 @@ namespace Obfuz.Utils
 
         public static bool HasCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Find("System.Runtime.CompilerServices.CompilerGeneratedAttribute") != null;
+            return obj.CustomAttributes.Find(ConstValues.CompilerGeneratedAttributeFullName) != null;
         }
 
         public static bool HasEncryptFieldAttribute(IHasCustomAttribute obj)
@@ -896,27 +896,27 @@ namespace Obfuz.Utils
 
         public static bool HasRuntimeInitializeOnLoadMethodAttribute(MethodDef method)
         {
-            return method.CustomAttributes.Find("UnityEngine.RuntimeInitializeOnLoadMethodAttribute") != null;
+            return method.CustomAttributes.Find(ConstValues.RuntimeInitializedOnLoadMethodAttributeFullName) != null;
         }
 
         public static bool HasBlackboardEnumAttribute(TypeDef typeDef)
         {
-            return typeDef.CustomAttributes.Find("Unity.Behavior.BlackboardEnumAttribute") != null;
+            return typeDef.CustomAttributes.Find(ConstValues.BlackboardEnumAttributeFullName) != null;
         }
 
         public static bool HasBurstCompileAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Find("Unity.Burst.BurstCompileAttribute") != null;
+            return obj.CustomAttributes.Find(ConstValues.BurstCompileFullName) != null;
         }
 
         public static bool HasDOTSCompilerGeneratedAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Find("Unity.Jobs.DOTSCompilerGeneratedAttribute") != null;
+            return obj.CustomAttributes.Find(ConstValues.DOTSCompilerGeneratedAttributeFullName) != null;
         }
 
         public static bool HasMicrosoftCodeAnalysisEmbeddedAttribute(IHasCustomAttribute obj)
         {
-            return obj.CustomAttributes.Find("Microsoft.CodeAnalysis.EmbeddedAttribute") != null;
+            return obj.CustomAttributes.Find(ConstValues.EmbeddedAttributeFullName) != null;
         }
     }
 }

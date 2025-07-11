@@ -23,5 +23,11 @@ namespace Obfuz.Editor
         public const string ZluaLuaMarshalAsAttributeFullName = "Zlua.LuaMarshalAsAttribute";
 
         public const string BurstCompileFullName = "Unity.Burst.BurstCompileAttribute";
+        public const string DOTSCompilerGeneratedAttributeFullName = "Unity.Jobs.DOTSCompilerGeneratedAttribute";
+
+        public const string RuntimeInitializedOnLoadMethodAttributeFullName = "UnityEngine.RuntimeInitializeOnLoadMethodAttribute";
+        public const string BlackboardEnumAttributeFullName = "Unity.Behavior.BlackboardEnumAttribute";
+
+        public const string CompilerGeneratedAttributeFullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute";
     }
 }

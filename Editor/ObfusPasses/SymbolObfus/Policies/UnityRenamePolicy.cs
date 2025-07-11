@@ -153,10 +153,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return true;
             }
-            if (MetaUtil.HasBurstCompileAttribute(typeDef))
-            {
-                return true;
-            }
             if (typeDef.DeclaringType != null)
             {
                 return IsUnitySourceGeneratedAssemblyType(typeDef.DeclaringType);
@@ -191,6 +187,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
+            if (MetaUtil.HasBurstCompileAttribute(typeDef))
+            {
+                return false;
+            }
             if (typeDef.Methods.Any(m => MetaUtil.HasRuntimeInitializeOnLoadMethodAttribute(m)))
             {
                 return false;
@@ -213,7 +213,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasBurstCompileAttribute(methodDef) || MetaUtil.HasDOTSCompilerGeneratedAttribute(methodDef))
+            if (MetaUtil.HasBurstCompileAttribute(methodDef) || MetaUtil.HasBurstCompileAttribute(methodDef.DeclaringType) || MetaUtil.HasDOTSCompilerGeneratedAttribute(methodDef))
             {
                 return false;
             }
@@ -239,10 +239,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
                 }
             }
             if (_computeDeclaringTypeDisableAllMemberRenamingCache.GetValue(typeDef))
-            {
-                return false;
-            }
-            if (MetaUtil.HasBurstCompileAttribute(fieldDef))
             {
                 return false;
             }
