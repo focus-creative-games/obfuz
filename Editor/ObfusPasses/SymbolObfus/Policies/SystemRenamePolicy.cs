@@ -23,6 +23,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             ConstValues.ZluaLuaInvokeAttributeFullName,
             ConstValues.ZluaLuaCallbackAttributeFullName,
             ConstValues.ZluaLuaMarshalAsAttributeFullName,
+            ConstValues.BurstCompileFullName,
         };
 
 

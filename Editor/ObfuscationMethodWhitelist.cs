@@ -63,6 +63,10 @@ namespace Obfuz
             {
                 return true;
             }
+            if (method.CustomAttributes.Find(ConstValues.BurstCompileFullName) != null)
+            {
+                return true;
+            }
 
             // don't obfuscate cctor when it has RuntimeInitializeOnLoadMethodAttribute with load type AfterAssembliesLoaded
             if (method.IsStatic && method.Name == ".cctor" && typeDef.Methods.Any(m => DoesMethodContainsRuntimeInitializeOnLoadMethodAttributeAndLoadTypeGreaterEqualAfterAssembliesLoaded(m)))
@@ -79,6 +83,10 @@ namespace Obfuz
                 return true;
             }
             if (IsInWhiteList(type.Module))
+            {
+                return true;
+            }
+            if (type.CustomAttributes.Find(ConstValues.BurstCompileFullName) != null)
             {
                 return true;
             }

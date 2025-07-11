@@ -1,4 +1,6 @@
-﻿namespace Obfuz.Editor
+﻿using System.Text;
+
+namespace Obfuz.Editor
 {
     public static class ConstValues
     {
@@ -19,5 +21,7 @@
         public const string ZluaLuaInvokeAttributeFullName = "Zlua.LuaInvokeAttribute";
         public const string ZluaLuaCallbackAttributeFullName = "Zlua.LuaCallbackAttribute";
         public const string ZluaLuaMarshalAsAttributeFullName = "Zlua.LuaMarshalAsAttribute";
+
+        public const string BurstCompileFullName = "Unity.Burst.BurstCompileAttribute";
     }
 }
