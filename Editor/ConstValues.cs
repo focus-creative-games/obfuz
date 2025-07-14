@@ -13,6 +13,7 @@ namespace Obfuz.Editor
         public const string ObfuzScopeFullName = "Obfuz.ObfuzScope";
 
         public const string EncryptFieldAttributeFullName = "Obfuz.EncryptFieldAttribute";
+        public const string GeneratedEncryptionVirtualMachineFullName = "Obfuz.EncryptionVM.GeneratedEncryptionVirtualMachine";
 
         public const string EmbeddedAttributeFullName = "Microsoft.CodeAnalysis.EmbeddedAttribute";
 

@@ -299,7 +299,7 @@ namespace Obfuz
 
                 obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache,
 
-                whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache),
+                whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache, new BurstCompileComputeCache(modulesToObfuscate, allObfuscationRelativeModules)),
                 passPolicy = _passPolicy,
             };
             ObfuscationPassContext.Current = _ctx;
