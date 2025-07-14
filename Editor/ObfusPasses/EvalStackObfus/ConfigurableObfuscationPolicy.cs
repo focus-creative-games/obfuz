@@ -64,7 +64,7 @@ namespace Obfuz.ObfusPasses.EvalStackObfus
         private static readonly ObfuscationRule s_default = new ObfuscationRule()
         {
             obfuscationLevel = ObfuscationLevel.Basic,
-            obfuscationPercentage = 0.5f,
+            obfuscationPercentage = 0.05f,
         };
 
         private ObfuscationRule _global;
@@ -91,6 +91,10 @@ namespace Obfuz.ObfusPasses.EvalStackObfus
             else
             {
                 _global.InheritParent(s_default);
+            }
+            if (_global.obfuscationPercentage.Value > 0.1f)
+            {
+                UnityEngine.Debug.LogWarning($"EvalStackObfus significantly increases the size of the obfuscated hot-update DLL. It is recommended to keep the obfuscationPercentage ≤ 0.1 (currently set to {_global.obfuscationPercentage.Value}).");
             }
             _xmlParser.InheritParentRules(_global);
         }
