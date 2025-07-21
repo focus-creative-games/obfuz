@@ -19,6 +19,10 @@ namespace Obfuz.Utils
             result.Append(" ");
             result.Append(method.DeclaringType.FullName);
             result.Append("::");
+            if (method.IsStatic)
+            {
+                result.Append("@");
+            }
             result.Append(method.Name);
             if (method.HasGenericParameters)
             {
