@@ -1,3 +1,5 @@
+using System;
+
 namespace Obfuz
 {
     public static class ExprUtility
@@ -22,6 +24,16 @@ namespace Obfuz
             return a + b;
         }
 
+        public static IntPtr Add(IntPtr a, IntPtr b)
+        {
+            return (IntPtr)((long)a + (long)b);
+        }
+
+        public static IntPtr Add(IntPtr a, int b)
+        {
+            return a + b;
+        }
+
         public static int Subtract(int a, int b)
         {
             return a - b;
@@ -38,6 +50,16 @@ namespace Obfuz
         }
 
         public static double Subtract(double a, double b)
+        {
+            return a - b;
+        }
+
+        public static IntPtr Subtract(IntPtr a, IntPtr b)
+        {
+            return (IntPtr)((long)a - (long)b);
+        }
+
+        public static IntPtr Subtract(IntPtr a, int b)
         {
             return a - b;
         }
@@ -60,6 +82,16 @@ namespace Obfuz
         public static double Multiply(double a, double b)
         {
             return a * b;
+        }
+
+        public static IntPtr Multiply(IntPtr a, IntPtr b)
+        {
+            return (IntPtr)((long)a * (long)b);
+        }
+
+        public static IntPtr Multiply(IntPtr a, int b)
+        {
+            return (IntPtr)((long)a * b);
         }
 
         public static int Divide(int a, int b)

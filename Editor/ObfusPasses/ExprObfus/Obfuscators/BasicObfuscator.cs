@@ -9,7 +9,35 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
     class BasicObfuscator : ObfuscatorBase
     {
-        private IMethod GetMethod(DefaultMetadataImporter importer, Code code, EvalDataType op1)
+        private IMethod GetUnaryOpMethod(DefaultMetadataImporter importer, Code code, EvalDataType op1)
+        {
+            switch (code)
+            {
+                case Code.Neg:
+                {
+                    switch (op1)
+                    {
+                        case EvalDataType.Int32: return importer.NegInt;
+                        case EvalDataType.Int64: return importer.NegLong;
+                        case EvalDataType.Float: return importer.NegFloat;
+                        case EvalDataType.Double: return importer.NegDouble;
+                        default: return null;
+                    }
+                }
+                case Code.Not:
+                {
+                    switch (op1)
+                    {
+                        case EvalDataType.Int32: return importer.NotInt;
+                        case EvalDataType.Int64: return importer.NotLong;
+                        default: return null;
+                    }
+                }
+                default: return null;
+            }
+        }
+
+        private IMethod GetBinaryOpMethod(DefaultMetadataImporter importer, Code code, EvalDataType op1, EvalDataType op2)
         {
             switch (code)
             {
@@ -17,10 +45,19 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
                 {
                     switch (op1)
                     {
-                        case EvalDataType.Int32: return importer.AddInt;
-                        case EvalDataType.Int64: return importer.AddLong;
-                        case EvalDataType.Float: return importer.AddFloat;
-                        case EvalDataType.Double: return importer.AddDouble;
+                        case EvalDataType.Int32: return op2 == op1 ? importer.AddInt : null;
+                        case EvalDataType.Int64: return op2 == op1 ? importer.AddLong : null;
+                        case EvalDataType.Float: return op2 == op1 ? importer.AddFloat : null;
+                        case EvalDataType.Double: return op2 == op1 ? importer.AddDouble : null;
+                        case EvalDataType.I:
+                        {
+                            switch (op2)
+                            {
+                                case EvalDataType.I: return importer.AddIntPtr;
+                                case EvalDataType.Int32: return importer.AddIntPtrInt;
+                                default: return null;
+                            }
+                        }
                         default: return null;
                     }
                 }
@@ -28,10 +65,19 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
                 {
                     switch (op1)
                     {
-                        case EvalDataType.Int32: return importer.SubtractInt;
-                        case EvalDataType.Int64: return importer.SubtractLong;
-                        case EvalDataType.Float: return importer.SubtractFloat;
-                        case EvalDataType.Double: return importer.SubtractDouble;
+                        case EvalDataType.Int32: return op2 == op1 ? importer.SubtractInt : null;
+                        case EvalDataType.Int64: return op2 == op1 ? importer.SubtractLong : null;
+                        case EvalDataType.Float: return op2 == op1 ? importer.SubtractFloat : null;
+                        case EvalDataType.Double: return op2 == op1 ? importer.SubtractDouble : null;
+                        case EvalDataType.I:
+                        {
+                            switch (op2)
+                            {
+                                case EvalDataType.I: return importer.SubtractIntPtr;
+                                case EvalDataType.Int32: return importer.SubtractIntPtrInt;
+                                default: return null;
+                            }
+                        }
                         default: return null;
                     }
                 }
@@ -39,10 +85,19 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
                 {
                     switch (op1)
                     {
-                        case EvalDataType.Int32: return importer.MultiplyInt;
-                        case EvalDataType.Int64: return importer.MultiplyLong;
-                        case EvalDataType.Float: return importer.MultiplyFloat;
-                        case EvalDataType.Double: return importer.MultiplyDouble;
+                        case EvalDataType.Int32: return op2 == op1 ? importer.MultiplyInt : null;
+                        case EvalDataType.Int64: return op2 == op1 ? importer.MultiplyLong : null;
+                        case EvalDataType.Float: return op2 == op1 ? importer.MultiplyFloat : null;
+                        case EvalDataType.Double: return op2 == op1 ? importer.MultiplyDouble : null;
+                        case EvalDataType.I:
+                        {
+                            switch (op2)
+                            {
+                                case EvalDataType.I: return importer.MultiplyIntPtr;
+                                case EvalDataType.Int32: return importer.MultiplyIntPtrInt;
+                                default: return null;
+                            }
+                        }
                         default: return null;
                     }
                 }
@@ -166,9 +221,10 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBasicUnaryOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op);
+            IMethod opMethod = GetUnaryOpMethod(ctx.importer, inst.OpCode.Code, op);
             if (opMethod == null)
             {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate unary operation {inst.OpCode.Code} with different operand types: op={op}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
             outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
@@ -177,14 +233,10 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBasicBinOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (op1 != op2)
-            {
-                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
-                return false;
-            }
-            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
+            IMethod opMethod = GetBinaryOpMethod(ctx.importer, inst.OpCode.Code, op1, op2);
             if (opMethod == null)
             {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
             outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
@@ -193,9 +245,10 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateUnaryBitwiseOp(Instruction inst, EvalDataType op, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op);
+            IMethod opMethod = GetUnaryOpMethod(ctx.importer, inst.OpCode.Code, op);
             if (opMethod == null)
             {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate unary operation {inst.OpCode.Code} with different operand types: op={op}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
             outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
@@ -204,14 +257,10 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBinBitwiseOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (op1 != op2)
-            {
-                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
-                return false;
-            }
-            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
+            IMethod opMethod = GetBinaryOpMethod(ctx.importer, inst.OpCode.Code, op1, op2);
             if (opMethod == null)
             {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with different operand types: op1={op1}, op2={op2}, ret={ret}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
             outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));
@@ -220,14 +269,10 @@ namespace Obfuz.ObfusPasses.ExprObfus.Obfuscators
 
         public override bool ObfuscateBitShiftOp(Instruction inst, EvalDataType op1, EvalDataType op2, EvalDataType ret, List<Instruction> outputInsts, ObfusMethodContext ctx)
         {
-            if (op2 != EvalDataType.Int32)
-            {
-                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with operand type {op2}. This is a limitation of the BasicObfuscator.");
-                return false;
-            }
-            IMethod opMethod = GetMethod(ctx.importer, inst.OpCode.Code, op1);
+            IMethod opMethod = GetBinaryOpMethod(ctx.importer, inst.OpCode.Code, op1, op2);
             if (opMethod == null)
             {
+                Debug.LogWarning($"BasicObfuscator: Cannot obfuscate binary operation {inst.OpCode.Code} with operand type {op2}. This is a limitation of the BasicObfuscator.");
                 return false;
             }
             outputInsts.Add(Instruction.Create(OpCodes.Call, opMethod));

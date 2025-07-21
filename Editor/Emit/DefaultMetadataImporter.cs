@@ -153,6 +153,11 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_addFloat, "ExprUtility.Add(float, float) not found");
             _addDouble = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(double), typeof(double) }));
             Assert.IsNotNull(_addDouble, "ExprUtility.Add(double, double) not found");
+            _addIntPtr = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(IntPtr), typeof(IntPtr) }));
+            Assert.IsNotNull(_addIntPtr, "ExprUtility.Add(IntPtr, IntPtr) not found");
+            _addIntPtrInt = mod.Import(exprUtilityType.GetMethod("Add", new[] { typeof(IntPtr), typeof(int) }));
+            Assert.IsNotNull(_addIntPtrInt, "ExprUtility.Add(IntPtr, int) not found");
+
             _subtractInt = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_subtractInt, "ExprUtility.Subtract(int, int) not found");
             _subtractLong = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(long), typeof(long) }));
@@ -161,6 +166,11 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_subtractFloat, "ExprUtility.Subtract(float, float) not found");
             _subtractDouble = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(double), typeof(double) }));
             Assert.IsNotNull(_subtractDouble, "ExprUtility.Subtract(double, double) not found");
+            _subtractIntPtr = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(IntPtr), typeof(IntPtr) }));
+            Assert.IsNotNull(_subtractIntPtr, "ExprUtility.Subtract(IntPtr, IntPtr) not found");
+            _subtractIntPtrInt = mod.Import(exprUtilityType.GetMethod("Subtract", new[] { typeof(IntPtr), typeof(int) }));
+            Assert.IsNotNull(_subtractIntPtrInt, "ExprUtility.Subtract(IntPtr, int) not found");
+
             _multiplyInt = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_multiplyInt, "ExprUtility.Multiply(int, int) not found");
             _multiplyLong = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(long), typeof(long) }));
@@ -169,6 +179,11 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_multiplyFloat, "ExprUtility.Multiply(float, float) not found");
             _multiplyDouble = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(double), typeof(double) }));
             Assert.IsNotNull(_multiplyDouble, "ExprUtility.Multiply(double, double) not found");
+            _multiplyIntPtr = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(IntPtr), typeof(IntPtr) }));
+            Assert.IsNotNull(_multiplyIntPtr, "ExprUtility.Multiply(IntPtr, IntPtr) not found");
+            _multiplyIntPtrInt = mod.Import(exprUtilityType.GetMethod("Multiply", new[] { typeof(IntPtr), typeof(int) }));
+            Assert.IsNotNull(_multiplyIntPtrInt, "ExprUtility.Multiply(IntPtr, int) not found");
+
             _divideInt = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_divideInt, "ExprUtility.Divide(int, int) not found");
             _divideLong = mod.Import(exprUtilityType.GetMethod("Divide", new[] { typeof(long), typeof(long) }));
@@ -269,14 +284,20 @@ namespace Obfuz.Emit
         private IMethod _addLong;
         private IMethod _addFloat;
         private IMethod _addDouble;
+        private IMethod _addIntPtr;
+        private IMethod _addIntPtrInt;
         private IMethod _subtractInt;
         private IMethod _subtractLong;
         private IMethod _subtractFloat;
         private IMethod _subtractDouble;
+        private IMethod _subtractIntPtr;
+        private IMethod _subtractIntPtrInt;
         private IMethod _multiplyInt;
         private IMethod _multiplyLong;
         private IMethod _multiplyFloat;
         private IMethod _multiplyDouble;
+        private IMethod _multiplyIntPtr;
+        private IMethod _multiplyIntPtrInt;
         private IMethod _divideInt;
         private IMethod _divideLong;
         private IMethod _divideFloat;
@@ -350,14 +371,22 @@ namespace Obfuz.Emit
         public IMethod AddLong => _addLong;
         public IMethod AddFloat => _addFloat;
         public IMethod AddDouble => _addDouble;
+        public IMethod AddIntPtr => _addIntPtr;
+        public IMethod AddIntPtrInt => _addIntPtrInt;
         public IMethod SubtractInt => _subtractInt;
         public IMethod SubtractLong => _subtractLong;
         public IMethod SubtractFloat => _subtractFloat;
         public IMethod SubtractDouble => _subtractDouble;
+        public IMethod SubtractIntPtr => _subtractIntPtr;
+        public IMethod SubtractIntPtrInt => _subtractIntPtrInt;
+
         public IMethod MultiplyInt => _multiplyInt;
         public IMethod MultiplyLong => _multiplyLong;
         public IMethod MultiplyFloat => _multiplyFloat;
         public IMethod MultiplyDouble => _multiplyDouble;
+        public IMethod MultiplyIntPtr => _multiplyIntPtr;
+        public IMethod MultiplyIntPtrInt => _multiplyIntPtrInt;
+
         public IMethod DivideInt => _divideInt;
         public IMethod DivideLong => _divideLong;
         public IMethod DivideFloat => _divideFloat;
