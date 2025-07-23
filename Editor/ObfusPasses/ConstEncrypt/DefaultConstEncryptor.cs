@@ -281,7 +281,7 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 fieldDef.InitialValue = encryptedBytes;
                 byte[] decryptedBytes = (byte[])encryptedBytes.Clone();
                 encryptionScope.encryptor.DecryptBlock(decryptedBytes, ops, salt);
-                Assert.AreEqual(originalBytes, decryptedBytes, "Decrypted bytes should match the original bytes after encryption and decryption.");
+                AssertUtil.AreArrayEqual(originalBytes, decryptedBytes, "Decrypted bytes should match the original bytes after encryption and decryption.");
             }
             return encryptedRvaData;
         }

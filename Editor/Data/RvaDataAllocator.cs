@@ -4,6 +4,7 @@ using Obfuz.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine.Assertions;
@@ -26,8 +27,10 @@ namespace Obfuz.Data
 
     public class RvaDataAllocator : GroupByModuleEntityBase
     {
-        // randomized
-        const int maxRvaDataSize = 0x1000;
+        const int maxRvaDataSize = 2 * 1024;
+
+        // in HybridCLR version below 8.3.0, the max total static field size of a type is 16KB, so we limit the total size of RVA data to 16KB
+        const int maxTotalRvaDataFieldSizeInHybridCLR = 16 * 1024;
 
         private IRandom _random;
 
@@ -58,11 +61,23 @@ namespace Obfuz.Data
             }
         }
 
-        private readonly List<RvaField> _rvaFields = new List<RvaField>();
+        private class RvaTypeDefInfo
+        {
+            public readonly TypeDef typeDef;
+            public readonly int index;
+            public readonly List<RvaField> rvaFields = new List<RvaField>();
+
+            public RvaTypeDefInfo(TypeDef typeDef, int index)
+            {
+                this.typeDef = typeDef;
+                this.index = index;
+            }
+        }
+
         private RvaField _currentField;
 
-
-        private TypeDef _rvaTypeDef;
+        private RvaTypeDefInfo _currentRvaType;
+        private readonly List<RvaTypeDefInfo> _rvaTypeDefs = new List<RvaTypeDefInfo>();
 
         private readonly Dictionary<int, TypeDef> _dataHolderTypeBySizes = new Dictionary<int, TypeDef>();
         private bool _done;
@@ -78,27 +93,28 @@ namespace Obfuz.Data
 
         private (FieldDef, FieldDef) CreateDataHolderRvaField(TypeDef dataHolderType)
         {
-            if (_rvaTypeDef == null)
+            if (_currentRvaType == null || _currentRvaType.rvaFields.Count >= maxTotalRvaDataFieldSizeInHybridCLR / maxRvaDataSize - 1)
             {
                 using (var scope = new DisableTypeDefFindCacheScope(Module))
                 {
-                    _rvaTypeDef = new TypeDefUser("$Obfuz$RVA$", Module.CorLibTypes.Object.ToTypeDefOrRef());
-                    Module.Types.Add(_rvaTypeDef);
+                    var rvaTypeDef = new TypeDefUser($"$Obfuz$RVA${_rvaTypeDefs.Count}", Module.CorLibTypes.Object.ToTypeDefOrRef());
+                    Module.Types.Add(rvaTypeDef);
+                    _currentRvaType = new RvaTypeDefInfo(rvaTypeDef, _rvaTypeDefs.Count);
+                    _rvaTypeDefs.Add(_currentRvaType);
                 }
             }
 
+            var holderField = new FieldDefUser($"$RVA_Data{_currentRvaType.rvaFields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
+            holderField.DeclaringType = _currentRvaType.typeDef;
 
-            var holderField = new FieldDefUser($"$RVA_Data{_rvaFields.Count}", new FieldSig(dataHolderType.ToTypeSig()), FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
-            holderField.DeclaringType = _rvaTypeDef;
-
-            var runtimeValueField = new FieldDefUser($"$RVA_Value{_rvaFields.Count}", new FieldSig(new SZArraySig(Module.CorLibTypes.Byte)), FieldAttributes.Static | FieldAttributes.Public);
-            runtimeValueField.DeclaringType = _rvaTypeDef;
+            var runtimeValueField = new FieldDefUser($"$RVA_Value{_currentRvaType.rvaFields.Count}", new FieldSig(new SZArraySig(Module.CorLibTypes.Byte)), FieldAttributes.Static | FieldAttributes.Public);
+            runtimeValueField.DeclaringType = _currentRvaType.typeDef;
             return (holderField, runtimeValueField);
         }
 
         private TypeDef GetDataHolderType(int size)
         {
-            size = (size + 15) & ~15; // align to 6 bytes
+            size = (size + 15) & ~15; // align to 16 bytes
             if (_dataHolderTypeBySizes.TryGetValue(size, out var type))
                 return type;
 
@@ -133,7 +149,7 @@ namespace Obfuz.Data
                 encryptionOps = _random.NextInt(),
                 salt = _random.NextInt(),
             };
-            _rvaFields.Add(newRvaField);
+            _currentRvaType.rvaFields.Add(newRvaField);
             return newRvaField;
         }
 
@@ -238,51 +254,50 @@ namespace Obfuz.Data
 
         private void CreateCCtorOfRvaTypeDef()
         {
-            if (_rvaTypeDef == null)
+            foreach (RvaTypeDefInfo rvaTypeDef in _rvaTypeDefs)
             {
-                return;
+                ModuleDef mod = rvaTypeDef.typeDef.Module;
+                var cctorMethod = new MethodDefUser(".cctor",
+                    MethodSig.CreateStatic(Module.CorLibTypes.Void),
+                    MethodImplAttributes.IL | MethodImplAttributes.Managed,
+                    MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName | MethodAttributes.Private);
+                cctorMethod.DeclaringType = rvaTypeDef.typeDef;
+                //_rvaTypeDef.Methods.Add(cctor);
+                var body = new CilBody();
+                cctorMethod.Body = body;
+                var ins = body.Instructions;
+
+                DefaultMetadataImporter importer = this.GetDefaultModuleMetadataImporter();
+                AddVerifyCodes(ins, importer);
+                foreach (var field in rvaTypeDef.rvaFields)
+                {
+                    // ldc
+                    // newarr
+                    // dup
+                    // stsfld
+                    // ldtoken
+                    // RuntimeHelpers.InitializeArray(array, fieldHandle);
+                    ins.Add(Instruction.Create(OpCodes.Ldc_I4, (int)field.size));
+                    ins.Add(Instruction.Create(OpCodes.Newarr, field.runtimeValueField.FieldType.Next.ToTypeDefOrRef()));
+                    ins.Add(Instruction.Create(OpCodes.Dup));
+                    ins.Add(Instruction.Create(OpCodes.Dup));
+                    ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
+                    ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
+                    ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArray));
+
+                    // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
+                    ins.Add(Instruction.CreateLdcI4(field.encryptionOps));
+                    ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.salt));
+                    ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptBlock));
+
+                }
+                ins.Add(Instruction.Create(OpCodes.Ret));
             }
-            ModuleDef mod = _rvaTypeDef.Module;
-            var cctorMethod = new MethodDefUser(".cctor",
-                MethodSig.CreateStatic(Module.CorLibTypes.Void),
-                MethodImplAttributes.IL | MethodImplAttributes.Managed,
-                MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName | MethodAttributes.Private);
-            cctorMethod.DeclaringType = _rvaTypeDef;
-            //_rvaTypeDef.Methods.Add(cctor);
-            var body = new CilBody();
-            cctorMethod.Body = body;
-            var ins = body.Instructions;
-
-            DefaultMetadataImporter importer = this.GetDefaultModuleMetadataImporter();
-            AddVerifyCodes(ins, importer);
-            foreach (var field in _rvaFields)
-            {
-                // ldc
-                // newarr
-                // dup
-                // stsfld
-                // ldtoken
-                // RuntimeHelpers.InitializeArray(array, fieldHandle);
-                ins.Add(Instruction.Create(OpCodes.Ldc_I4, (int)field.size));
-                ins.Add(Instruction.Create(OpCodes.Newarr, field.runtimeValueField.FieldType.Next.ToTypeDefOrRef()));
-                ins.Add(Instruction.Create(OpCodes.Dup));
-                ins.Add(Instruction.Create(OpCodes.Dup));
-                ins.Add(Instruction.Create(OpCodes.Stsfld, field.runtimeValueField));
-                ins.Add(Instruction.Create(OpCodes.Ldtoken, field.holderDataField));
-                ins.Add(Instruction.Create(OpCodes.Call, importer.InitializedArray));
-
-                // EncryptionService.DecryptBlock(array, field.encryptionOps, field.salt);
-                ins.Add(Instruction.CreateLdcI4(field.encryptionOps));
-                ins.Add(Instruction.Create(OpCodes.Ldc_I4, field.salt));
-                ins.Add(Instruction.Create(OpCodes.Call, importer.DecryptBlock));
-
-            }
-            ins.Add(Instruction.Create(OpCodes.Ret));
         }
 
         private void SetFieldsRVA()
         {
-            foreach (var field in _rvaFields)
+            foreach (var field in _rvaTypeDefs.SelectMany(t => t.rvaFields))
             {
                 Assert.IsTrue(field.bytes.Count <= field.size);
                 if (field.bytes.Count < field.size)

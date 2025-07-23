@@ -4,6 +4,7 @@ using System.IO;
 
 namespace Obfuz.Utils
 {
+
     public class AssemblyCache
     {
         private readonly IAssemblyResolver _assemblyPathResolver;
