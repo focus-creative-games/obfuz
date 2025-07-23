@@ -1,6 +1,5 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using NUnit.Framework;
 using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.Settings;
@@ -221,7 +220,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 ins.Add(Instruction.Create(OpCodes.Ldnull));
                 ins.Add(Instruction.Create(OpCodes.Ldftn, ci.proxyMethod));
                 MethodDef ctor = ci.delegateType.FindMethod(".ctor");
-                Assert.NotNull(ctor, $"Delegate type {ci.delegateType.FullName} does not have a constructor.");
+                UnityEngine.Assertions.Assert.IsNotNull(ctor, $"Delegate type {ci.delegateType.FullName} does not have a constructor.");
                 ins.Add(Instruction.Create(OpCodes.Newobj, ctor));
                 ins.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 ++index;

@@ -1,12 +1,12 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using NUnit.Framework;
 using Obfuz.Data;
 using Obfuz.Emit;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.ConstEncrypt
 {

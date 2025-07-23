@@ -1,9 +1,5 @@
-﻿using dnlib.DotNet;
-using NUnit.Framework;
-using Obfuz.Settings;
-using Obfuz.Utils;
+﻿using Obfuz.Utils;
 using System;
-using System.Collections;
 using System.Linq;
 using System.Text;
 

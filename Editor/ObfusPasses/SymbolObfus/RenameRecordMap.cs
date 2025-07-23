@@ -1,5 +1,4 @@
 using dnlib.DotNet;
-using NUnit.Framework;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Obfuz.ObfusPasses.SymbolObfus
 {

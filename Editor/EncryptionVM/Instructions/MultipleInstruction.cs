@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using Obfuz.Utils;
+﻿using Obfuz.Utils;
 using System.Collections.Generic;
 
 namespace Obfuz.EncryptionVM.Instructions
@@ -21,7 +20,7 @@ namespace Obfuz.EncryptionVM.Instructions
         private void Verify()
         {
             int a = 1122334;
-            Assert.AreEqual(a, a * _multiValue * _revertMultiValue);
+            UnityEngine.Assertions.Assert.AreEqual(a, a * _multiValue * _revertMultiValue);
         }
 
         public override int Encrypt(int value, int[] secretKey, int salt)
