@@ -41,6 +41,8 @@ namespace Obfuz.Settings
 
         private SerializedProperty _garbageCodeGenerationSettings;
 
+        private SerializedProperty _polymorphicDllSettings;
+
         public ObfuzSettingsProvider() : base("Project/Obfuz", SettingsScope.Project)
         {
         }
@@ -78,6 +80,8 @@ namespace Obfuz.Settings
             _controlFlowObfusSettings = _serializedObject.FindProperty("controlFlowObfusSettings");
 
             _garbageCodeGenerationSettings = _serializedObject.FindProperty("garbageCodeGenerationSettings");
+
+            _polymorphicDllSettings = _serializedObject.FindProperty("polymorphicDllSettings");
         }
 
         public override void OnGUI(string searchContext)
@@ -106,6 +110,8 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_controlFlowObfusSettings);
 
             EditorGUILayout.PropertyField(_garbageCodeGenerationSettings);
+
+            EditorGUILayout.PropertyField(_polymorphicDllSettings);
 
             if (EditorGUI.EndChangeCheck())
             {

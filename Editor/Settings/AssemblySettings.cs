@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace Obfuz.Settings
 {
-
     [Serializable]
     public class AssemblySettings
     {

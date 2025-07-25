@@ -47,6 +47,9 @@ namespace Obfuz.Settings
         [Tooltip("garbage code generator settings")]
         public GarbageCodeGenerationSettings garbageCodeGenerationSettings;
 
+        [Tooltip("polymorphic dll settings")]
+        public PolymorphicDllSettings polymorphicDllSettings;
+
         public string ObfuzRootDir => $"Library/Obfuz";
 
         public string GetObfuscatedAssemblyOutputPath(BuildTarget target)
