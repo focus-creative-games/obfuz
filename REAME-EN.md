@@ -22,6 +22,7 @@
 
 ## Features
 
+- **Polymorphic DLL Files**: Custom DLL file format with randomized structure, varying with each release, effectively countering cracking and tampering.
 - **Symbol Obfuscation**: Supports comprehensive configuration rules and incremental obfuscation for flexible and efficient code protection.
 - **Constant Obfuscation**: Obfuscates constants such as `int`, `long`, `float`, `double`, `string` and `array` to prevent reverse engineering.
 - **Variable Memory Encryption**: Encrypts variables in memory to enhance runtime security.
@@ -50,7 +51,6 @@ Obfuz is actively evolving. Upcoming features include:
 
 - **Code Watermarking**: Embed traceable watermarks in your code.
 - **Anti-Memory Dumping and Anti-Debugging**: Prevent memory dumps and debugging attempts.
-- **DLL Structure Encryption**: Secure DLL file structures against tampering.
 - **Code Virtualization**: Transform code into virtualized instructions for maximum security.
 
 ## Documentation
