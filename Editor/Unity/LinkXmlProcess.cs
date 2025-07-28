@@ -39,6 +39,11 @@ namespace Obfuz.Unity
         public static string GenerateAdditionalLinkXmlFile(BuildTarget target)
         {
             ObfuzSettings settings = ObfuzSettings.Instance;
+            if (!settings.buildPipelineSettings.enable)
+            {
+                Debug.Log("Obfuscation is disabled. Skipping link.xml generation.");
+                return null;
+            }
             string symbolMappingFile = settings.symbolObfusSettings.GetSymbolMappingFile();
             if (!File.Exists(symbolMappingFile))
             {
