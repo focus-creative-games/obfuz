@@ -713,7 +713,10 @@ namespace Obfuz.Emit
                         }
                         case Code.Castclass:
                         {
-                            PushStack(newPushedDatas, (ITypeDefOrRef)inst.Operand);
+                            Assert.IsTrue(stackSize > 0);
+                            var obj = stackDatas[stackSize - 1];
+                            Assert.IsTrue(obj.type == EvalDataType.Ref);
+                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, ((ITypeDefOrRef)inst.Operand).ToTypeSig()));
                             break;
                         }
                         case Code.Isinst:
@@ -721,7 +724,7 @@ namespace Obfuz.Emit
                             Assert.IsTrue(stackSize > 0);
                             var obj = stackDatas[stackSize - 1];
                             Assert.IsTrue(obj.type == EvalDataType.Ref);
-                            PushStack(newPushedDatas, obj);
+                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, ((ITypeDefOrRef)inst.Operand).ToTypeSig()));
                             break;
                         }
                         case Code.Unbox:
