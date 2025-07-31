@@ -16,7 +16,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             None = 0x0,
             Private = 0x1,
             Protected = 0x2,
-            Public = 0x3,
+            Public = 0x4,
         }
 
         class MethodRuleSpec
