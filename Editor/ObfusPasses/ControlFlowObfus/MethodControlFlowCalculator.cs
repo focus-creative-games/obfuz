@@ -362,69 +362,96 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
              InsertSwitchMachineBasicBlockForGroup(rootGroup, inst2bb);
         }
 
-        //private void ShuffleBasicBlocks0(List<BasicBlockInfo> bbs)
-        //{
-        //    int n = bbs.Count;
-        //    if (n <= 1)
-        //    {
-        //        return;
-        //    }
+        private void ShuffleBasicBlocks0(List<BasicBlockInfo> bbs)
+        {
+            if (bbs.Count <= 2)
+            {
+                return;
+            }
+            
+            var subBlocksExcludeFirstLast = bbs.GetRange(1, bbs.Count - 2);
 
-        //    var firstSection = new List<BasicBlockInfo>() { bbs[0] };
-        //    var sectionsExcludeFirstLast = new List<List<BasicBlockInfo>>();
-        //    List<BasicBlockInfo> currentSection = firstSection;
-        //    for (int i = 1; i < n; i++)
-        //    {
-        //        BasicBlockInfo cur = bbs[i];
-        //        if (cur.inputArgs.locals.Count == 0)
-        //        {
-        //            currentSection = new List<BasicBlockInfo>() { cur };
-        //            sectionsExcludeFirstLast.Add(currentSection);
-        //        }
-        //        else
-        //        {
-        //            currentSection.Add(cur);
-        //        }
-        //    }
-        //    if (sectionsExcludeFirstLast.Count <= 1)
-        //    {
-        //        return;
-        //    }
-        //    var lastSection = sectionsExcludeFirstLast.Last();
-        //    sectionsExcludeFirstLast.RemoveAt(sectionsExcludeFirstLast.Count - 1);
+            var blocksInputArgsCountZero = new List<BasicBlockInfo>();
+            var blocksInputArgsCountNonZero = new List<BasicBlockInfo>();
+            foreach (var bb in subBlocksExcludeFirstLast)
+            {
+                if (bb.inputArgs.locals.Count == 0)
+                {
+                    blocksInputArgsCountZero.Add(bb);
+                }
+                else
+                {
+                    blocksInputArgsCountNonZero.Add(bb);
+                }
+            }
+            RandomUtil.ShuffleList(blocksInputArgsCountZero, _random);
+
+            int index = 1;
+            foreach (var bb in blocksInputArgsCountZero)
+            {
+                bbs[index++] = bb;
+            }
+            foreach (var bb in blocksInputArgsCountNonZero)
+            {
+                bbs[index++] = bb;
+            }
+            Assert.AreEqual(bbs.Count - 1, index, "Shuffled basic blocks count should be the same as original count minus first and last blocks");
+
+            //var firstSection = new List<BasicBlockInfo>() { bbs[0] };
+            //var sectionsExcludeFirstLast = new List<List<BasicBlockInfo>>();
+            //List<BasicBlockInfo> currentSection = firstSection;
+            //for (int i = 1; i < n; i++)
+            //{
+            //    BasicBlockInfo cur = bbs[i];
+            //    if (cur.inputArgs.locals.Count == 0)
+            //    {
+            //        currentSection = new List<BasicBlockInfo>() { cur };
+            //        sectionsExcludeFirstLast.Add(currentSection);
+            //    }
+            //    else
+            //    {
+            //        currentSection.Add(cur);
+            //    }
+            //}
+            //if (sectionsExcludeFirstLast.Count <= 1)
+            //{
+            //    return;
+            //}
+            //var lastSection = sectionsExcludeFirstLast.Last();
+            //sectionsExcludeFirstLast.RemoveAt(sectionsExcludeFirstLast.Count - 1);
 
 
-        //    RandomUtil.ShuffleList(sectionsExcludeFirstLast, _random);
+            //RandomUtil.ShuffleList(sectionsExcludeFirstLast, _random);
 
-        //    bbs.Clear();
-        //    bbs.AddRange(firstSection);
-        //    bbs.AddRange(sectionsExcludeFirstLast.SelectMany(section => section));
-        //    bbs.AddRange(lastSection);
-        //    Assert.AreEqual(n, bbs.Count, "Shuffled basic blocks count should be the same as original count");
-        //}
+            //bbs.Clear();
+            //bbs.AddRange(firstSection);
+            //bbs.AddRange(sectionsExcludeFirstLast.SelectMany(section => section));
+            //bbs.AddRange(lastSection);
+            //Assert.AreEqual(n, bbs.Count, "Shuffled basic blocks count should be the same as original count");
+        }
 
         private void ShuffleBasicBlocks(List<BasicBlockInfo> bbs)
         {
             // TODO
 
-            //int n = bbs.Count;
-            //BasicBlockInfo groupPrev = bbs[0].prev;
-            //BasicBlockInfo groupNext = bbs[n - 1].next;
-            ////RandomUtil.ShuffleList(bbs, _random);
-            //ShuffleBasicBlocks0(bbs);
-            //BasicBlockInfo prev = groupPrev;
-            //for (int i = 0; i < n; i++)
-            //{
-            //    BasicBlockInfo cur = bbs[i];
-            //    cur.prev = prev;
-            //    prev.next = cur;
-            //    prev = cur;
-            //}
-            //prev.next = groupNext;
-            //if (groupNext != null)
-            //{
-            //    groupNext.prev = prev;
-            //}
+            int n = bbs.Count;
+            BasicBlockInfo groupPrev = bbs[0].prev;
+            BasicBlockInfo groupNext = bbs[n - 1].next;
+            //RandomUtil.ShuffleList(bbs, _random);
+            ShuffleBasicBlocks0(bbs);
+            BasicBlockInfo prev = groupPrev;
+            for (int i = 0; i < n; i++)
+            {
+                BasicBlockInfo cur = bbs[i];
+                cur.prev = prev;
+                prev.next = cur;
+                prev = cur;
+            }
+            prev.next = groupNext;
+            if (groupNext != null)
+            {
+                groupNext.prev = prev;
+            }
         }
 
         private Local _globalSwitchIndexLocal;
