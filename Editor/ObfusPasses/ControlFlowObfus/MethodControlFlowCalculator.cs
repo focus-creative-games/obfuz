@@ -330,7 +330,8 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             group.basicBlocks.Insert(group.basicBlocks.IndexOf(to), saveLocalBasicBlock);
             group.switchMachineCases.Add(new SwitchMachineCase { index = -1, prepareBlock = saveLocalBasicBlock, targetBlock = to});
             saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Ldsfld, (FieldDef)null));
-            saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Br, group.switchMachineInst));
+            saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Stloc, GlobalSwitchIndexLocal));
+            saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Br, group.switchMachineEntryInst));
 
 
             return saveLocalBasicBlock;
@@ -426,6 +427,21 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             //}
         }
 
+        private Local _globalSwitchIndexLocal;
+
+        Local GlobalSwitchIndexLocal
+        {
+            get
+            {
+                if (_globalSwitchIndexLocal == null)
+                {
+                    _globalSwitchIndexLocal = new Local(_method.Module.CorLibTypes.Int32);
+                    _method.Body.Variables.Add(_globalSwitchIndexLocal);
+                }
+                return _globalSwitchIndexLocal;
+            }
+        }
+
         private void InsertSwitchMachineBasicBlockForGroup(BlockGroup group, Dictionary<Instruction, BasicBlockInfo> inst2bb)
         {
             if (group.subGroups != null && group.subGroups.Count > 0)
@@ -449,6 +465,8 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 var instructions = new List<Instruction>()
                     {
                         Instruction.Create(OpCodes.Ldsfld, (FieldDef)null),
+                        Instruction.Create(OpCodes.Stloc, GlobalSwitchIndexLocal),
+                        group.switchMachineEntryInst,
                         group.switchMachineInst,
                         Instruction.Create(OpCodes.Br, firstCase.targetBlock.FirstInstruction),
                     };
@@ -456,7 +474,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 {
                     instructions.Insert(0, Instruction.Create(OpCodes.Br, firstBlock.FirstInstruction));
                 }
-                
+
                 var switchMachineBb = new BasicBlockInfo()
                 {
                     group = group,
@@ -480,7 +498,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                     switchMachineCase.index = i;
                     List<Instruction> prepareBlockInstructions = switchMachineCase.prepareBlock.instructions;
 
-                    Instruction setBranchIndexInst = prepareBlockInstructions[prepareBlockInstructions.Count - 2];
+                    Instruction setBranchIndexInst = prepareBlockInstructions[prepareBlockInstructions.Count - 3];
                     Assert.AreEqual(setBranchIndexInst.OpCode, OpCodes.Ldsfld, "first instruction of prepareBlock should be Ldsfld");
                     //setBranchIndexInst.Operand = i;
                     var indexField = _constFieldAllocator.Allocate(i);
@@ -489,9 +507,10 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 }
 
                 // after shuffle
-                Assert.IsTrue(instructions.Count == 3 || instructions.Count == 4, "Switch machine basic block should contain 3 or 4 instructions");
-                Assert.AreEqual(Code.Ldsfld, instructions[instructions.Count - 3].OpCode.Code, "First instruction should be Ldsfld");
-                instructions[instructions.Count - 3].Operand = _constFieldAllocator.Allocate(firstCase.index);
+                //Assert.IsTrue(instructions.Count == 4 || instructions.Count == 5, "Switch machine basic block should contain 4 or 5 instructions");
+                Instruction loadFirstIndex = instructions[instructions.Count - 5];
+                Assert.AreEqual(Code.Ldsfld, loadFirstIndex.OpCode.Code, "First instruction should be Ldsfld");
+                loadFirstIndex.Operand = _constFieldAllocator.Allocate(firstCase.index);
             }
         }
 
@@ -553,6 +572,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
 
             public List<BasicBlockInfo> basicBlocks;
 
+            public Instruction switchMachineEntryInst;
             public Instruction switchMachineInst;
             public List<SwitchMachineCase> switchMachineCases;
 
@@ -663,7 +683,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 this.subGroups = finalGroupList;
             }
 
-            public void ComputeBasicBlocks(Dictionary<Instruction, BasicBlockInfo> inst2bb)
+            public void ComputeBasicBlocks(Dictionary<Instruction, BasicBlockInfo> inst2bb, Func<Local> switchIndexLocalGetter)
             {
                 if (subGroups == null || subGroups.Count == 0)
                 {
@@ -684,13 +704,14 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                             basicBlocks.Add(block);
                         }
                     }
+                    switchMachineEntryInst = Instruction.Create(OpCodes.Ldloc, switchIndexLocalGetter());
                     switchMachineInst = Instruction.Create(OpCodes.Switch, new List<Instruction>());
                     switchMachineCases = new List<SwitchMachineCase>();
                     return;
                 }
                 foreach (var subGroup in subGroups)
                 {
-                    subGroup.ComputeBasicBlocks(inst2bb);
+                    subGroup.ComputeBasicBlocks(inst2bb, switchIndexLocalGetter);
                 }
             }
         }
@@ -799,7 +820,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             var rootGroup = new BlockGroup(new List<Instruction>(instructions), inst2blockGroup);
             rootGroup.SplitInstructionsNotInAnySubGroupsToIndividualGroups(inst2blockGroup);
 
-            rootGroup.ComputeBasicBlocks(BuildInstructionToBasicBlockInfoDic());
+            rootGroup.ComputeBasicBlocks(BuildInstructionToBasicBlockInfoDic(), () => GlobalSwitchIndexLocal);
             return rootGroup;
         }
 
