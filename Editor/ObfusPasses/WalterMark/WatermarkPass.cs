@@ -157,7 +157,7 @@ namespace Obfuz.ObfusPasses.Watermark
                     Instruction.Create(OpCodes.Ldtoken, fieldDef),
                     Instruction.Create(OpCodes.Call, importer.InitializedArray),
                 });
-                Debug.Log($"Inserted watermark access for field '{fieldDef.Name}' in method '{targetMethod.FullName}' at index {insertIndex}.");
+                //Debug.Log($"Inserted watermark access for field '{fieldDef.Name}' in method '{targetMethod.FullName}' at index {insertIndex}.");
             }
         }
 
@@ -211,7 +211,7 @@ namespace Obfuz.ObfusPasses.Watermark
 
                 insts.InsertRange(insertIndex, insertInstructions);
                 intIndex += ldcCount;
-                Debug.Log($"Inserted watermark IL sequence for in method '{targetMethod.FullName}' at index {insertIndex}.");
+                //Debug.Log($"Inserted watermark IL sequence for in method '{targetMethod.FullName}' at index {insertIndex}.");
             }
         }
 
