@@ -1,14 +1,19 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using dnlib.DotNet.PolymorphicWriter.Utilities;
+using NUnit.Framework;
+using Obfuz.Emit;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using FieldAttributes = dnlib.DotNet.FieldAttributes;
+using HashUtil = Obfuz.Utils.HashUtil;
+using IRandom = Obfuz.Utils.IRandom;
 using KeyGenerator = Obfuz.Utils.KeyGenerator;
 using TypeAttributes = dnlib.DotNet.TypeAttributes;
 
@@ -58,9 +63,24 @@ namespace Obfuz.ObfusPasses.Watermark
             }
         }
 
-        private void AddWaterMarkToAssembly(ModuleDef module, string waterMarkText)
+        class WatermarkInfo
+        {
+            public string text;
+            public byte[] signature;
+            public readonly List<FieldDef> signatureHoldFields = new List<FieldDef>();
+        }
+
+        private WatermarkInfo CreateWatermarkInfo(ModuleDef module, EncryptionScopeInfo encryptionScope, string waterMarkText)
         {
             string finalWatermarkText = $"{waterMarkText} [{module.Name}]";
+            byte[] watermarkBytes = KeyGenerator.GenerateKey(finalWatermarkText, _watermarkSettings.signatureLength);
+
+            var watermarkInfo = new WatermarkInfo()
+            {
+                text = finalWatermarkText,
+                signature = watermarkBytes,
+            };
+
             TypeDef moduleType = module.FindNormal("<PrivateImplementationDetails>");
             if (moduleType == null)
             {
@@ -70,11 +90,7 @@ namespace Obfuz.ObfusPasses.Watermark
                 moduleType.CustomAttributes.Add(new CustomAttribute(module.Import(module.Import(typeof(CompilerGeneratedAttribute)).ResolveTypeDefThrow().FindDefaultConstructor())));
                 module.Types.Add(moduleType);
             }
-
-            var ctx = ObfuscationPassContext.Current;
-            EncryptionScopeInfo encryptionScope = ctx.moduleEntityManager.EncryptionScopeProvider.GetScope(module);
             var random = encryptionScope.localRandomCreator(0);
-            byte[] watermarkBytes = KeyGenerator.GenerateKey(finalWatermarkText, _watermarkSettings.signatureLength);
             for (int subIndex = 0; subIndex < watermarkBytes.Length;)
             {
                 int subSegmentLength = Math.Min(random.NextInt(16, 32) & ~3, watermarkBytes.Length - subIndex);
@@ -91,11 +107,12 @@ namespace Obfuz.ObfusPasses.Watermark
                 }
 
                 subIndex += subSegmentLength;
-                var field = new FieldDefUser($"$Obfuz$WatermarkDataHolderField{moduleType.Fields.Count}", 
+                var field = new FieldDefUser($"$Obfuz$WatermarkDataHolderField{moduleType.Fields.Count}",
                     new FieldSig(dataHolderType.ToTypeSig()),
                     FieldAttributes.Assembly | FieldAttributes.InitOnly | FieldAttributes.Static | FieldAttributes.HasFieldRVA);
                 field.DeclaringType = moduleType;
                 field.InitialValue = subSegment;
+                watermarkInfo.signatureHoldFields.Add(field);
             }
 
             var moduleTypeFields = moduleType.Fields.ToList();
@@ -105,6 +122,106 @@ namespace Obfuz.ObfusPasses.Watermark
             {
                 moduleType.Fields.Add(field);
             }
+            return watermarkInfo;
+        }
+
+        private void AddFieldAccessToSignatureHolder(ModuleDef module, EncryptionScopeInfo encryptionScope, WatermarkInfo watermarkInfo)
+        {
+            var insertTargetMethods = module.Types
+                .SelectMany(t => t.Methods)
+                .Where(m => m.HasBody && m.Body.Instructions.Count > 10)
+                .ToList();
+
+            if (insertTargetMethods.Count == 0)
+            {
+                Debug.LogWarning($"No suitable methods found in module '{module.Name}' to insert access to watermark signature.");
+                return;
+            }
+
+            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash("AddFieldAccessToSignatureHolder"));
+            DefaultMetadataImporter importer = ObfuscationPassContext.Current.moduleEntityManager.GetEntity<DefaultMetadataImporter>(module);
+            foreach (var fieldDef in watermarkInfo.signatureHoldFields)
+            {
+                // Randomly select a method to insert the access
+                var targetMethod = insertTargetMethods[random.NextInt(insertTargetMethods.Count)];
+                int insertIndex = random.NextInt(1, targetMethod.Body.Instructions.Count - 3);
+
+                var insts = (List<Instruction>)targetMethod.Body.Instructions;
+
+                insts.InsertRange(insertIndex, new[]
+                {
+                    Instruction.CreateLdcI4(random.NextInt(1, 10000000)),
+                    Instruction.Create(OpCodes.Brtrue, insts[insertIndex]),
+                    Instruction.CreateLdcI4(random.NextInt(fieldDef.InitialValue.Length)),
+                    Instruction.Create(OpCodes.Newarr, module.CorLibTypes.Byte),
+                    Instruction.Create(OpCodes.Ldtoken, fieldDef),
+                    Instruction.Create(OpCodes.Call, importer.InitializedArray),
+                });
+                Debug.Log($"Inserted watermark access for field '{fieldDef.Name}' in method '{targetMethod.FullName}' at index {insertIndex}.");
+            }
+        }
+
+        private readonly OpCode[] binOpCodes = new[]
+        {
+                OpCodes.Add, OpCodes.Sub, OpCodes.Mul, OpCodes.Div, OpCodes.Rem,
+                OpCodes.And, OpCodes.Or, OpCodes.Xor
+            };
+
+        private OpCode GetRandomBinOpCode(IRandom random)
+        {
+            return binOpCodes[random.NextInt(binOpCodes.Length)];
+        }
+
+        private void AddWaterMarkILSequences(ModuleDef module, EncryptionScopeInfo encryptionScope, WatermarkInfo watermarkInfo)
+        {
+            var insertTargetMethods = module.Types
+                .SelectMany(t => t.Methods)
+                .Where(m => m.HasBody && m.Body.Instructions.Count > 10)
+                .ToList();
+
+            if (insertTargetMethods.Count == 0)
+            {
+                Debug.LogWarning($"No suitable methods found in module '{module.Name}' to insert watermark IL sequences.");
+                return;
+            }
+            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash("AddWaterMarkILSequences"));
+            int[] signature = KeyGenerator.ConvertToIntKey(watermarkInfo.signature);
+            for (int intIndex = 0; intIndex < signature.Length;)
+            {
+                int ldcCount = Math.Min(random.NextInt(2, 4), signature.Length - intIndex);
+                // Randomly select a method to insert the IL sequence
+                var targetMethod = insertTargetMethods[random.NextInt(insertTargetMethods.Count)];
+                var insts = (List<Instruction>)targetMethod.Body.Instructions;
+                int insertIndex = random.NextInt(1, insts.Count - 3);
+
+                var insertInstructions = new List<Instruction>()
+                {
+                    Instruction.CreateLdcI4(random.NextInt(1, 10000000)),
+                    Instruction.Create(OpCodes.Brtrue, insts[insertIndex]),
+                };
+                for (int i = 0; i < ldcCount; i++)
+                {
+                    insertInstructions.Add(Instruction.CreateLdcI4(signature[intIndex + i]));
+                    if (i > 0)
+                    {
+                        insertInstructions.Add(Instruction.Create(GetRandomBinOpCode(random)));
+                    }
+                }
+                insertInstructions.Add(Instruction.Create(OpCodes.Brfalse, insertInstructions[0]));
+
+                insts.InsertRange(insertIndex, insertInstructions);
+                intIndex += ldcCount;
+                Debug.Log($"Inserted watermark IL sequence for in method '{targetMethod.FullName}' at index {insertIndex}.");
+            }
+        }
+
+        private void AddWaterMarkToAssembly(ModuleDef module, string waterMarkText)
+        {
+            var ctx = ObfuscationPassContext.Current;
+            EncryptionScopeInfo encryptionScope = ctx.moduleEntityManager.EncryptionScopeProvider.GetScope(module);
+            WatermarkInfo watermarkInfo = CreateWatermarkInfo(module, encryptionScope, waterMarkText);
+            AddFieldAccessToSignatureHolder(module, encryptionScope, watermarkInfo);
+            AddWaterMarkILSequences(module, encryptionScope, watermarkInfo);
         }
 
         
