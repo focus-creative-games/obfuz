@@ -34,6 +34,7 @@
 - **Static and Dynamic Decryption**: Combines static and dynamic decryption to resist offline static analysis.
  **Obfuscation Polymorphism**: Generates different obfuscated code by configuring different generation keys and randomization seeds.
 - **Garbage Code Generation**​​: Supports various types of low-quality code generation to improve App Store and Google Play review pass rates
+- **Code Watermarking**: Embed traceable watermarks in your code.
 - **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
 - **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
 - **DOTS Compatibility**: Works seamlessly across all DOTS versions with zero configuration required.
@@ -49,7 +50,6 @@
 
 Obfuz is actively evolving. Upcoming features include:
 
-- **Code Watermarking**: Embed traceable watermarks in your code.
 - **Anti-Memory Dumping and Anti-Debugging**: Prevent memory dumps and debugging attempts.
 - **Code Virtualization**: Transform code into virtualized instructions for maximum security.
 
