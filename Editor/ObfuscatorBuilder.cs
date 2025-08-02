@@ -8,6 +8,7 @@ using Obfuz.ObfusPasses.ExprObfus;
 using Obfuz.ObfusPasses.FieldEncrypt;
 using Obfuz.ObfusPasses.RemoveConstField;
 using Obfuz.ObfusPasses.SymbolObfus;
+using Obfuz.ObfusPasses.Watermark;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System.Collections.Generic;
@@ -201,6 +202,10 @@ namespace Obfuz
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ControlFlowObfus))
             {
                 builder.AddPass(new ControlFlowObfusPass(settings.controlFlowObfusSettings.ToFacade()));
+            }
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.WaterMark))
+            {
+                builder.AddPass(new WatermarkPass(settings.watermarkSettings.ToFacade()));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {

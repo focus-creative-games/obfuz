@@ -41,6 +41,7 @@ namespace Obfuz.Settings
         private SerializedProperty _controlFlowObfusSettings;
 
         private SerializedProperty _garbageCodeGenerationSettings;
+        private SerializedProperty _watermarkSettings;
 
         private SerializedProperty _polymorphicDllSettings;
 
@@ -82,6 +83,7 @@ namespace Obfuz.Settings
             _controlFlowObfusSettings = _serializedObject.FindProperty("controlFlowObfusSettings");
 
             _garbageCodeGenerationSettings = _serializedObject.FindProperty("garbageCodeGenerationSettings");
+            _watermarkSettings = _serializedObject.FindProperty("watermarkSettings");
 
             _polymorphicDllSettings = _serializedObject.FindProperty("polymorphicDllSettings");
         }
@@ -113,6 +115,7 @@ namespace Obfuz.Settings
             EditorGUILayout.PropertyField(_controlFlowObfusSettings);
 
             EditorGUILayout.PropertyField(_garbageCodeGenerationSettings);
+            EditorGUILayout.PropertyField(_watermarkSettings);
 
             EditorGUILayout.PropertyField(_polymorphicDllSettings);
 

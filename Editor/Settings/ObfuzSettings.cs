@@ -50,6 +50,9 @@ namespace Obfuz.Settings
         [Tooltip("garbage code generator settings")]
         public GarbageCodeGenerationSettings garbageCodeGenerationSettings;
 
+        [Tooltip("watermark settings")]
+        public WatermarkSettings watermarkSettings;
+
         [Tooltip("polymorphic dll settings")]
         public PolymorphicDllSettings polymorphicDllSettings;
 

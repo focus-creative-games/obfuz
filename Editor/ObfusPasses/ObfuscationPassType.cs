@@ -17,6 +17,7 @@ namespace Obfuz.ObfusPasses
         EvalStackObfus = 0x1000,
 
         RemoveConstField = 0x100000,
+        WaterMark = 0x200000,
 
         AllObfus = SymbolObfus | CallObfus | ExprObfus | ControlFlowObfus | EvalStackObfus,
         AllEncrypt = ConstEncrypt | FieldEncrypt,
