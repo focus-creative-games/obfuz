@@ -122,7 +122,7 @@ namespace Obfuz
                 searchPaths.Add("Managed/UnityEngine");
             }
 
-                var resultPaths = new List<string>();
+            var resultPaths = new List<string>();
             foreach (var path in searchPaths)
             {
                 string candidatePath1 = Path.Combine(applicationContentsPath, path);

@@ -1,5 +1,4 @@
 ﻿using dnlib.DotNet;
-using UnityEngine;
 
 namespace Obfuz.ObfusPasses.ControlFlowObfus
 {

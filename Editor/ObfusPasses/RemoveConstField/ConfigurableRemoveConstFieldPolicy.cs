@@ -1,6 +1,5 @@
 ﻿using dnlib.DotNet;
 using Obfuz.Conf;
-using Obfuz.Utils;
 using System.Collections.Generic;
 using System.Xml;
 

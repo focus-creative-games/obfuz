@@ -1,10 +1,7 @@
 using dnlib.DotNet;
-using dnlib.DotNet.Emit;
 using Obfuz.Settings;
 using Obfuz.Utils;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Obfuz.ObfusPasses.RemoveConstField
 {

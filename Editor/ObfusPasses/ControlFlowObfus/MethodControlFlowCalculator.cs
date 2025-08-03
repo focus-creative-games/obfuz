@@ -328,7 +328,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
 
             BlockGroup group = to.group;
             group.basicBlocks.Insert(group.basicBlocks.IndexOf(to), saveLocalBasicBlock);
-            group.switchMachineCases.Add(new SwitchMachineCase { index = -1, prepareBlock = saveLocalBasicBlock, targetBlock = to});
+            group.switchMachineCases.Add(new SwitchMachineCase { index = -1, prepareBlock = saveLocalBasicBlock, targetBlock = to });
             saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Ldsfld, (FieldDef)null));
             saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Stloc, GlobalSwitchIndexLocal));
             saveLocalBasicBlock.instructions.Add(Instruction.Create(OpCodes.Br, group.switchMachineEntryInst));
@@ -359,7 +359,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
         {
             Dictionary<Instruction, BasicBlockInfo> inst2bb = BuildInstructionToBasicBlockInfoDic();
 
-             InsertSwitchMachineBasicBlockForGroup(rootGroup, inst2bb);
+            InsertSwitchMachineBasicBlockForGroup(rootGroup, inst2bb);
         }
 
         private void ShuffleBasicBlocks0(List<BasicBlockInfo> bbs)
@@ -368,7 +368,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             {
                 return;
             }
-            
+
             var subBlocksExcludeFirstLast = bbs.GetRange(1, bbs.Count - 2);
 
             var blocksInputArgsCountZero = new List<BasicBlockInfo>();

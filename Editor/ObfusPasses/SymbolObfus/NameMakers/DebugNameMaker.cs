@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
+﻿namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
     public class DebugNameMaker : NameMakerBase
     {

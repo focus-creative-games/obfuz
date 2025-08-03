@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Obfuz.Editor
+﻿namespace Obfuz.Editor
 {
     public static class ConstValues
     {

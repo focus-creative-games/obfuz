@@ -1,5 +1,4 @@
 ﻿using dnlib.DotNet;
-using Obfuz.Emit;
 
 namespace Obfuz.ObfusPasses.ControlFlowObfus
 {

@@ -2,7 +2,6 @@
 using dnlib.DotNet.Emit;
 using Obfuz.Data;
 using Obfuz.Emit;
-using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -64,7 +63,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             {
                 return typeName;
             }
-            for (int i = 0; ;i++)
+            for (int i = 0; ; i++)
             {
                 typeName = $"$Obfuz$Delegate_{hashCode}_{i}";
                 if (_allocatedDelegateNames.Add(typeName))

@@ -1,14 +1,11 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using dnlib.DotNet.PolymorphicWriter.Utilities;
-using NUnit.Framework;
 using Obfuz.Emit;
 using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using FieldAttributes = dnlib.DotNet.FieldAttributes;
@@ -224,6 +221,6 @@ namespace Obfuz.ObfusPasses.Watermark
             AddWaterMarkILSequences(module, encryptionScope, watermarkInfo);
         }
 
-        
+
     }
 }

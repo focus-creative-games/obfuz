@@ -1,8 +1,6 @@
 ﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Obfuz.Data;
 using Obfuz.Emit;
-using Obfuz.Settings;
 using Obfuz.Utils;
 using System.Collections.Generic;
 using System.Linq;

@@ -3,7 +3,6 @@ using dnlib.DotNet.Emit;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine.Assertions;
 

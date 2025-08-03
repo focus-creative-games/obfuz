@@ -52,9 +52,9 @@ namespace Obfuz.ObfusPasses.CallObfus
             switch (mode)
             {
                 case ProxyMode.Dispatch:
-                    return new DispatchProxyObfuscator(ctx.moduleEntityManager);
+                return new DispatchProxyObfuscator(ctx.moduleEntityManager);
                 case ProxyMode.Delegate:
-                    return new DelegateProxyObfuscator(ctx.moduleEntityManager);
+                return new DelegateProxyObfuscator(ctx.moduleEntityManager);
                 default:
                 throw new System.NotSupportedException($"Unsupported proxy mode: {mode}");
             }

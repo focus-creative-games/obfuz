@@ -1,5 +1,4 @@
-﻿using Obfuz.Settings;
-using Obfuz.Utils;
+﻿using Obfuz.Utils;
 
 namespace Obfuz.GarbageCodeGeneration
 {
