@@ -1,11 +1,9 @@
-# Obfuz
+# Introduction
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Unity Version](https://img.shields.io/badge/Unity-2019%2B-blue)](https://unity.com/)
 
-**Obfuz** is an open-source, powerful, easy-to-use, and highly reliable Unity code obfuscation and protection solution that fully meets the demands of commercial game projects.
-
-[English](./README-EN.md) | [中文](./README.md)
+Obfuz is an open-source, powerful, user-friendly, and reliable Unity code obfuscation and protection solution that fully meets the needs of commercial game projects.
 
 [Github](https://github.com/focus-creative-games/obfuz) | [Gitee](https://gitee.com/focus-creative-games/obfuz)
 
@@ -13,61 +11,61 @@
 
 ## Why Choose Obfuz?
 
-- **Open Source & Free**: Licensed under MIT, free to use and modify.  
-- **Powerful Features**: Delivers obfuscation and code protection comparable to commercial tools.  
-- **Unity-First Design**: Deeply optimized for Unity workflows. Automatically handles all edge cases (e.g., preserving `MonoBehaviour` names) except reflection (due to technical limitations). Near-zero configuration required.  
-- **Battle-Tested**: Verified by 3,000+ automated test cases covering virtually all common code patterns.  
-- **Hot Reload Ready**: Fully compatible with leading hot-reload solutions like HybridCLR and xLua.  
-- **Agile Development**: Rapid bug fixes, prompt feature updates, and immediate support for the latest Unity/Unity Engine changes.  
+- **Powerful Features**: Provides robust obfuscation and code protection capabilities comparable to commercial tools.
+- **Deep Unity Integration**: Optimized for Unity workflows, automatically handling all special cases except reflection (e.g., MonoBehaviour names cannot be obfuscated), working well with zero configuration.
+- **Quick Integration**: Simply configure which assemblies to obfuscate and integrate code obfuscation in just three minutes.
+- **Stable and Reliable**: Comprehensive automated test projects with over 3000 test cases covering almost all common code scenarios.
+- **Hot Update Support**: Supports popular code hot update solutions like HybridCLR and xLua.
+- **Agile Development**: Quick response to developer needs, rapid bug fixes, and timely follow-up on the latest changes in Unity and Unite Engine.
 
 ## Features
 
-- **Polymorphic DLL Files**: Custom DLL file format with randomized structure, varying with each release, effectively countering cracking and tampering.
-- **Symbol Obfuscation**: Supports comprehensive configuration rules and incremental obfuscation for flexible and efficient code protection.
-- **Constant Obfuscation**: Obfuscates constants such as `int`, `long`, `float`, `double`, `string` and `array` to prevent reverse engineering.
+- **Polymorphic DLL Files**: Custom structurally randomized DLL file format with different structures on each release, effectively resisting cracking and tampering.
+- **Symbol Obfuscation**: Supports rich configuration rules and incremental obfuscation for flexible and efficient code protection.
+- **Constant Obfuscation**: Obfuscates constants like `int`, `long`, `float`, `double`, `string`, and arrays to prevent reverse engineering.
 - **Variable Memory Encryption**: Encrypts variables in memory to enhance runtime security.
-- **Eval stack Obfuscation**: Obfuscates eval stack variable to prevent reverse engineering.
-- **Expression Obfuscation**: Obfuscate complex expressions for enhanced protection.
-- **Function Call Obfuscation**: Scrambles function call structures to increase cracking difficulty.
-- **Control Flow Obfuscation**: Disrupt code flow to deter reverse engineering.
-- **Randomized Encryption VM**: Generates randomized virtual machines to thwart decompilation and cracking tools.
-- **Static and Dynamic Decryption**: Combines static and dynamic decryption to resist offline static analysis.
- **Obfuscation Polymorphism**: Generates different obfuscated code by configuring different generation keys and randomization seeds.
-- **Garbage Code Generation**​​: Supports various types of low-quality code generation to improve App Store and Google Play review pass rates
-- **Code Watermarking**: Embed traceable watermarks in your code.
-- **Seamless Unity Integration**: Deeply integrated with Unity workflows, requiring minimal configuration to get started.
-- **Hot Update Compatibility**: Fully supports hot update frameworks like HybridCLR, xLua, and Puerts, ensuring compatibility with dynamic code updates.
-- **DOTS Compatibility**: Works seamlessly across all DOTS versions with zero configuration required.
+- **Evaluation Stack Obfuscation**: Obfuscates variables in the execution stack to increase reverse engineering difficulty.
+- **Expression Obfuscation**: Obfuscates most common operations like add and sub.
+- **Call Obfuscation**:打乱 function call structures to increase cracking difficulty.
+- **Control Flow Obfuscation**: Control flow flattening to disrupt code execution flow, significantly increasing reverse engineering difficulty.
+- **Random Encryption Virtual Machine**: Generates randomized virtual machines to effectively resist decompilation and cracking tools.
+- **Static and Dynamic Decryption**: Combines static and dynamic decryption to prevent offline static analysis.
+- **Obfuscation Polymorphism**: Generates different obfuscated code by configuring different generation keys and random seeds.
+- **Garbage Code Generation**: Supports multiple garbage code generation methods to improve App Store and Google Play review pass rates.
+- **Code Watermarking**: Embeds traceable watermarks.
+- **Deep Unity Integration**: Seamlessly integrates with Unity workflows, ready to use with simple configuration.
+- **Hot Update Support**: Fully compatible with hot update frameworks like HybridCLR and xLua, ensuring smooth dynamic code updates.
+- **DOTS Compatibility**: Compatible with all versions of DOTS without configuration.
 
-## Supported Unity Versions & Platforms
+## Supported Unity Versions and Platforms
 
-- Unity 2019 and later versions
-- Tuanjie 1.0.0 and later versions
-- All platforms supported by Unity and Tuanjie
-- il2cpp and mono backend
-
-## Planned Features
-
-Obfuz is actively evolving. Upcoming features include:
-
-- **Anti-Memory Dumping and Anti-Debugging**: Prevent memory dumps and debugging attempts.
-- **Code Virtualization**: Transform code into virtualized instructions for maximum security.
+- Supports Unity 2019+
+- Supports Unite Engine
+- Supports all platforms supported by Unity and Unite Engine
+- Supports il2cpp and mono backend
 
 ## Documentation
 
-- [Document](https://www.obfuz.com/)
+- [Documentation](https://www.obfuz.com/)
 - [Quick Start](https://www.obfuz.com/docs/beginner/quick-start)
-- [Samples](https://github.com/focus-creative-games/obfuz-samples)
+- [Sample Projects](https://github.com/focus-creative-games/obfuz-samples)
+
+## Future Plans
+
+Obfuz is under continuous development, with upcoming features including:
+
+- **Anti-Memory Dump and Anti-Debugging**: Prevent memory dumping and debugging.
+- **Code Virtualization**: Convert code to virtualized instructions for the highest level of security.
 
 ## License
 
-Obfuz is released under the MIT License. Feel free to use, modify, and distribute it as needed.
+Obfuz is released under the MIT License, welcome to use, modify, and distribute freely.
 
-## Contact
+## Contact Us
 
-For questions, suggestions, or bug reports, please reach us through:
+For questions, suggestions, or bug reports, please contact us through:
 
-- Submit an Issue on GitHub
-- Email the maintainer: `obfuz#code-philosophy.com`
-- Obfuz QQ Group: 1048396510
-- Discord channel: `https://discord.gg/bFXhmrUw8c`
+- Submit Issues on GitHub
+- Email the maintainers: `obfuz#code-philosophy.com`
+- QQ Group **Obfuz Community**: 1048396510
+- Discord Channel: `https://discord.gg/bFXhmrUw8c`
