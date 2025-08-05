@@ -812,7 +812,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             var tryBlocks = new List<TryBlockInfo>();
             foreach (var ex in _method.Body.ExceptionHandlers)
             {
-                TryBlockInfo tryBlock = tryBlocks.Find(tryBlocks => tryBlocks.tryStart == ex.TryStart && tryBlocks.tryEnd == ex.TryEnd);
+                TryBlockInfo tryBlock = tryBlocks.Find(block => block.tryStart == ex.TryStart && block.tryEnd == ex.TryEnd);
                 if (tryBlock == null)
                 {
                     int startIndex = inst2Index[ex.TryStart];

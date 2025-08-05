@@ -10,7 +10,7 @@ namespace Obfuz.Emit
 
         ModuleDef Module { get; set; }
 
-        public EncryptionScopeProvider EncryptionScopeProvider { get; }
+        EncryptionScopeProvider EncryptionScopeProvider { get; }
 
         EncryptionScopeInfo EncryptionScope { get; set; }
 
