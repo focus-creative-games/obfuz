@@ -65,7 +65,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (method.CustomAttributes.Find(ConstValues.BurstCompileFullName) != null || _burstCompileComputeCache.IsBurstCompileMethodOrReferencedByBurstCompileMethod(method))
+            if (MetaUtil.HasBurstCompileAttribute(method) || _burstCompileComputeCache.IsBurstCompileMethodOrReferencedByBurstCompileMethod(method))
             {
                 return true;
             }
@@ -88,7 +88,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (type.CustomAttributes.Find(ConstValues.BurstCompileFullName) != null)
+            if (MetaUtil.HasBurstCompileAttribute(type))
             {
                 return true;
             }

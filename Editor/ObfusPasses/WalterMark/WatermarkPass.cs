@@ -138,9 +138,12 @@ namespace Obfuz.ObfusPasses.Watermark
 
         private void AddFieldAccessToSignatureHolder(ModuleDef module, EncryptionScopeInfo encryptionScope, WatermarkInfo watermarkInfo)
         {
+            BurstCompileComputeCache burstCompileComputeCache = ObfuscationPassContext.Current.burstCompileComputeCache;
             var insertTargetMethods = module.Types
+                .Where(t => !MetaUtil.HasBurstCompileAttribute(t))
                 .SelectMany(t => t.Methods)
-                .Where(m => m.HasBody && m.Body.Instructions.Count > 10)
+                .Where(m => m.HasBody && m.Body.Instructions.Count > 10 && !MetaUtil.HasBurstCompileAttribute(m)
+                && !burstCompileComputeCache.IsBurstCompileMethodOrReferencedByBurstCompileMethod(m))
                 .ToList();
 
             if (insertTargetMethods.Count == 0)
@@ -149,7 +152,7 @@ namespace Obfuz.ObfusPasses.Watermark
                 return;
             }
 
-            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash("AddFieldAccessToSignatureHolder"));
+            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash($"AddFieldAccessToSignatureHolder:{module.Name}"));
             DefaultMetadataImporter importer = ObfuscationPassContext.Current.moduleEntityManager.GetEntity<DefaultMetadataImporter>(module);
             foreach (var fieldDef in watermarkInfo.signatureHoldFields)
             {
@@ -195,7 +198,7 @@ namespace Obfuz.ObfusPasses.Watermark
                 Debug.LogWarning($"No suitable methods found in module '{module.Name}' to insert watermark IL sequences.");
                 return;
             }
-            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash("AddWaterMarkILSequences"));
+            var random = encryptionScope.localRandomCreator(HashUtil.ComputeHash($"AddWaterMarkILSequences:{module.Name}"));
             int[] signature = KeyGenerator.ConvertToIntKey(watermarkInfo.signature);
             for (int intIndex = 0; intIndex < signature.Length;)
             {

@@ -62,6 +62,7 @@ namespace Obfuz
         public List<ModuleDef> modulesToObfuscate;
         public List<ModuleDef> allObfuscationRelativeModules;
         public ObfuzIgnoreScopeComputeCache obfuzIgnoreScopeComputeCache;
+        public BurstCompileComputeCache burstCompileComputeCache;
 
         public ObfuscationMethodWhitelist whiteList;
         public ConfigurablePassPolicy passPolicy;

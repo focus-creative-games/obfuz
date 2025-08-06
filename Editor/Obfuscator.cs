@@ -288,6 +288,7 @@ namespace Obfuz
                 EncryptionScopeProvider = encryptionScopeProvider,
             };
             var obfuzIgnoreScopeComputeCache = new ObfuzIgnoreScopeComputeCache();
+            var burstCompileCache = new BurstCompileComputeCache(modulesToObfuscate, allObfuscationRelativeModules);
             _ctx = new ObfuscationPassContext
             {
                 coreSettings = _coreSettings,
@@ -298,8 +299,9 @@ namespace Obfuz
                 moduleEntityManager = moduleEntityManager,
 
                 obfuzIgnoreScopeComputeCache = obfuzIgnoreScopeComputeCache,
+                burstCompileComputeCache = burstCompileCache,
 
-                whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache, new BurstCompileComputeCache(modulesToObfuscate, allObfuscationRelativeModules)),
+                whiteList = new ObfuscationMethodWhitelist(obfuzIgnoreScopeComputeCache, burstCompileCache),
                 passPolicy = _passPolicy,
             };
             ObfuscationPassContext.Current = _ctx;
