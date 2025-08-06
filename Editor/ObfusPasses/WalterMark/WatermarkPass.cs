@@ -122,6 +122,20 @@ namespace Obfuz.ObfusPasses.Watermark
             return watermarkInfo;
         }
 
+        private int GetRandomInsertPosition(List<Instruction> instructions, IRandom random)
+        {
+            var insertPositions = instructions
+                .Select((inst, index) => new { Instruction = inst, Index = index })
+                .Where(x => x.Instruction.OpCode.FlowControl == FlowControl.Next)
+                .Select(x => x.Index)
+                .ToList();
+            if (insertPositions.Count == 0)
+            {
+                return 0; // No valid position to insert
+            }
+            return insertPositions[random.NextInt(insertPositions.Count)] + 1;
+        }
+
         private void AddFieldAccessToSignatureHolder(ModuleDef module, EncryptionScopeInfo encryptionScope, WatermarkInfo watermarkInfo)
         {
             var insertTargetMethods = module.Types
@@ -141,18 +155,18 @@ namespace Obfuz.ObfusPasses.Watermark
             {
                 // Randomly select a method to insert the access
                 var targetMethod = insertTargetMethods[random.NextInt(insertTargetMethods.Count)];
-                int insertIndex = random.NextInt(1, targetMethod.Body.Instructions.Count - 3);
-
                 var insts = (List<Instruction>)targetMethod.Body.Instructions;
-
+                int insertIndex = GetRandomInsertPosition(insts, random);
+                Instruction nop = Instruction.Create(OpCodes.Nop);
                 insts.InsertRange(insertIndex, new[]
                 {
-                    Instruction.CreateLdcI4(random.NextInt(1, 10000000)),
-                    Instruction.Create(OpCodes.Brtrue, insts[insertIndex]),
-                    Instruction.CreateLdcI4(random.NextInt(fieldDef.InitialValue.Length)),
-                    Instruction.Create(OpCodes.Newarr, module.CorLibTypes.Byte),
-                    Instruction.Create(OpCodes.Ldtoken, fieldDef),
-                    Instruction.Create(OpCodes.Call, importer.InitializedArray),
+	                Instruction.CreateLdcI4(random.NextInt(1, 10000000)),
+	                Instruction.Create(OpCodes.Brtrue, nop),
+	                Instruction.CreateLdcI4(random.NextInt(fieldDef.InitialValue.Length)),
+	                Instruction.Create(OpCodes.Newarr, module.CorLibTypes.Byte),
+	                Instruction.Create(OpCodes.Ldtoken, fieldDef),
+	                Instruction.Create(OpCodes.Call, importer.InitializedArray),
+	                nop,
                 });
                 //Debug.Log($"Inserted watermark access for field '{fieldDef.Name}' in method '{targetMethod.FullName}' at index {insertIndex}.");
             }
@@ -189,8 +203,7 @@ namespace Obfuz.ObfusPasses.Watermark
                 // Randomly select a method to insert the IL sequence
                 var targetMethod = insertTargetMethods[random.NextInt(insertTargetMethods.Count)];
                 var insts = (List<Instruction>)targetMethod.Body.Instructions;
-                int insertIndex = random.NextInt(1, insts.Count - 3);
-
+                int insertIndex = GetRandomInsertPosition(insts, random);
                 var insertInstructions = new List<Instruction>()
                 {
                     Instruction.CreateLdcI4(random.NextInt(1, 10000000)),
@@ -204,7 +217,7 @@ namespace Obfuz.ObfusPasses.Watermark
                         insertInstructions.Add(Instruction.Create(GetRandomBinOpCode(random)));
                     }
                 }
-                insertInstructions.Add(Instruction.Create(OpCodes.Brfalse, insertInstructions[0]));
+                insertInstructions.Add(Instruction.Create(OpCodes.Pop));
 
                 insts.InsertRange(insertIndex, insertInstructions);
                 intIndex += ldcCount;
