@@ -9,12 +9,12 @@ namespace Obfuz
         private static readonly Dictionary<Type, string> _type2OriginalFullName = new Dictionary<Type, string>();
         private static readonly Dictionary<Assembly, Dictionary<string, Type>> _originalFullName2Types = new Dictionary<Assembly, Dictionary<string, Type>>();
 
-        internal static void RegisterType<T>(string originalFullName)
+        public static void RegisterType<T>(string originalFullName)
         {
             RegisterType(typeof(T), originalFullName);
         }
 
-        internal static void RegisterType(Type type, string originalFullName)
+        public static void RegisterType(Type type, string originalFullName)
         {
             if (_type2OriginalFullName.ContainsKey(type))
             {
