@@ -92,7 +92,7 @@ namespace Obfuz
             {
                 return true;
             }
-            if (_obfuzComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(type, type.DeclaringType, ObfuzScope.TypeName))
+            if (_obfuzComputeCache.HasSelfOrDeclaringOrEnclosingOrInheritObfuzIgnoreScope(type, type.DeclaringType, ObfuzScope.MethodBody))
             {
                 return true;
             }
