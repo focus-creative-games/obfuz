@@ -187,10 +187,10 @@ namespace Obfuz
             {
                 builder.AddPass(new ExprObfusPass(settings.exprObfusSettings.ToFacade()));
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.EvalStackObfus))
-            {
-                builder.AddPass(new EvalStackObfusPass(settings.evalStackObfusSettings.ToFacade()));
-            }
+            //if (obfuscationPasses.HasFlag(ObfuscationPassType.EvalStackObfus))
+            //{
+            //    builder.AddPass(new EvalStackObfusPass(settings.evalStackObfusSettings.ToFacade()));
+            //}
             if (obfuscationPasses.HasFlag(ObfuscationPassType.FieldEncrypt))
             {
                 builder.AddPass(new FieldEncryptPass(settings.fieldEncryptSettings.ToFacade()));
