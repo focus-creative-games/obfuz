@@ -918,6 +918,10 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             //{
             //    return false;
             //}
+            if (_method.HasGenericParameters || _method.DeclaringType.HasGenericParameters)
+            {
+                return false;
+            }
             var evc = new EvalStackCalculator(_method);
             BuildBasicBlockLink(evc);
             if (!CheckNotContainsNotSupportedEvalStackData())
