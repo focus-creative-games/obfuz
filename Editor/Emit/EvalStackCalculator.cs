@@ -124,7 +124,7 @@ namespace Obfuz.Emit
                 case ElementType.Ptr:
                 case ElementType.FnPtr:
                 case ElementType.ByRef:
-                datas.Add(new EvalDataTypeWithSig(EvalDataType.I, null));
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.I, type));
                 break;
                 case ElementType.String:
                 case ElementType.Class:
@@ -205,10 +205,20 @@ namespace Obfuz.Emit
             datas.Add(type);
         }
 
-        private void PushStackObject(List<EvalDataTypeWithSig> datas)
+        private void PushStackObject(List<EvalDataTypeWithSig> datas, TypeSig type)
         {
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, _method.Module.CorLibTypes.Object));
+            PushStack(datas, new EvalDataTypeWithSig(EvalDataType.Ref, type));
         }
+
+        private void PushStackPointer(List<EvalDataTypeWithSig> datas, TypeSig type)
+        {
+            PushStack(datas, new EvalDataTypeWithSig(EvalDataType.I, type));
+        }
+
+        //private void PushStackObject(List<EvalDataTypeWithSig> datas)
+        //{
+        //    datas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, _method.Module.CorLibTypes.Object));
+        //}
 
         private EvalDataType CalcBasicBinOpRetType(EvalDataType op1, EvalDataType op2)
         {
@@ -282,7 +292,7 @@ namespace Obfuz.Emit
                         var inputStackDatas = _blockEvalStackStates[bb].inputStackDatas;
                         if (inputStackDatas.Count == 0)
                         {
-                            inputStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, handler.CatchType.ToTypeSig()));
+                            PushStackObject(inputStackDatas, handler.CatchType.ToTypeSig());
                         }
                     }
                     if (handler.IsCatch || handler.IsFilter)
@@ -291,7 +301,7 @@ namespace Obfuz.Emit
                         var inputStackDatas = _blockEvalStackStates[bb].inputStackDatas;
                         if (inputStackDatas.Count == 0)
                         {
-                            inputStackDatas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, handler.CatchType.ToTypeSig()));
+                            PushStackObject(inputStackDatas, handler.CatchType.ToTypeSig());
                         }
                     }
                 }
@@ -375,7 +385,7 @@ namespace Obfuz.Emit
                         }
                         case Code.Ldnull:
                         {
-                            PushStackObject(newPushedDatas);
+                            PushStackObject(newPushedDatas, corLibTypes.Object);
                             break;
                         }
                         case Code.Ldc_I4_M1:
@@ -518,7 +528,7 @@ namespace Obfuz.Emit
                         case Code.Ldind_Ref:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStackObject(newPushedDatas);
+                            PushStackObject(newPushedDatas, stackDatas[stackSize - 1].typeSig?.RemovePinnedAndModifiers().Next ?? corLibTypes.Object);
                             break;
                         }
                         case Code.Ldind_R4:
@@ -701,7 +711,7 @@ namespace Obfuz.Emit
                         }
                         case Code.Ldstr:
                         {
-                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, corLibTypes.String));
+                            PushStackObject(newPushedDatas, corLibTypes.String);
                             break;
                         }
                         case Code.Newobj:
@@ -714,22 +724,22 @@ namespace Obfuz.Emit
                         {
                             Assert.IsTrue(stackSize > 0);
                             var obj = stackDatas[stackSize - 1];
-                            Assert.IsTrue(obj.type == EvalDataType.Ref);
-                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, ((ITypeDefOrRef)inst.Operand).ToTypeSig()));
+                            //Assert.IsTrue(obj.type == EvalDataType.Ref);
+                            PushStackObject(newPushedDatas, ((ITypeDefOrRef)inst.Operand).ToTypeSig());
                             break;
                         }
                         case Code.Isinst:
                         {
                             Assert.IsTrue(stackSize > 0);
                             var obj = stackDatas[stackSize - 1];
-                            Assert.IsTrue(obj.type == EvalDataType.Ref);
-                            PushStack(newPushedDatas, new EvalDataTypeWithSig(EvalDataType.Ref, ((ITypeDefOrRef)inst.Operand).ToTypeSig()));
+                            //Assert.IsTrue(obj.type == EvalDataType.Ref);
+                            PushStackObject(newPushedDatas, ((ITypeDefOrRef)inst.Operand).ToTypeSig());
                             break;
                         }
                         case Code.Unbox:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStack(newPushedDatas, EvalDataType.I);
+                            PushStackPointer(newPushedDatas, corLibTypes.IntPtr);
                             break;
                         }
                         case Code.Unbox_Any:
@@ -741,7 +751,8 @@ namespace Obfuz.Emit
                         case Code.Box:
                         {
                             Assert.IsTrue(stackSize > 0);
-                            PushStackObject(newPushedDatas);
+                            //PushStack(newPushedDatas, (ITypeDefOrRef)inst.Operand);
+                            PushStackObject(newPushedDatas, ((ITypeDefOrRef)inst.Operand).ToTypeSig());
                             break;
                         }
                         case Code.Throw:
@@ -829,7 +840,7 @@ namespace Obfuz.Emit
                         case Code.Ldelem_Ref:
                         {
                             Assert.IsTrue(stackSize >= 2);
-                            PushStackObject(newPushedDatas);
+                            PushStackObject(newPushedDatas, stackDatas[stackSize - 2].typeSig.RemovePinnedAndModifiers().Next ?? corLibTypes.Object);
                             break;
                         }
                         case Code.Ldelem:

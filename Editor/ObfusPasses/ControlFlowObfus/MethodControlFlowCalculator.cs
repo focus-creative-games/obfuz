@@ -34,15 +34,16 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
 
             private TypeSig GetLocalTypeSig(ICorLibTypes corLibTypes, EvalDataTypeWithSig type)
             {
+                TypeSig typeSig = type.typeSig;
                 switch (type.type)
                 {
                     case EvalDataType.Int32: return corLibTypes.Int32;
                     case EvalDataType.Int64: return corLibTypes.Int64;
                     case EvalDataType.Float: return corLibTypes.Single;
                     case EvalDataType.Double: return corLibTypes.Double;
-                    case EvalDataType.I: return corLibTypes.IntPtr;
-                    case EvalDataType.Ref: Assert.IsNotNull(type.typeSig); return type.typeSig;
-                    case EvalDataType.ValueType: Assert.IsNotNull(type.typeSig); return type.typeSig;
+                    case EvalDataType.I: return typeSig ?? corLibTypes.IntPtr;
+                    case EvalDataType.Ref: return typeSig == null || MetaUtil.IsValueType(typeSig) ? corLibTypes.Object : typeSig;
+                    case EvalDataType.ValueType: Assert.IsNotNull(typeSig); return typeSig;
                     case EvalDataType.Token: throw new System.NotSupportedException("Token type is not supported in BasicBlockInputOutputArguments");
                     default: throw new System.NotSupportedException("not supported EvalDataType");
                 }

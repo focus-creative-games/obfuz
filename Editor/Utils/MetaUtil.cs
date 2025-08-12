@@ -254,6 +254,62 @@ namespace Obfuz.Utils
             }
             return false;
         }
+        public static bool IsValueType(TypeSig typeSig)
+        {
+            var a = typeSig.RemovePinnedAndModifiers();
+            switch (a.ElementType)
+            {
+                case ElementType.Void: return false;
+                case ElementType.Boolean:
+                case ElementType.Char:
+                case ElementType.I1:
+                case ElementType.U1:
+                case ElementType.I2:
+                case ElementType.U2:
+                case ElementType.I4:
+                case ElementType.U4:
+                case ElementType.I8:
+                case ElementType.U8:
+                case ElementType.R4:
+                case ElementType.R8: return true;
+                case ElementType.String: return true;
+                case ElementType.TypedByRef: return false;
+                case ElementType.I: return true;
+                case ElementType.U: return true;
+                case ElementType.Object: return false;
+                case ElementType.Sentinel: return false;
+                case ElementType.Ptr: return true;
+                case ElementType.ByRef: return true;
+                case ElementType.SZArray: return false;
+                case ElementType.Array: return false;
+                case ElementType.ValueType:
+                {
+                    return true;
+                }
+                case ElementType.Var:
+                case ElementType.MVar: return true;
+                case ElementType.Class: return false;
+                case ElementType.GenericInst:
+                {
+                    var gia = (GenericInstSig)a;
+                    TypeDef typeDef = gia.GenericType.ToTypeDefOrRef().ResolveTypeDef();
+                    if (typeDef == null)
+                    {
+                        throw new Exception($"type:{a} definition could not be found");
+                    }
+                    if (typeDef.IsEnum)
+                    {
+                        return true;
+                    }
+                    return typeDef.IsValueType;
+                }
+                case ElementType.FnPtr: return true;
+                case ElementType.ValueArray: return true;
+                case ElementType.Module: return false;
+                default:
+                throw new NotSupportedException(typeSig.ToString());
+            }
+        }
 
         public static bool MayRenameCustomDataType(ElementType type)
         {
