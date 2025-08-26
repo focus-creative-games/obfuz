@@ -9,6 +9,8 @@ namespace Obfuz
 
     public class EncryptionScopeInfo
     {
+        public const int MaxEncryptionLevel = 4;
+
         public readonly IEncryptor encryptor;
         public readonly RandomCreator localRandomCreator;
 

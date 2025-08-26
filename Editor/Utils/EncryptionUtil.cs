@@ -16,7 +16,7 @@ namespace Obfuz.Utils
             return count;
         }
 
-        public static int GenerateEncryptionOpCodes(IRandom random, IEncryptor encryptor, int encryptionLevel)
+        public static int GenerateEncryptionOpCodes(IRandom random, IEncryptor encryptor, int encryptionLevel, bool logWarningWhenExceedMaxOps = true)
         {
             if (encryptionLevel <= 0 || encryptionLevel > 4)
             {
@@ -32,7 +32,11 @@ namespace Obfuz.Utils
                 newOps |= (uint)op;
                 if (newOps > uint.MaxValue)
                 {
-                    Debug.LogWarning($"OpCode overflow. encryptionLevel:{encryptionLevel}, vmOpCodeCount:{vmOpCodeCount}");
+                    if (logWarningWhenExceedMaxOps)
+                    {
+                        Debug.LogWarning($"OpCode overflow. encryptionLevel:{encryptionLevel}, vmOpCodeCount:{vmOpCodeCount}");
+                    }
+                    break;
                 }
                 else
                 {

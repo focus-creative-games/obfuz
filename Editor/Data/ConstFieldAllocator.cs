@@ -172,7 +172,7 @@ namespace Obfuz.Data
             {
                 ConstFieldInfo constInfo = _field2Fields[field];
                 IRandom localRandom = _randomCreator(HashUtil.ComputePrimitiveOrStringOrBytesHashCode(constInfo.value));
-                int ops = EncryptionUtil.GenerateEncryptionOpCodes(localRandom, _encryptor, 4);
+                int ops = EncryptionUtil.GenerateEncryptionOpCodes(localRandom, _encryptor, EncryptionScopeInfo.MaxEncryptionLevel, false);
                 int salt = localRandom.NextInt();
                 switch (constInfo.value)
                 {

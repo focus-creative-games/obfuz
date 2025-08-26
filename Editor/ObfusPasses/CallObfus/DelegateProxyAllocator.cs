@@ -2,6 +2,7 @@
 using dnlib.DotNet.Emit;
 using Obfuz.Data;
 using Obfuz.Emit;
+using Obfuz.Settings;
 using Obfuz.Utils;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,7 @@ namespace Obfuz.ObfusPasses.CallObfus
             public MethodDef proxyMethod;
         }
         private readonly Dictionary<MethodKey, CallInfo> _callMethods = new Dictionary<MethodKey, CallInfo>();
+        private CallObfuscationSettingsFacade _settings;
 
         public DelegateProxyAllocator()
         {
@@ -53,6 +55,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Init()
         {
             _delegateInstanceHolderType = CreateDelegateInstanceHolderTypeDef();
+            _settings = CallObfusPass.CurrentSettings;
         }
 
         private string AllocateDelegateTypeName(MethodSig delegateInvokeSig)
@@ -241,7 +244,7 @@ namespace Obfuz.ObfusPasses.CallObfus
                 ins.Add(Instruction.Create(OpCodes.Dup));
 
                 IRandom localRandom = encryptionScope.localRandomCreator(HashUtil.ComputePrimitiveOrStringOrBytesHashCode(ci.key1));
-                int ops = EncryptionUtil.GenerateEncryptionOpCodes(localRandom, encryptionScope.encryptor, 4);
+                int ops = EncryptionUtil.GenerateEncryptionOpCodes(localRandom, encryptionScope.encryptor, _settings.obfuscationLevel);
                 int salt = localRandom.NextInt();
 
                 int encryptedValue = encryptionScope.encryptor.Encrypt(ci.index, ops, salt);

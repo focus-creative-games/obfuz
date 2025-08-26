@@ -238,7 +238,7 @@ namespace Obfuz.Data
             int verifyIntValue = 0x12345678;
             EncryptionScopeInfo encryptionScope = this.EncryptionScope;
             IRandom verifyRandom = encryptionScope.localRandomCreator(verifyIntValue);
-            int verifyOps = EncryptionUtil.GenerateEncryptionOpCodes(verifyRandom, encryptionScope.encryptor, 4);
+            int verifyOps = EncryptionUtil.GenerateEncryptionOpCodes(verifyRandom, encryptionScope.encryptor, EncryptionScopeInfo.MaxEncryptionLevel, false);
             int verifySalt = verifyRandom.NextInt();
             int encryptedVerifyIntValue = encryptionScope.encryptor.Encrypt(verifyIntValue, verifyOps, verifySalt);
 
