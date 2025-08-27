@@ -15,7 +15,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
     public class SymbolRename
     {
         private readonly bool _useConsistentNamespaceObfuscation;
-        private readonly bool _detectReflectionCompatibility;
         private readonly List<string> _obfuscationRuleFiles;
         private readonly string _mappingXmlPath;
 
@@ -30,7 +29,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap;
         private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator;
-        private readonly List<IObfuscationPolicy> _customPolicies = new List<IObfuscationPolicy>();
+        private readonly List<Type> _customPolicyTypes;
 
         class CustomAttributeInfo
         {
@@ -43,24 +42,12 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         public SymbolRename(SymbolObfuscationSettingsFacade settings)
         {
             _useConsistentNamespaceObfuscation = settings.useConsistentNamespaceObfuscation;
-            _detectReflectionCompatibility = settings.detectReflectionCompatibility;
             _mappingXmlPath = settings.symbolMappingFile;
             _obfuscationRuleFiles = settings.ruleFiles.ToList();
             _renameRecordMap = new RenameRecordMap(settings.symbolMappingFile, settings.debug, settings.keepUnknownSymbolInSymbolMappingFile);
             _virtualMethodGroupCalculator = new VirtualMethodGroupCalculator();
             _nameMaker = settings.debug ? NameMakerFactory.CreateDebugNameMaker() : NameMakerFactory.CreateNameMakerBaseASCIICharSet(settings.obfuscatedNamePrefix);
-
-            foreach (var customPolicyType in settings.customRenamePolicyTypes)
-            {
-                if (Activator.CreateInstance(customPolicyType, new object[] { this }) is IObfuscationPolicy customPolicy)
-                {
-                    _customPolicies.Add(customPolicy);
-                }
-                else
-                {
-                    Debug.LogWarning($"Custom rename policy type {customPolicyType} is not a valid IObfuscationPolicy");
-                }
-            }
+            _customPolicyTypes = settings.customRenamePolicyTypes;
         }
 
         public void Init()
@@ -72,7 +59,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             _toObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.modulesToObfuscate);
             _nonObfuscatedButReferencingObfuscatedModuleSet = new HashSet<ModuleDef>(ctx.allObfuscationRelativeModules.Where(m => !_toObfuscatedModuleSet.Contains(m)));
 
-            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate, _obfuscationRuleFiles);
+            _renamePolicy = CreateDefaultRenamePolicy(_obfuscationRuleFiles, _customPolicyTypes);
+            BuildCustomAttributeArguments();
+        }
+
+        public static IObfuscationPolicy CreateDefaultRenamePolicy(List<string> obfuscationRuleFiles, List<Type> customPolicyTypes)
+        {
+            var ctx = ObfuscationPassContext.Current;
+            var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate, obfuscationRuleFiles);
             var totalRenamePolicies = new List<IObfuscationPolicy>
             {
                 new SupportPassPolicy(ctx.passPolicy),
@@ -80,10 +74,49 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 new UnityRenamePolicy(),
                 obfuscateRuleConfig,
             };
-            totalRenamePolicies.AddRange(_customPolicies);
 
-            _renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(totalRenamePolicies.ToArray()));
-            BuildCustomAttributeArguments();
+            foreach (var customPolicyType in customPolicyTypes)
+            {
+                if (Activator.CreateInstance(customPolicyType, new object[] { null }) is IObfuscationPolicy customPolicy)
+                {
+                    totalRenamePolicies.Add(customPolicy);
+                }
+                else
+                {
+                    Debug.LogWarning($"Custom rename policy type {customPolicyType} is not a valid IObfuscationPolicy");
+                }
+            }
+
+            IObfuscationPolicy renamePolicy = new CacheRenamePolicy(new CombineRenamePolicy(totalRenamePolicies.ToArray()));
+            PrecomputeNeedRename(ctx.modulesToObfuscate, renamePolicy);
+            return renamePolicy;
+        }
+
+        private static void PrecomputeNeedRename(List<ModuleDef> toObfuscatedModules, IObfuscationPolicy renamePolicy)
+        {
+            foreach (ModuleDef mod in toObfuscatedModules)
+            {
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    renamePolicy.NeedRename(type);
+                    foreach (var field in type.Fields)
+                    {
+                        renamePolicy.NeedRename(field);
+                    }
+                    foreach (var method in type.Methods)
+                    {
+                        renamePolicy.NeedRename(method);
+                    }
+                    foreach (var property in type.Properties)
+                    {
+                        renamePolicy.NeedRename(property);
+                    }
+                    foreach (var eventDef in type.Events)
+                    {
+                        renamePolicy.NeedRename(eventDef);
+                    }
+                }
+            }
         }
 
         private void CollectCArgumentWithTypeOf(IHasCustomAttribute meta, List<CustomAttributeInfo> customAttributes)
@@ -149,42 +182,9 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
-        private void PrecomputeNeedRename()
-        {
-            foreach (ModuleDef mod in _toObfuscatedModules)
-            {
-                foreach (TypeDef type in mod.GetTypes())
-                {
-                    _renamePolicy.NeedRename(type);
-                    foreach (var field in type.Fields)
-                    {
-                        _renamePolicy.NeedRename(field);
-                    }
-                    foreach (var method in type.Methods)
-                    {
-                        _renamePolicy.NeedRename(method);
-                    }
-                    foreach (var property in type.Properties)
-                    {
-                        _renamePolicy.NeedRename(property);
-                    }
-                    foreach (var eventDef in type.Events)
-                    {
-                        _renamePolicy.NeedRename(eventDef);
-                    }
-                }
-            }
-        }
-
         public void Process()
         {
             _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
-            PrecomputeNeedRename();
-            if (_detectReflectionCompatibility)
-            {
-                var reflectionCompatibilityDetector = new ReflectionCompatibilityDetector(_toObfuscatedModules, _obfuscatedAndNotObfuscatedModules, _renamePolicy);
-                reflectionCompatibilityDetector.Analyze();
-            }
             RenameTypes();
             RenameFields();
             RenameMethods();

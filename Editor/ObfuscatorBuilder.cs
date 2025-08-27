@@ -175,6 +175,11 @@ namespace Obfuz
                 },
             };
             ObfuscationPassType obfuscationPasses = settings.obfuscationPassSettings.enabledPasses;
+
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus) && settings.symbolObfusSettings.detectReflectionCompatibility)
+            {
+                builder.AddPass(new ReflectionCompatibilityDetectionPass(settings.symbolObfusSettings.ToFacade()));
+            }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.ConstEncrypt))
             {
                 builder.AddPass(new ConstEncryptPass(settings.constEncryptSettings.ToFacade()));

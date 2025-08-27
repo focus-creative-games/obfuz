@@ -243,7 +243,15 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     }
                     else
                     {
-                        throw new Exception("impossible");
+                        TypeDef enumType = FindLatestTypeOf(method.GetParamCount() + extraSearchInstructionCount)?.ResolveTypeDef();
+                        if (enumType != null && enumType.IsEnum && IsAnyEnumItemRenamed(enumType))
+                        {
+                            Debug.LogError($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse field of argument type:{enumType.FullName} is renamed.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ReflectionCompatibilityDetector] Reflection compatibility issue in {_curCallingMethod}: Enum.TryParse field of argument `type` should not be renamed.");
+                        }
                     }
                     break;
                 }
