@@ -2,7 +2,7 @@
 
 namespace Obfuz
 {
-    public static class AssetUtility
+    public static class AssertUtility
     {
         public static void VerifySecretKey(int expectedValue, int actualValue)
         {

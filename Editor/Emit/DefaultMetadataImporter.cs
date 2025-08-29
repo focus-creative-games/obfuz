@@ -138,7 +138,7 @@ namespace Obfuz.Emit
 
             _initializeArray = mod.Import(typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray", new[] { typeof(Array), typeof(RuntimeFieldHandle) }));
             Assert.IsNotNull(_initializeArray);
-            _verifySecretKey = mod.Import(typeof(AssetUtility).GetMethod("VerifySecretKey", new[] { typeof(int), typeof(int) }));
+            _verifySecretKey = mod.Import(typeof(AssertUtility).GetMethod("VerifySecretKey", new[] { typeof(int), typeof(int) }));
             Assert.IsNotNull(_verifySecretKey, "VerifySecretKey not found");
 
             _obfuscationTypeMapperRegisterType = mod.Import(typeof(ObfuscationTypeMapper).GetMethod("RegisterType", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null));
