@@ -118,6 +118,34 @@ namespace Obfuz.Utils
             return null;
         }
 
+        public static bool IsAssignableFrom(TypeDef fromType, TypeDef toType)
+        {
+            TypeDef cur = fromType;
+            while (true)
+            {
+                if (cur == toType)
+                {
+                    return true;
+                }
+                if (toType.IsInterface)
+                {
+                    foreach (var interfaceType in cur.Interfaces)
+                    {
+                        TypeDef interfaceTypeDef = interfaceType.Interface.ResolveTypeDef();
+                        if (interfaceTypeDef != null && interfaceTypeDef == toType)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                cur = GetBaseTypeDef(cur);
+                if (cur == null)
+                {
+                    return false;
+                }
+            }
+        }
+
         public static bool IsInheritFromDOTSTypes(TypeDef typeDef)
         {
             TypeDef cur = typeDef;
