@@ -1144,7 +1144,7 @@ namespace Obfuz.Emit
                     {
                         if (MetaUtil.IsAssignableFrom(typeDef1, typeDef2))
                         {
-                            return typeDef2.ToTypeSig();
+                            return _method.Module.Import(typeDef2).ToTypeSig();
                         }
                         typeDef2 = typeDef2.BaseType?.ResolveTypeDefThrow();
                     }
