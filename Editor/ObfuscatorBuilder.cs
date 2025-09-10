@@ -1,4 +1,5 @@
-﻿using Obfuz.EncryptionVM;
+﻿using dnlib.DotNet.Writer;
+using Obfuz.EncryptionVM;
 using Obfuz.ObfusPasses;
 using Obfuz.ObfusPasses.CallObfus;
 using Obfuz.ObfusPasses.ConstEncrypt;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 namespace Obfuz
 {
@@ -22,6 +24,7 @@ namespace Obfuz
     public class CoreSettingsFacade
     {
         public BuildTarget buildTarget;
+        public RuntimeType targetRuntime;
 
         public byte[] defaultStaticSecretKey;
         public byte[] defaultDynamicSecretKey;
@@ -152,11 +155,20 @@ namespace Obfuz
                 bool exists = Directory.Exists(path);
                 UnityEngine.Debug.Log($"search path:{path} exists:{exists}");
             }
+            RuntimeType targetRuntime = settings.compatibilitySettings.targetRuntime != RuntimeType.ActivatedScriptingBackend ?
+                settings.compatibilitySettings.targetRuntime :
+                (PlatformUtil.IsMonoBackend() ? RuntimeType.Mono : RuntimeType.IL2CPP);
+            if (searchPathIncludeUnityEditorDll && targetRuntime != RuntimeType.Mono)
+            {
+                Debug.LogError($"obfuscate dll for editor, but ObfuzSettings.CompatibilitySettings.targetRuntime isn't RuntimeType.Mono. Use RuntimeType.Mono for targetRuntime automatically.");
+                targetRuntime = RuntimeType.Mono;
+            }
             var builder = new ObfuscatorBuilder
             {
                 _coreSettingsFacade = new CoreSettingsFacade()
                 {
                     buildTarget = target,
+                    targetRuntime = targetRuntime,
                     defaultStaticSecretKey = KeyGenerator.GenerateKey(settings.secretSettings.defaultStaticSecretKey, VirtualMachine.SecretKeyLength),
                     defaultDynamicSecretKey = KeyGenerator.GenerateKey(settings.secretSettings.defaultDynamicSecretKey, VirtualMachine.SecretKeyLength),
                     assembliesUsingDynamicSecretKeys = settings.secretSettings.assembliesUsingDynamicSecretKeys.ToList(),

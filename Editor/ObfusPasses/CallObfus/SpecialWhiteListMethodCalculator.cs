@@ -1,4 +1,5 @@
 ﻿using dnlib.DotNet;
+using Obfuz.Settings;
 using Obfuz.Utils;
 using System.Collections.Generic;
 
@@ -6,11 +7,13 @@ namespace Obfuz.ObfusPasses.CallObfus
 {
     class SpecialWhiteListMethodCalculator
     {
+        private readonly RuntimeType _targetRuntime;
         private readonly bool _obfuscateCallToMethodInMscorlib;
         private readonly CachedDictionary<IMethod, bool> _specialWhiteListMethodCache;
 
-        public SpecialWhiteListMethodCalculator(bool obfuscateCallToMethodInMscorlib)
+        public SpecialWhiteListMethodCalculator(RuntimeType targetRuntime, bool obfuscateCallToMethodInMscorlib)
         {
+            _targetRuntime = targetRuntime;
             _obfuscateCallToMethodInMscorlib = obfuscateCallToMethodInMscorlib;
             _specialWhiteListMethodCache = new CachedDictionary<IMethod, bool>(MethodEqualityComparer.CompareDeclaringTypes, this.ComputeIsInWhiteList);
         }
@@ -46,7 +49,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             MethodDef calledMethodDef = calledMethod.ResolveMethodDef();
             // mono has more strict access control, calls non-public method will raise exception.
-            if (PlatformUtil.IsMonoBackend())
+            if (_targetRuntime == RuntimeType.Mono)
             {
                 if (calledMethodDef != null && (!calledMethodDef.IsPublic || !IsTypeSelfAndParentPublic(calledMethodDef.DeclaringType)))
                 {

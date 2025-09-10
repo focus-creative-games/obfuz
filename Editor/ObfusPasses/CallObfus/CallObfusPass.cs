@@ -20,7 +20,7 @@ namespace Obfuz.ObfusPasses.CallObfus
         public static CallObfuscationSettingsFacade CurrentSettings { get; private set; }
 
         private readonly CallObfuscationSettingsFacade _settings;
-        private readonly SpecialWhiteListMethodCalculator _specialWhiteListMethodCache;
+        private SpecialWhiteListMethodCalculator _specialWhiteListMethodCache;
 
         private IObfuscator _dynamicProxyObfuscator;
         private IObfuscationPolicy _dynamicProxyPolicy;
@@ -31,8 +31,6 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
             _settings = settings;
             CurrentSettings = settings;
-
-            _specialWhiteListMethodCache = new SpecialWhiteListMethodCalculator(settings.obfuscateCallToMethodInMscorlib);
         }
 
         public override void Stop()
@@ -43,6 +41,8 @@ namespace Obfuz.ObfusPasses.CallObfus
         public override void Start()
         {
             var ctx = ObfuscationPassContext.Current;
+
+            _specialWhiteListMethodCache = new SpecialWhiteListMethodCalculator(ctx.coreSettings.targetRuntime, _settings.obfuscateCallToMethodInMscorlib);
             _dynamicProxyObfuscator = CreateObfuscator(ctx, _settings.proxyMode);
             _dynamicProxyPolicy = new ConfigurableObfuscationPolicy(ctx.coreSettings.assembliesToObfuscate, _settings.ruleFiles);
         }

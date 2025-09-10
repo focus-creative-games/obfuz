@@ -11,6 +11,9 @@ namespace Obfuz.Settings
         [Tooltip("build pipeline settings")]
         public BuildPipelineSettings buildPipelineSettings;
 
+        [Tooltip("compatibility settings")]
+        public CompatibilitySettings compatibilitySettings;
+
         [Tooltip("assembly settings")]
         public AssemblySettings assemblySettings;
 
