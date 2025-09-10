@@ -395,12 +395,34 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         private bool MatchModifier(ModifierType? modifierType, PropertyDef propertyDef)
         {
-            return modifierType == null || (modifierType & ComputeModifierType((FieldAttributes)propertyDef.Attributes)) != 0;
+            FieldAttributes access = default;
+            if (propertyDef.GetMethod != null)
+            {
+                access |= (FieldAttributes)propertyDef.GetMethod.Access;
+            }
+            if (propertyDef.SetMethod != null)
+            {
+                access |= (FieldAttributes)propertyDef.SetMethod.Access;
+            }
+            return modifierType == null || (modifierType & ComputeModifierType(access)) != 0;
         }
 
         private bool MatchModifier(ModifierType? modifierType, EventDef eventDef)
         {
-            return modifierType == null || (modifierType & ComputeModifierType((FieldAttributes)eventDef.Attributes)) != 0;
+            FieldAttributes access = default;
+            if (eventDef.AddMethod != null)
+            {
+                access |= (FieldAttributes)eventDef.AddMethod.Access;
+            }
+            if (eventDef.RemoveMethod != null)
+            {
+                access |= (FieldAttributes)eventDef.RemoveMethod.Access;
+            }
+            if (eventDef.InvokeMethod != null)
+            {
+                access |= (FieldAttributes)eventDef.InvokeMethod.Access;
+            }
+            return modifierType == null || (modifierType & ComputeModifierType(access)) != 0;
         }
 
         private class MethodComputeCache
