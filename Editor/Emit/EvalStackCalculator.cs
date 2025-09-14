@@ -110,32 +110,32 @@ namespace Obfuz.Emit
             case ElementType.U2:
             case ElementType.I4:
             case ElementType.U4:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Int32, null));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.Int32, null));
+                break;
             case ElementType.I8:
             case ElementType.U8:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Int64, null));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.Int64, null));
+                break;
             case ElementType.R4:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Float, null));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.Float, null));
+                break;
             case ElementType.R8:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Double, null));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.Double, null));
+                break;
             case ElementType.I:
             case ElementType.U:
             case ElementType.Ptr:
             case ElementType.FnPtr:
             case ElementType.ByRef:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.I, type));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.I, type));
+                break;
             case ElementType.String:
             case ElementType.Class:
             case ElementType.Array:
             case ElementType.SZArray:
             case ElementType.Object:
-            datas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, type));
-            break;
+                datas.Add(new EvalDataTypeWithSig(EvalDataType.Ref, type));
+                break;
             case ElementType.ValueType:
             {
                 TypeDef typeDef = type.ToTypeDefOrRef().ResolveTypeDefThrow();
@@ -176,8 +176,8 @@ namespace Obfuz.Emit
             }
             case ElementType.Var:
             case ElementType.MVar:
-            PushStack(datas, new EvalDataTypeWithSig(EvalDataType.ValueType, type));
-            break;
+                PushStack(datas, new EvalDataTypeWithSig(EvalDataType.ValueType, type));
+                break;
             case ElementType.ValueArray:
             case ElementType.R:
             case ElementType.CModOpt:
@@ -185,8 +185,8 @@ namespace Obfuz.Emit
             case ElementType.Internal:
             case ElementType.Module:
             case ElementType.Sentinel:
-            PushStack(datas, EvalDataType.Unknown);
-            break;
+                PushStack(datas, EvalDataType.Unknown);
+                break;
 
             default: throw new Exception($"Unsupported type: {type} in method: {_method.FullName}.");
             }
@@ -244,7 +244,7 @@ namespace Obfuz.Emit
                 case EvalDataType.Int32: return EvalDataType.Int64;
                 case EvalDataType.Int64:
                 case EvalDataType.I:
-                return EvalDataType.Int64;
+                    return EvalDataType.Int64;
                 default: throw new Exception($"Unsupported operand type: {op2} for {op1} in binary operation.");
                 }
             }
@@ -613,9 +613,9 @@ namespace Obfuz.Emit
                         case EvalDataType.I:
                         case EvalDataType.Float:
                         case EvalDataType.Double:
-                        break;
+                            break;
                         default:
-                        throw new Exception($"Unsupported operand type: {op} in unary operation.");
+                            throw new Exception($"Unsupported operand type: {op} in unary operation.");
                         }
                         _instructionParameterInfos.Add(inst, new InstructionParameterInfo(op, EvalDataType.None, ret));
                         PushStack(newPushedDatas, ret);
@@ -1006,7 +1006,7 @@ namespace Obfuz.Emit
             }
         }
 
-        private TypeSig ReduceBaseType(TypeSig type1, TypeSig type2)
+        private TypeSig ReduceBaseType(TypeSig type1, TypeSig type2, bool forceRefType)
         {
             if (TypeEqualityComparer.Instance.Equals(type1, type2))
             {
@@ -1025,9 +1025,6 @@ namespace Obfuz.Emit
             switch (t1)
             {
             case ElementType.Void:
-            case ElementType.R4:
-            case ElementType.R8:
-            case ElementType.R:
             case ElementType.TypedByRef:
             case ElementType.ValueArray:
             {
@@ -1036,6 +1033,26 @@ namespace Obfuz.Emit
                     break;
                 }
                 return type1;
+            }
+            case ElementType.R4:
+            case ElementType.R8:
+            case ElementType.R:
+            {
+                if (t1 == t2)
+                {
+                    return type1;
+                }
+                if (forceRefType)
+                {
+                    switch (t2)
+                    {
+                    case ElementType.Class:
+                    case ElementType.GenericInst:
+                        return type2;
+                    default: return _corLibTypes.Object;
+                    }
+                }
+                break;
             }
             case ElementType.Boolean:
             case ElementType.Char:
@@ -1066,6 +1083,20 @@ namespace Obfuz.Emit
                 {
                     return type2;
                 }
+                default:
+                {
+                    if (forceRefType)
+                    {
+                        switch (t2)
+                        {
+                        case ElementType.Class:
+                        case ElementType.GenericInst:
+                            return type2;
+                        default: return _corLibTypes.Object;
+                        }
+                    }
+                    break;
+                }
                 }
                 break;
             }
@@ -1078,7 +1109,23 @@ namespace Obfuz.Emit
                 case ElementType.U:
                 case ElementType.I8:
                 case ElementType.U8:
-                return type1;
+                {
+                    return type1;
+                }
+                default:
+                {
+                    if (forceRefType)
+                    {
+                        switch (t2)
+                        {
+                        case ElementType.Class:
+                        case ElementType.GenericInst:
+                            return type2;
+                        default: return _corLibTypes.Object;
+                        }
+                    }
+                    break;
+                }
                 }
                 break;
             }
@@ -1096,6 +1143,20 @@ namespace Obfuz.Emit
                 {
                     return type2;
                 }
+                default:
+                {
+                    if (forceRefType)
+                    {
+                        switch (t2)
+                        {
+                        case ElementType.Class:
+                        case ElementType.GenericInst:
+                            return type2;
+                        default: return _corLibTypes.Object;
+                        }
+                    }
+                    break;
+                }
                 }
                 break;
             }
@@ -1111,8 +1172,8 @@ namespace Obfuz.Emit
             {
                 switch (t2)
                 {
-                case ElementType.Ptr: return new PtrSig(ReduceBaseType(type1.Next, type2.Next));
-                case ElementType.ByRef: return new ByRefSig(ReduceBaseType(type1.Next, type2.Next));
+                case ElementType.Ptr: return new PtrSig(ReduceBaseType(type1.Next, type2.Next, false));
+                case ElementType.ByRef: return new ByRefSig(ReduceBaseType(type1.Next, type2.Next, false));
                 case ElementType.I:
                 case ElementType.U: return type1;
                 }
@@ -1122,7 +1183,7 @@ namespace Obfuz.Emit
             {
                 switch (t2)
                 {
-                case ElementType.ByRef: return new ByRefSig(ReduceBaseType(type1.Next, type2.Next));
+                case ElementType.ByRef: return new ByRefSig(ReduceBaseType(type1.Next, type2.Next, false));
                 case ElementType.I:
                 case ElementType.U: return type1;
                 }
@@ -1130,6 +1191,10 @@ namespace Obfuz.Emit
             }
             case ElementType.ValueType:
             {
+                if (forceRefType)
+                {
+                    return type2;
+                }
                 break;
             }
             case ElementType.Class:
@@ -1193,9 +1258,9 @@ namespace Obfuz.Emit
                 switch (t2)
                 {
                 case ElementType.Array:
-                return new ArraySig(ReduceBaseType(type1.Next, type2.Next));
+                    return new ArraySig(ReduceBaseType(type1.Next, type2.Next, false));
                 case ElementType.SZArray:
-                return _method.Module.ImportAsTypeSig(typeof(Array));
+                    return _method.Module.ImportAsTypeSig(typeof(Array));
                 case ElementType.GenericInst:
                 {
                     var gis = (GenericInstSig)type2;
@@ -1203,7 +1268,7 @@ namespace Obfuz.Emit
                     {
                     case "IList`1":
                     case "ICollection`1":
-                    return type2;
+                        return type2;
                     }
                     return _corLibTypes.Object;
                 }
@@ -1261,15 +1326,17 @@ namespace Obfuz.Emit
                 break;
             }
             case ElementType.Object:
-            return type1;
+            {
+                return type1;
+            }
             case ElementType.SZArray:
             {
                 switch (t2)
                 {
                 case ElementType.SZArray:
-                return new SZArraySig(ReduceBaseType(type1.Next, type2.Next));
+                    return new SZArraySig(ReduceBaseType(type1.Next, type2.Next, false));
                 case ElementType.MVar:
-                return _corLibTypes.Object;
+                    return _corLibTypes.Object;
                 }
                 break;
             }
@@ -1324,7 +1391,7 @@ namespace Obfuz.Emit
                 {
                     return type1;
                 }
-                return new EvalDataTypeWithSig(type1.type, ReduceBaseType(type1.typeSig, type2.typeSig));
+                return new EvalDataTypeWithSig(type1.type, ReduceBaseType(type1.typeSig, type2.typeSig, type1.type == EvalDataType.Ref));
             }
             case EvalDataType.ValueType:
             {
