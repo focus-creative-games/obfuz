@@ -124,14 +124,14 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
 
         private readonly CachedDictionary<TypeDef, bool> _computeDeclaringTypeDisableAllMemberRenamingCache;
         private readonly CachedDictionary<TypeDef, bool> _isSerializableCache;
-        private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourCache;
+        private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourOrScriptableObjectCache;
         private readonly CachedDictionary<TypeDef, bool> _isScriptOrSerializableTypeCache;
 
         public UnityRenamePolicy()
         {
             _computeDeclaringTypeDisableAllMemberRenamingCache = new CachedDictionary<TypeDef, bool>(ComputeDeclaringTypeDisableAllMemberRenaming);
             _isSerializableCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsSerializableType);
-            _isInheritFromMonoBehaviourCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsInheritFromMonoBehaviour);
+            _isInheritFromMonoBehaviourOrScriptableObjectCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptType);
             _isScriptOrSerializableTypeCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptOrSerializableType);
         }
 
@@ -201,7 +201,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         public override bool NeedRename(MethodDef methodDef)
         {
             TypeDef typeDef = methodDef.DeclaringType;
-            if (s_monoBehaviourEvents.Contains(methodDef.Name) && _isInheritFromMonoBehaviourCache.GetValue(typeDef))
+            if (s_monoBehaviourEvents.Contains(methodDef.Name) && _isInheritFromMonoBehaviourOrScriptableObjectCache.GetValue(typeDef))
             {
                 return false;
             }
