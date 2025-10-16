@@ -774,13 +774,13 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
         private class ExceptionHandlerWithFilterGroup : BlockGroup
         {
             public readonly ExceptionHandler exceptionHandler;
-            //public readonly ExceptionFilterGroup filterGroup;
-            //public readonly ExceptionHandlerGroup handlerGroup;
-            public ExceptionHandlerWithFilterGroup(ExceptionHandler exceptionHandler, List<Instruction> filterInstructions, List<Instruction> handlerInstructions, List<Instruction> allInstructions, Dictionary<Instruction, BlockGroup> inst2group) : base(allInstructions, inst2group)
+            public readonly ExceptionFilterGroup filterGroup;
+            public readonly ExceptionHandlerGroup handlerGroup;
+            public ExceptionHandlerWithFilterGroup(ExceptionHandler exceptionHandler, ExceptionFilterGroup filterGroup, ExceptionHandlerGroup handlerGroup, List<Instruction> instructions, Dictionary<Instruction, BlockGroup> inst2group) : base(instructions, inst2group)
             {
                 this.exceptionHandler = exceptionHandler;
-                var filterGroup = new ExceptionFilterGroup(exceptionHandler, filterInstructions, inst2group);
-                var handlerGroup = new ExceptionHandlerGroup(exceptionHandler, handlerInstructions, inst2group);
+                this.filterGroup = filterGroup;
+                this.handlerGroup = handlerGroup;
             }
         }
 
@@ -833,9 +833,10 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                     int filterEndIndex = ex.HandlerStart != null ? inst2Index[ex.HandlerStart] : inst2Index.Count;
                     int handlerStartIndex = filterEndIndex;
                     int handlerEndIndex = ex.HandlerEnd != null ? inst2Index[ex.HandlerEnd] : inst2Index.Count;
-                    var filterHandlerGroup = new ExceptionHandlerWithFilterGroup(ex,
-                        instructions.GetRange(filterStartIndex, filterEndIndex - filterStartIndex),
-                        instructions.GetRange(handlerStartIndex, handlerEndIndex - handlerStartIndex),
+
+                    var filterGroup = new ExceptionFilterGroup(ex, instructions.GetRange(filterStartIndex, filterEndIndex - filterStartIndex), inst2blockGroup);
+                    var handlerGroup = new ExceptionHandlerGroup(ex, instructions.GetRange(handlerStartIndex, handlerEndIndex - handlerStartIndex), inst2blockGroup);
+                    var filterHandlerGroup = new ExceptionHandlerWithFilterGroup(ex, filterGroup, handlerGroup,
                         instructions.GetRange(filterStartIndex, handlerEndIndex - filterStartIndex), inst2blockGroup);
                 }
                 else
