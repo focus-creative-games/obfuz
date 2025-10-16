@@ -35,7 +35,7 @@ namespace Obfuz.EncryptionVM.Instructions
 
         public override void GenerateEncryptCode(List<string> lines, string indent)
         {
-            lines.Add(indent + $"value = value *  {_multiValue} + _secretKey[{_opKeyIndex}] + salt;");
+            lines.Add(indent + $"value = value * {_multiValue} + _secretKey[{_opKeyIndex}] + salt;");
         }
 
         public override void GenerateDecryptCode(List<string> lines, string indent)

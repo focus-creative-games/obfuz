@@ -29,7 +29,7 @@ namespace Obfuz.EncryptionVM.Instructions
 
         public override void GenerateDecryptCode(List<string> lines, string indent)
         {
-            lines.Add(indent + $"value = ((value  - {_addValue}) ^ salt) - _secretKey[{_opKeyIndex}];");
+            lines.Add(indent + $"value = ((value - {_addValue}) ^ salt) - _secretKey[{_opKeyIndex}];");
         }
     }
 }

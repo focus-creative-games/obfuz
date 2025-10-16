@@ -73,7 +73,7 @@ namespace Obfuz.EncryptionVM
             {");
             foreach (var opCode in _vm.opCodes)
             {
-                lines.Add($@"               case {opCode.code}:
+                lines.Add($@"                case {opCode.code}:
                 {{
                     // {opCode.function.GetType().Name}");
                 AppendEncryptCode(lines, opCode.function);
@@ -82,8 +82,7 @@ namespace Obfuz.EncryptionVM
             }
 
             lines.Add(@"
-                default:
-                    throw new System.Exception($""Invalid opCode:{opCode}"");
+                default: throw new System.Exception($""Invalid opCode:{opCode}"");
             }
         }");
         }
@@ -97,7 +96,7 @@ namespace Obfuz.EncryptionVM
             {");
             foreach (var opCode in _vm.opCodes)
             {
-                lines.Add($@"               case {opCode.code}:
+                lines.Add($@"                case {opCode.code}:
                 {{
                     // {opCode.function.GetType().Name}");
                 AppendDecryptCode(lines, opCode.function);
@@ -106,8 +105,7 @@ namespace Obfuz.EncryptionVM
             }
 
             lines.Add(@"
-                default:
-                    throw new System.Exception($""Invalid opCode:{opCode}"");
+                default: throw new System.Exception($""Invalid opCode:{opCode}"");
             }
         }");
         }
