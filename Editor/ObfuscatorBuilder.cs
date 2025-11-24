@@ -135,6 +135,8 @@ namespace Obfuz
                 "PlaybackEngines/WSASupport/Variations/il2cpp/Managed",
 #elif UNITY_LUMIN
                 "PlaybackEngines/LuminSupport/Variations/il2cpp/Managed",
+#elif UNITY_PS5
+                "PlaybackEngines/PS5Player/Variations/il2cpp/Managed",
 #else
 #error "Unsupported platform, please report to us"
 #endif
