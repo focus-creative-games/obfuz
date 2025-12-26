@@ -330,6 +330,7 @@ namespace Obfuz
 
         private void LoadAssemblies(AssemblyCache assemblyCache, List<ModuleDef> modulesToObfuscate, List<ModuleDef> allObfuscationRelativeModules)
         {
+            assemblyCache.LoadModule("Obfuz.Runtime");
             foreach (string assName in _allObfuscationRelativeAssemblyNames)
             {
                 ModuleDefMD mod = assemblyCache.TryLoadModule(assName);
