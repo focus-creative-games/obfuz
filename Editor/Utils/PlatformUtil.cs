@@ -26,8 +26,13 @@ namespace Obfuz.Utils
     {
         public static bool IsMonoBackend()
         {
-            return PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup)
-                == ScriptingImplementation.Mono2x;
+            BuildTargetGroup buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+#if UNITY_6000_0_OR_NEWER
+            var namedBuildTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup);
+            return PlayerSettings.GetScriptingBackend(namedBuildTarget) == ScriptingImplementation.Mono2x;
+#else
+            return PlayerSettings.GetScriptingBackend(buildTargetGroup) == ScriptingImplementation.Mono2x;
+#endif
         }
     }
 }
