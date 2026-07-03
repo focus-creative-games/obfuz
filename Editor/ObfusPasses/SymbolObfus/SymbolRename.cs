@@ -538,6 +538,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 {
                     foreach (MethodDef method in type.Methods)
                     {
+                        // always rename method params, even if the method is not renamed
+                        RenameMethodParams(method);
                         if (method.IsVirtual)
                         {
                             continue;
@@ -805,7 +807,6 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private void Rename(MethodDef method, RefMethodMetas refMethodMetas, string newName)
         {
             ModuleDefMD mod = (ModuleDefMD)method.DeclaringType.Module;
-            RenameMethodParams(method);
             RenameMethodBody(method);
             if (refMethodMetas != null)
             {
