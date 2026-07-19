@@ -160,7 +160,15 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                     case ElementType.Class:
                     case ElementType.ValueType:
                     {
-                        return t1.AssemblyQualifiedName == t2.AssemblyQualifiedName;
+                        if (t1.AssemblyQualifiedName == t2.AssemblyQualifiedName)
+                        {
+                            return true;
+                        }
+                        if (t1.FullName == t2.FullName)
+                        {
+                            return t1.ToTypeDefOrRef().ResolveTypeDefThrow() == t2.ToTypeDefOrRef().ResolveTypeDefThrow();
+                        }
+                        return false;
                     }
                     case ElementType.Ptr:
                     case ElementType.ByRef:

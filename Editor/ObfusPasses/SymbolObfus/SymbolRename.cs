@@ -49,6 +49,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         private readonly Dictionary<ModuleDef, List<CustomAttributeInfo>> _customAttributeArgumentsWithTypeByMods = new Dictionary<ModuleDef, List<CustomAttributeInfo>>();
         private readonly RenameRecordMap _renameRecordMap;
         private readonly VirtualMethodGroupCalculator _virtualMethodGroupCalculator;
+        private readonly List<MethodDef> _virtualMethods = new List<MethodDef>();
         private readonly List<Type> _customPolicyTypes;
 
         class CustomAttributeInfo
@@ -205,6 +206,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus
         public void Process()
         {
             _renameRecordMap.Init(_toObfuscatedModules, _nameMaker);
+            BuildVirtualMethodGroup();
             RenameTypes();
             RenameFields();
             RenameMethods();
@@ -525,11 +527,28 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             }
         }
 
+        private void BuildVirtualMethodGroup()
+        {
+            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
+            {
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    _virtualMethodGroupCalculator.CalculateType(type);
+                    foreach (MethodDef method in type.Methods)
+                    {
+                        if (method.IsVirtual)
+                        {
+                            _virtualMethods.Add(method);
+                        }
+                    }
+                }
+            }
+        }
+
         private void RenameMethods()
         {
             //Debug.Log("Rename methods begin");
             //Debug.Log("Rename not virtual methods begin");
-            var virtualMethods = new List<MethodDef>();
             var refMethodMetasMap = new Dictionary<MethodDef, RefMethodMetas>();
             BuildRefMethodMetasMap(refMethodMetasMap);
             foreach (ModuleDef mod in _toObfuscatedModules)
@@ -552,28 +571,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 }
             }
 
-            foreach (ModuleDef mod in _obfuscatedAndNotObfuscatedModules)
-            {
-                foreach (TypeDef type in mod.GetTypes())
-                {
-                    _virtualMethodGroupCalculator.CalculateType(type);
-                    foreach (MethodDef method in type.Methods)
-                    {
-                        if (method.IsVirtual)
-                        {
-                            virtualMethods.Add(method);
-                        }
-                    }
-                }
-            }
-
             //Debug.Log("Rename not virtual methods end");
 
 
             //Debug.Log("Rename virtual methods begin");
             var visitedVirtualMethods = new HashSet<MethodDef>();
             var groupNeedRenames = new Dictionary<VirtualMethodGroup, bool>();
-            foreach (var method in virtualMethods)
+            foreach (var method in _virtualMethods)
             {
                 if (!visitedVirtualMethods.Add(method))
                 {
@@ -753,7 +757,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus
                 foreach (TypeRef typeRef in refTypeDefMeta.typeRefs)
                 {
                     Assert.AreEqual(typeRef.FullName, oldFullName);
-                    Assert.IsTrue(typeRef.DefinitionAssembly.Name == moduleName);
+                    // Assert fail when typeRef to a fowarded type
+                    // Assert.IsTrue(typeRef.DefinitionAssembly.Name == moduleName);
                     if (!string.IsNullOrEmpty(oldNamespace))
                     {
                         typeRef.Namespace = newNamespace;
