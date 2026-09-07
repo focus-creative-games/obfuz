@@ -19,7 +19,6 @@
 // SOFTWARE.
 
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
@@ -291,10 +290,9 @@ namespace Obfuz
             }
         }
 
-        public virtual unsafe void DecryptInitializeArray(System.Array arr, System.RuntimeFieldHandle field, int length, int ops, int salt)
+        public virtual unsafe void DecryptInitializeArray(System.Array arr, byte[] data, int offset, int length, int ops, int salt)
         {
-            //Assert.AreEqual(Marshal.SizeOf(arr.GetType().GetElementType()), arr.Length);
-            RuntimeHelpers.InitializeArray(arr, field);
+            Buffer.BlockCopy(data, offset, arr, 0, length);
             if (arr is byte[] byteArr)
             {
                 fixed (byte* dataPtr = &byteArr[0])

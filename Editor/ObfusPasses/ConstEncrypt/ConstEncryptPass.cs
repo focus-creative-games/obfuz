@@ -143,6 +143,9 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                             {
                                 // don't need cache for byte array obfuscation
                                 needCache = false;
+                                // Drop ldtoken RuntimeFieldHandle; DecryptInitializeArray now loads from RvaDataAllocator byte[].
+                                prevInst.OpCode = OpCodes.Nop;
+                                prevInst.Operand = null;
                                 _dataObfuscator.ObfuscateBytes(method, needCache, ravFieldDef, data, outputInstructions);
                                 return true;
                             }

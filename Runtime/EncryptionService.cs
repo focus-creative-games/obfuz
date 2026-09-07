@@ -139,9 +139,9 @@ namespace Obfuz
             return Decrypt(data, offset, bytesLength, ops, salt);
         }
 
-        public static void DecryptInitializeArray(System.Array arr, System.RuntimeFieldHandle field, int length, int ops, int salt)
+        public static void DecryptInitializeArray(System.Array arr, byte[] data, int offset, int length, int ops, int salt)
         {
-            _encryptor.DecryptInitializeArray(arr, field, length, ops, salt);
+            _encryptor.DecryptInitializeArray(arr, data, offset, length, ops, salt);
         }
     }
 }

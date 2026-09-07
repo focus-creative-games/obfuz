@@ -266,15 +266,15 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
 
         class EncryptedRvaDataInfo
         {
-            public readonly FieldDef fieldDef;
+            public readonly RvaData rvaData;
             public readonly byte[] originalBytes;
             public readonly byte[] encryptedBytes;
             public readonly int opts;
             public readonly int salt;
 
-            public EncryptedRvaDataInfo(FieldDef fieldDef, byte[] originalBytes, byte[] encryptedBytes, int opts, int salt)
+            public EncryptedRvaDataInfo(RvaData rvaData, byte[] originalBytes, byte[] encryptedBytes, int opts, int salt)
             {
-                this.fieldDef = fieldDef;
+                this.rvaData = rvaData;
                 this.originalBytes = originalBytes;
                 this.encryptedBytes = encryptedBytes;
                 this.opts = opts;
@@ -296,8 +296,11 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
                 byte[] encryptedBytes = (byte[])originalBytes.Clone();
                 encryptionScope.encryptor.EncryptBlock(encryptedBytes, ops, salt);
                 Assert.AreNotEqual(originalBytes, encryptedBytes, "Original bytes should not be the same as encrypted bytes.");
-                encryptedRvaData = new EncryptedRvaDataInfo(fieldDef, originalBytes, encryptedBytes, ops, salt);
+                RvaDataAllocator rvaDataAllocator = _moduleEntityManager.GetEntity<RvaDataAllocator>(fieldDef.Module);
+                RvaData rvaData = rvaDataAllocator.Allocate(encryptedBytes);
+                encryptedRvaData = new EncryptedRvaDataInfo(rvaData, originalBytes, encryptedBytes, ops, salt);
                 _encryptedRvaFields.Add(fieldDef, encryptedRvaData);
+                // Keep ciphertext in the original RVA field so plaintext is not shipped; runtime loads via RvaDataAllocator.
                 fieldDef.InitialValue = encryptedBytes;
                 byte[] decryptedBytes = (byte[])encryptedBytes.Clone();
                 encryptionScope.encryptor.DecryptBlock(decryptedBytes, ops, salt);
@@ -313,6 +316,8 @@ namespace Obfuz.ObfusPasses.ConstEncrypt
             Assert.AreEqual(value.Length, encryptedData.encryptedBytes.Length);
 
             DefaultMetadataImporter importer = GetModuleMetadataImporter(method);
+            obfuscatedInstructions.Add(Instruction.Create(OpCodes.Ldsfld, encryptedData.rvaData.field));
+            obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.rvaData.offset));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.encryptedBytes.Length));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.opts));
             obfuscatedInstructions.Add(Instruction.CreateLdcI4(encryptedData.salt));

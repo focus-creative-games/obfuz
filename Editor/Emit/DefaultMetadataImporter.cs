@@ -124,7 +124,7 @@ namespace Obfuz.Emit
             Assert.IsNotNull(_decryptFromRvaBytes);
             _decryptFromRvaString = mod.Import(encryptionServiceType.GetMethod("DecryptFromRvaString", new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptFromRvaString);
-            _decryptInitializeArray = mod.Import(encryptionServiceType.GetMethod("DecryptInitializeArray", new[] { typeof(System.Array), typeof(System.RuntimeFieldHandle), typeof(int), typeof(int), typeof(int) }));
+            _decryptInitializeArray = mod.Import(encryptionServiceType.GetMethod("DecryptInitializeArray", new[] { typeof(System.Array), typeof(byte[]), typeof(int), typeof(int), typeof(int), typeof(int) }));
             Assert.IsNotNull(_decryptInitializeArray);
         }
     }
