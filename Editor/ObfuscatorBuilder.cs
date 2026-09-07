@@ -247,10 +247,10 @@ namespace Obfuz
             {
                 builder.AddPass(new ControlFlowObfusPass(settings.controlFlowObfusSettings.ToFacade()));
             }
-            if (obfuscationPasses.HasFlag(ObfuscationPassType.WaterMark))
-            {
-                builder.AddPass(new WatermarkPass(settings.watermarkSettings.ToFacade()));
-            }
+            // if (obfuscationPasses.HasFlag(ObfuscationPassType.WaterMark))
+            // {
+            //     builder.AddPass(new WatermarkPass(settings.watermarkSettings.ToFacade()));
+            // }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {
                 builder.AddPass(new SymbolObfusPass(settings.symbolObfusSettings.ToFacade()));
