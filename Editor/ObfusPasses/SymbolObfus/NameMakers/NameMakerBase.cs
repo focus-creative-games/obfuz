@@ -115,7 +115,7 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public virtual string GetNewName(ParamDef param, string originalName)
         {
-            return "1";
+            return $"_{param.Sequence}";
         }
 
         public string GetNewName(FieldDef fieldDef, string originalName)
