@@ -91,9 +91,21 @@ namespace Obfuz.ObfusPasses.CallObfus
         {
         }
 
+        // Seeded from the per-build encryption seed, so the dispatch layout is reproducible for a
+        // fixed secretSettings.randomSeed and differs whenever that seed does.
+        private IRandom _layoutRandom;
+
+        private const int DispatchLayoutSeed = 0x5150D15;
+
         public override void Init()
         {
             _settings = CallObfusPass.CurrentSettings;
+            _layoutRandom = EncryptionScope.localRandomCreator(DispatchLayoutSeed);
+        }
+
+        private int NextRandom(int exclusiveMax)
+        {
+            return exclusiveMax <= 0 ? 0 : (int)((uint)_layoutRandom.NextInt() % (uint)exclusiveMax);
         }
 
         private TypeDef CreateProxyTypeDef()
@@ -257,36 +269,81 @@ namespace Obfuz.ObfusPasses.CallObfus
                 methodPair.Item1.DeclaringType = _proxyTypeDef;
             }
 
-            foreach (DispatchMethodInfo dispatchMethod in _dispatchMethods.Values.SelectMany(ms => ms))
+            // Every target that shares a dispatch signature is a legal operand for any dispatch
+            // method of that signature, which makes them free decoys: see the loop below.
+            var decoyPool = new Dictionary<MethodSig, List<CallInfo>>(SignatureEqualityComparer.Instance);
+            foreach (var e in _dispatchMethods)
             {
-                var methodDef = dispatchMethod.methodDef;
-                var methodSig = methodDef.MethodSig;
+                decoyPool.Add(e.Key, e.Value.SelectMany(d => d.methods).ToList());
+            }
 
-
-                var body = new CilBody();
-                methodDef.Body = body;
-                var ins = body.Instructions;
-
-                foreach (Parameter param in methodDef.Parameters)
+            foreach (var e in _dispatchMethods)
+            {
+                List<CallInfo> pool = decoyPool[e.Key];
+                foreach (DispatchMethodInfo dispatchMethod in e.Value)
                 {
-                    ins.Add(Instruction.Create(OpCodes.Ldarg, param));
-                }
+                    var methodDef = dispatchMethod.methodDef;
+                    var methodSig = methodDef.MethodSig;
 
-                var switchCases = new List<Instruction>();
-                var switchInst = Instruction.Create(OpCodes.Switch, switchCases);
-                ins.Add(switchInst);
-                var ret = Instruction.Create(OpCodes.Ret);
 
-                // sort methods by signature to ensure stable order
-                //dispatchMethod.methods.Sort((a, b) => a.id.CompareTo(b.id));
-                foreach (CallInfo ci in dispatchMethod.methods)
-                {
-                    var callTargetMethod = Instruction.Create(ci.callVir ? OpCodes.Callvirt : OpCodes.Call, ci.method);
-                    switchCases.Add(callTargetMethod);
-                    ins.Add(callTargetMethod);
-                    ins.Add(Instruction.Create(OpCodes.Br, ret));
+                    var body = new CilBody();
+                    methodDef.Body = body;
+                    var ins = body.Instructions;
+
+                    foreach (Parameter param in methodDef.Parameters)
+                    {
+                        ins.Add(Instruction.Create(OpCodes.Ldarg, param));
+                    }
+
+                    var switchCases = new List<Instruction>();
+                    var ret = Instruction.Create(OpCodes.Ret);
+
+                    var blocks = new List<Instruction>();
+                    foreach (CallInfo ci in dispatchMethod.methods)
+                    {
+                        var callTargetMethod = Instruction.Create(ci.callVir ? OpCodes.Callvirt : OpCodes.Call, ci.method);
+                        switchCases.Add(callTargetMethod);
+                        blocks.Add(callTargetMethod);
+                    }
+
+                    // Decoy cases. A call site only ever stores an index below the real case count,
+                    // and that index reaches the switch encrypted, so these blocks can never
+                    // execute: they cost nothing at runtime. Statically they are indistinguishable
+                    // from real dispatch targets, so they add call-graph edges that did not exist
+                    // and make the hub's callee set differ between builds.
+                    int decoyCount = pool.Count == 0 ? 0 : NextRandom(2 + _settings.obfuscationLevel * 2);
+                    for (int i = 0; i < decoyCount; i++)
+                    {
+                        CallInfo decoy = pool[NextRandom(pool.Count)];
+                        var decoyCall = Instruction.Create(decoy.callVir ? OpCodes.Callvirt : OpCodes.Call, decoy.method);
+                        switchCases.Add(decoyCall);
+                        blocks.Add(decoyCall);
+                    }
+
+                    ins.Add(Instruction.Create(OpCodes.Switch, switchCases.ToArray()));
+
+                    // switchCases[i] stays the handler for index i, but the PHYSICAL order of the
+                    // blocks is free — each ends in `br ret` — so shuffling them hides which cases
+                    // are real and changes the body's shape between builds.
+                    var order = new List<int>();
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        order.Add(i);
+                    }
+                    for (int i = order.Count - 1; i > 0; i--)
+                    {
+                        int j = NextRandom(i + 1);
+                        int tmp = order[i];
+                        order[i] = order[j];
+                        order[j] = tmp;
+                    }
+                    foreach (int k in order)
+                    {
+                        ins.Add(blocks[k]);
+                        ins.Add(Instruction.Create(OpCodes.Br, ret));
+                    }
+                    ins.Add(ret);
                 }
-                ins.Add(ret);
             }
         }
     }
