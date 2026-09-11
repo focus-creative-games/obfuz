@@ -27,6 +27,7 @@ using Obfuz.ObfusPasses.ControlFlowObfus;
 using Obfuz.ObfusPasses.EvalStackObfus;
 using Obfuz.ObfusPasses.ExprObfus;
 using Obfuz.ObfusPasses.FieldEncrypt;
+using Obfuz.ObfusPasses.ParamPad;
 using Obfuz.ObfusPasses.RemoveConstField;
 using Obfuz.ObfusPasses.SymbolObfus;
 using Obfuz.ObfusPasses.Watermark;
@@ -250,6 +251,12 @@ namespace Obfuz
             if (obfuscationPasses.HasFlag(ObfuscationPassType.WaterMark))
             {
                 builder.AddPass(new WatermarkPass(settings.watermarkSettings.ToFacade()));
+            }
+            // Registered last on purpose: it works in Stop(), which runs in registration order, so
+            // it must come after CallObfus to see the dispatch proxy bodies. See ParamPadPass.Stop.
+            if (obfuscationPasses.HasFlag(ObfuscationPassType.ParamPad))
+            {
+                builder.AddPass(new ParamPadPass(settings.paramPadSettings.ToFacade()));
             }
             if (obfuscationPasses.HasFlag(ObfuscationPassType.SymbolObfus))
             {

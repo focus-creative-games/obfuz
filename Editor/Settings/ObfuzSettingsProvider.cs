@@ -52,6 +52,7 @@ namespace Obfuz.Settings
         private SerializedProperty _secretSettings;
         private SerializedProperty _encryptionVMSettings;
 
+        private SerializedProperty _paramPadSettings;
         private SerializedProperty _symbolObfusSettings;
         private SerializedProperty _constEncryptSettings;
         private SerializedProperty _removeConstFieldSettings;
@@ -95,6 +96,7 @@ namespace Obfuz.Settings
 
             _encryptionVMSettings = _serializedObject.FindProperty("encryptionVMSettings");
 
+            _paramPadSettings = _serializedObject.FindProperty("paramPadSettings");
             _symbolObfusSettings = _serializedObject.FindProperty("symbolObfusSettings");
             _constEncryptSettings = _serializedObject.FindProperty("constEncryptSettings");
             _removeConstFieldSettings = _serializedObject.FindProperty("removeConstFieldSettings");
@@ -128,6 +130,7 @@ namespace Obfuz.Settings
 
             EditorGUILayout.PropertyField(_encryptionVMSettings);
 
+            EditorGUILayout.PropertyField(_paramPadSettings);
             EditorGUILayout.PropertyField(_symbolObfusSettings);
             EditorGUILayout.PropertyField(_constEncryptSettings);
             EditorGUILayout.PropertyField(_removeConstFieldSettings);

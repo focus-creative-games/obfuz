@@ -46,6 +46,9 @@ namespace Obfuz.Settings
         [Tooltip("encryption virtual machine settings")]
         public EncryptionVMSettings encryptionVMSettings;
 
+        [Tooltip("parameter padding settings")]
+        public ParamPadSettings paramPadSettings;
+
         [Tooltip("symbol obfuscation settings")]
         public SymbolObfuscationSettings symbolObfusSettings;
 

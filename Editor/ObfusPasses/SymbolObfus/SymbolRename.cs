@@ -88,13 +88,13 @@ namespace Obfuz.ObfusPasses.SymbolObfus
             BuildCustomAttributeArguments();
         }
 
-        public static IObfuscationPolicy CreateDefaultRenamePolicy(List<string> obfuscationRuleFiles, List<Type> customPolicyTypes)
+        public static IObfuscationPolicy CreateDefaultRenamePolicy(List<string> obfuscationRuleFiles, List<Type> customPolicyTypes, ObfuscationPassType passType = ObfuscationPassType.SymbolObfus)
         {
             var ctx = ObfuscationPassContext.Current;
             var obfuscateRuleConfig = new ConfigurableRenamePolicy(ctx.coreSettings.assembliesToObfuscate, ctx.modulesToObfuscate, obfuscationRuleFiles);
             var totalRenamePolicies = new List<IObfuscationPolicy>
             {
-                new SupportPassPolicy(ctx.passPolicy),
+                new SupportPassPolicy(ctx.passPolicy, passType),
                 new SystemRenamePolicy(ctx.obfuzIgnoreScopeComputeCache),
                 new UnityRenamePolicy(),
                 obfuscateRuleConfig,

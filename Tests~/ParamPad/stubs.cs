@@ -18,33 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-
-namespace Obfuz.ObfusPasses
-{
-    [Flags]
-    public enum ObfuscationPassType
-    {
-        None = 0,
-
-        ConstEncrypt = 0x1,
-        FieldEncrypt = 0x2,
-
-        SymbolObfus = 0x100,
-        CallObfus = 0x200,
-        ExprObfus = 0x400,
-        ControlFlowObfus = 0x800,
-        EvalStackObfus = 0x1000,
-        ParamPad = 0x2000,
-
-        RemoveConstField = 0x100000,
-        WaterMark = 0x200000,
-
-        AllObfus = SymbolObfus | CallObfus | ExprObfus | ControlFlowObfus | EvalStackObfus | ParamPad,
-        AllEncrypt = ConstEncrypt | FieldEncrypt,
-
-        MethodBodyObfusOrEncrypt = ConstEncrypt | CallObfus | ExprObfus | ControlFlowObfus | EvalStackObfus,
-
-        All = ~0,
+namespace UnityEngine.Assertions {
+    public static class Assert {
+        public static void IsTrue(bool c) { if(!c) throw new System.Exception("assert"); }
+        public static void IsTrue(bool c, string m) { if(!c) throw new System.Exception(m); }
+        public static void IsNotNull(object o) { if(o==null) throw new System.Exception("null"); }
+    }
+}
+namespace UnityEngine {
+    public static class Debug {
+        public static void Log(object o) { System.Console.WriteLine(o); }
+        public static void LogWarning(object o) { System.Console.WriteLine(o); }
+        public static void LogError(object o) { System.Console.WriteLine(o); }
     }
 }

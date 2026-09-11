@@ -25,16 +25,18 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
     internal class SupportPassPolicy : ObfuscationPolicyBase
     {
         private readonly ConfigurablePassPolicy _policy;
+        private readonly ObfuscationPassType _passType;
 
 
         private bool Support(ObfuscationPassType passType)
         {
-            return passType.HasFlag(ObfuscationPassType.SymbolObfus);
+            return passType.HasFlag(_passType);
         }
 
-        public SupportPassPolicy(ConfigurablePassPolicy policy)
+        public SupportPassPolicy(ConfigurablePassPolicy policy, ObfuscationPassType passType = ObfuscationPassType.SymbolObfus)
         {
             _policy = policy;
+            _passType = passType;
         }
 
         public override bool NeedRename(TypeDef typeDef)

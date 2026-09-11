@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AssemblyName>probe</AssemblyName>
+    <RootNamespace>probe</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0168;CS0219;CS0414;CS1998;CS0162</NoWarn>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="dnlib"><HintPath>../../Plugins/dnlib.dll</HintPath></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="stubs.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="../../Editor/ConstValues.cs" />
+    <Compile Include="../../Editor/Utils/MetaUtil.cs" />
+    <Compile Include="../../Editor/Utils/TypeSigUtil.cs" />
+    <Compile Include="../../Editor/Utils/CachedDictionary.cs" />
+    <Compile Include="../../Editor/Utils/GenericArgumentContext.cs" />
+    <Compile Include="../../Editor/Utils/ThisArgType.cs" />
+    <Compile Include="../../Editor/ObfusPasses/ParamPad/ParameterPadding.cs" />
+  </ItemGroup>
+</Project>

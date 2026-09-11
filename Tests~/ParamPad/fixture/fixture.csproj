@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <AssemblyName>fixture</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS0649;CS0067;CS0414</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../unitystub/unitystub.csproj" />
+    <ProjectReference Include="../libA/libA.csproj" Aliases="LA" />
+    <ProjectReference Include="../libB/libB.csproj" Aliases="LB" />
+  </ItemGroup>
+</Project>

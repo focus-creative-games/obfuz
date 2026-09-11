@@ -1,0 +1,6 @@
+bin/
+obj/
+out/
+out[A-Z]/
+pristine/
+UnityEngine.CoreModule.dll
