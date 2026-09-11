@@ -146,6 +146,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
         private readonly CachedDictionary<TypeDef, bool> _isSerializableCache;
         private readonly CachedDictionary<TypeDef, bool> _isInheritFromMonoBehaviourOrScriptableObjectCache;
         private readonly CachedDictionary<TypeDef, bool> _isScriptOrSerializableTypeCache;
+        private readonly CachedDictionary<TypeDef, bool> _isAnyNestedTypeHasBurstCompileAttributeCache;
+        private readonly CachedDictionary<TypeDef, bool> _isInheritAnyNestingOrAnyNestedTypeHasBurstCompileAttributeCache;
 
         public UnityRenamePolicy()
         {
@@ -153,6 +155,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             _isSerializableCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsSerializableType);
             _isInheritFromMonoBehaviourOrScriptableObjectCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptType);
             _isScriptOrSerializableTypeCache = new CachedDictionary<TypeDef, bool>(MetaUtil.IsScriptOrSerializableType);
+            _isAnyNestedTypeHasBurstCompileAttributeCache = new CachedDictionary<TypeDef, bool>(IsAnyNestedTypeHasBurstCompileAttribute);
+            _isInheritAnyNestingOrAnyNestedTypeHasBurstCompileAttributeCache = new CachedDictionary<TypeDef, bool>(IsAnyNestingOrNestedTypeHasBurstCompileAttribute);
         }
 
         private bool IsUnitySourceGeneratedAssemblyType(TypeDef typeDef)
@@ -197,6 +201,30 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             return false;
         }
 
+        private bool IsInheritAnyNestingTypeHasBurstCompileAttribute(TypeDef typeDef)
+        {
+            if (typeDef.Module.IsCoreLibraryModule == true)
+            {
+                return false;
+            }
+            if (MetaUtil.HasBurstCompileAttribute(typeDef))
+            {
+                return true;
+            }
+            TypeDef parentTypeDef = typeDef.DeclaringType;
+            return parentTypeDef != null && IsInheritAnyNestingTypeHasBurstCompileAttribute(parentTypeDef);
+        }
+
+        private bool IsAnyNestedTypeHasBurstCompileAttribute(TypeDef typeDef)
+        {
+            return typeDef.NestedTypes.Any(nestedType => MetaUtil.HasBurstCompileAttribute(nestedType) || _isAnyNestedTypeHasBurstCompileAttributeCache.GetValue(nestedType));
+        }
+
+        private bool IsAnyNestingOrNestedTypeHasBurstCompileAttribute(TypeDef typeDef)
+        {
+            return IsInheritAnyNestingTypeHasBurstCompileAttribute(typeDef) || _isAnyNestedTypeHasBurstCompileAttributeCache.GetValue(typeDef);
+        }
+
         public override bool NeedRename(TypeDef typeDef)
         {
             if (_isScriptOrSerializableTypeCache.GetValue(typeDef))
@@ -207,7 +235,8 @@ namespace Obfuz.ObfusPasses.SymbolObfus.Policies
             {
                 return false;
             }
-            if (MetaUtil.HasBurstCompileAttribute(typeDef))
+            // if any declaring type or any nested type has BurstCompile attribute, we should not rename this type
+            if (_isInheritAnyNestingOrAnyNestedTypeHasBurstCompileAttributeCache.GetValue(typeDef))
             {
                 return false;
             }
