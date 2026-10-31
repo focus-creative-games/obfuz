@@ -52,7 +52,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 }
             }
 
-            private TypeSig GetLocalTypeSig(ICorLibTypes corLibTypes, EvalDataTypeWithSig type)
+            public static TypeSig GetLocalTypeSig(ICorLibTypes corLibTypes, EvalDataTypeWithSig type)
             {
                 TypeSig typeSig = type.typeSig;
                 switch (type.type)
@@ -177,6 +177,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
         private readonly IRandom _random;
         private readonly ConstFieldAllocator _constFieldAllocator;
         private readonly int _minInstructionCountOfBasicBlockToObfuscate;
+        private EvalStackCalculator _evalStackCalculator;
         private readonly BasicBlockInfo _bbHead;
 
         public MethodControlFlowCalculator(MethodDef method, IRandom random, ConstFieldAllocator constFieldAllocator, int minInstructionCountOfBasicBlockToObfuscate)
@@ -288,6 +289,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                     {
                         var inputArgs = new BasicBlockInputOutputArguments(_method, cur.inputStackDatas);
                         WalkInputArgumentGroup(cur, inputArgs);
+                        WidenInputArgsLocalsToGroupBaseType(inputArgs);
                     }
                 }
                 if (cur.outputArgs == null && cur.outputStackDatas.Count == 0)
@@ -314,6 +316,46 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
             }
         }
 
+
+        private void WidenInputArgsLocalsToGroupBaseType(BasicBlockInputOutputArguments inputArgs)
+        {
+            int slotCount = inputArgs.locals.Count;
+            if (slotCount == 0)
+            {
+                return;
+            }
+
+            var merged = new EvalDataTypeWithSig?[slotCount];
+            for (BasicBlockInfo block = _bbHead.next; block != null; block = block.next)
+            {
+                if (block.inputArgs == inputArgs && block.inputStackDatas.Count == slotCount)
+                {
+                    MergeStackDatas(merged, block.inputStackDatas);
+                }
+                if (block.outputArgs == inputArgs && block.outputStackDatas.Count == slotCount)
+                {
+                    MergeStackDatas(merged, block.outputStackDatas);
+                }
+            }
+
+            for (int i = 0; i < slotCount; i++)
+            {
+                if (merged[i].HasValue)
+                {
+                    inputArgs.locals[i].Type = BasicBlockInputOutputArguments.GetLocalTypeSig(_method.Module.CorLibTypes, merged[i].Value);
+                }
+            }
+        }
+
+        private void MergeStackDatas(EvalDataTypeWithSig?[] merged, List<EvalDataTypeWithSig> datas)
+        {
+            for (int i = 0; i < datas.Count; i++)
+            {
+                merged[i] = merged[i].HasValue
+                    ? _evalStackCalculator.ReduceBaseType(merged[i].Value, datas[i])
+                    : datas[i];
+            }
+        }
 
         private BasicBlockInfo CreateSaveStackBasicBlock(BasicBlockInfo to)
         {
@@ -944,6 +986,7 @@ namespace Obfuz.ObfusPasses.ControlFlowObfus
                 return false;
             }
             var evc = new EvalStackCalculator(_method);
+            _evalStackCalculator = evc;
             BuildBasicBlockLink(evc);
             if (!CheckNotContainsNotSupportedEvalStackData())
             {
