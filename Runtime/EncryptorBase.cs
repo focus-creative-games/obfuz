@@ -292,7 +292,11 @@ namespace Obfuz
 
         public virtual unsafe void DecryptInitializeArray(System.Array arr, byte[] data, int offset, int length, int ops, int salt)
         {
-            Buffer.BlockCopy(data, offset, arr, 0, length);
+            ConstUtility.InitializeArray(arr, data, offset, length);
+            if (length == 0)
+            {
+                return;
+            }
             if (arr is byte[] byteArr)
             {
                 fixed (byte* dataPtr = &byteArr[0])

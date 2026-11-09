@@ -20,6 +20,7 @@
 
 using System;
 using System.Text;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Assertions;
 
 namespace Obfuz
@@ -68,7 +69,54 @@ namespace Obfuz
 
         public static void InitializeArray(Array array, byte[] data, int offset, int length)
         {
-            Buffer.BlockCopy(data, offset, array, 0, length);
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+            Type elementType = array.GetType().GetElementType();
+            if (elementType.IsEnum)
+            {
+                CopyEnumArrayData(array, elementType, data, offset, length);
+            }
+            else
+            {
+                Buffer.BlockCopy(data, offset, array, 0, length);
+            }
+        }
+
+        private static unsafe void CopyEnumArrayData(Array array, Type elementType, byte[] data, int offset, int length)
+        {
+            // Buffer.BlockCopy does not accept enum arrays on all Unity runtimes.
+            // Enums contain no references and have the layout of their underlying type.
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+            if (offset < 0 || length < 0)
+            {
+                throw new ArgumentOutOfRangeException(offset < 0 ? nameof(offset) : nameof(length));
+            }
+            long byteLength = array.LongLength * UnsafeUtility.SizeOf(Enum.GetUnderlyingType(elementType));
+            if (offset > data.Length - length || length > byteLength)
+            {
+                throw new ArgumentException("Source or destination array is too short.");
+            }
+            if (length == 0)
+            {
+                return;
+            }
+            void* destination = UnsafeUtility.PinGCArrayAndGetDataAddress(array, out ulong handle);
+            try
+            {
+                fixed (byte* source = &data[offset])
+                {
+                    UnsafeUtility.MemCpy(destination, source, length);
+                }
+            }
+            finally
+            {
+                UnsafeUtility.ReleaseGCObject(handle);
+            }
         }
 
         public static unsafe int CastFloatAsInt(float value)
