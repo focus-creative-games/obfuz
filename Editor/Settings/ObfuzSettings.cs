@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEditorInternal;
@@ -117,16 +118,21 @@ namespace Obfuz.Settings
         private static ObfuzSettings LoadOrCreate()
         {
             string filePath = SettingsPath;
-            var arr = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
-            //Debug.Log($"typeof arr:{arr?.GetType()} arr[0]:{(arr != null && arr.Length > 0 ? arr[0].GetType(): null)}");
+            if (!File.Exists(filePath))
+            {
+                s_Instance = CreateInstance<ObfuzSettings>();
+                Save();
+                return s_Instance;
+            }
 
+            var arr = InternalEditorUtility.LoadSerializedFileAndForget(filePath);
             if (arr != null && arr.Length > 0 && arr[0] is ObfuzSettings obfuzSettings)
             {
                 s_Instance = obfuzSettings;
             }
             else
             {
-                s_Instance = s_Instance ?? CreateInstance<ObfuzSettings>();
+                throw new InvalidOperationException($"Failed to load Obfuz settings from '{filePath}'. Please check the settings file for errors.");
             }
             return s_Instance;
         }

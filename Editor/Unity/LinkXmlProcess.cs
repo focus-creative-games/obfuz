@@ -58,7 +58,15 @@ namespace Obfuz.Unity
 
         public static string GenerateAdditionalLinkXmlFile(BuildTarget target)
         {
-            ObfuzSettings settings = ObfuzSettings.Instance;
+            ObfuzSettings settings;
+            try
+            {
+                settings = ObfuzSettings.Instance;
+            }
+            catch (Exception e)
+            {
+                throw new BuildFailedException(e);
+            }
             if (!settings.buildPipelineSettings.enable)
             {
                 Debug.Log("Obfuscation is disabled. Skipping link.xml generation.");
