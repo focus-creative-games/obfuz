@@ -42,7 +42,7 @@ namespace Obfuz.Utils
             int index = fullName.LastIndexOf('/');
             if (index == -1)
             {
-                int index2 = fullName.IndexOf('.');
+                int index2 = fullName.LastIndexOf('.');
                 return index2 >= 0 ? (fullName.Substring(0, index2), fullName.Substring(index2 + 1)) : ("", fullName);
             }
             return ("", fullName.Substring(index + 1));
