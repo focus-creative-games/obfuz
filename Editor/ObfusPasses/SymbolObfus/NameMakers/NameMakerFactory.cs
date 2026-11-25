@@ -18,7 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 {
@@ -31,6 +32,10 @@ namespace Obfuz.ObfusPasses.SymbolObfus.NameMakers
 
         public static INameMaker CreateNameMakerBaseASCIICharSet(string namePrefix)
         {
+            if (!string.IsNullOrEmpty(namePrefix) && (namePrefix.IndexOf('/') >= 0 || namePrefix.IndexOf('.') >= 0))
+            {
+                throw new ArgumentException("The obfuscatedNamePrefix setting must not contain '/' or '.' because it is used in type names.", nameof(namePrefix));
+            }
             var words = new List<string>();
             for (int i = 0; i < 26; i++)
             {

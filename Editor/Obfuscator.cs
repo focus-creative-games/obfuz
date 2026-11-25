@@ -339,6 +339,23 @@ namespace Obfuz
                     Debug.Log($"assembly: {assName} not found! ignore.");
                     continue;
                 }
+                foreach (TypeDef type in mod.GetTypes())
+                {
+                    string typeNamespace = type.Namespace;
+                    string typeName = type.Name;
+                    if (!string.IsNullOrEmpty(typeNamespace) && typeNamespace.IndexOf('/') >= 0)
+                    {
+                        throw new NotSupportedException($"Type '{type.FullName}' in assembly '{mod.Assembly.Name}' has an unsupported namespace '{typeNamespace}': namespaces must not contain '/'.");
+                    }
+                    if (!string.IsNullOrEmpty(typeName) && (typeName.IndexOf('/') >= 0 || typeName.IndexOf('.') >= 0))
+                    {
+                        throw new NotSupportedException($"Type '{type.FullName}' in assembly '{mod.Assembly.Name}' has an unsupported name '{typeName}': type names must not contain '/' or '.'.");
+                    }
+                    if (type.IsNested && !string.IsNullOrEmpty(typeNamespace))
+                    {
+                        throw new NotSupportedException($"Nested type '{type.FullName}' in assembly '{mod.Assembly.Name}' has a non-empty namespace '{typeNamespace}'. Nested types with their own namespaces are not supported because they are incompatible with IL2CPP.");
+                    }
+                }
                 if (_coreSettings.assembliesToObfuscate.Contains(assName))
                 {
                     modulesToObfuscate.Add(mod);
